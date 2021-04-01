@@ -1,4 +1,4 @@
-# KataGo
+# Go Attack
 
 * [Overview](#overview)
 * [Setting Up and Running](#setting-up-and-running)
