@@ -5,7 +5,7 @@
 # To build everything:
 # docker build -t humancompatibleai/goattack:latest .
 # To run everything:
-# docker run --runtime=nvidia -v /home/yawen/goattack:/goattack -it --rm humancompatibleai/goattack:latest
+# docker run --runtime=nvidia -v /home/yawen/goattack:/goattack -it humancompatibleai/goattack:latest
 
  
 # Dockerfile, Image, Container
@@ -18,7 +18,7 @@ RUN apt-get update -q \
    build-essential \
    curl \
    git \
-   gconf \
+   gconf2 \
    libgl1-mesa-dev \
    libgl1-mesa-glx \
    libglew-dev \

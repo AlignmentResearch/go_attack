@@ -87,11 +87,11 @@ cat $BLACK_CONFIG_PATH >> $EXPDIR/black.cfg
 cat $WHITE_CONFIG_PATH >> $EXPDIR/white.cfg
 
 # Set BLACK and WHITE
-BLACK="$ROOT/engines/KataGo-v1.7.0/cpp/katago gtp "
+BLACK="$ROOT/engines/KataGo/cpp/katago gtp "
 BLACK+="-config $EXPDIR/black.cfg "
 BLACK+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"
 
-WHITE="$ROOT/engines/KataGo-v1.7.0/cpp/katago gtp "
+WHITE="$ROOT/engines/KataGo/cpp/katago gtp "
 WHITE+="-config $EXPDIR/white.cfg "
 WHITE+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"
 
@@ -117,10 +117,10 @@ then
 fi
 
 # recording the shell command
-echo "$ROOT/controllers/gogui-1.5.1/bin/gogui-twogtp -black "$BLACK" -white "$WHITE" $ARGS" > "$EXPDIR/game.log"
+echo "$ROOT/controllers/gogui/bin/gogui-twogtp -black "$BLACK" -white "$WHITE" $ARGS" > "$EXPDIR/game.log"
 
 # adding experiment name to to_analyze.txt
 echo "$EXP" >> "$( dirname $EXPDIR )/finished_exp.txt"
 
-bash $ROOT/controllers/gogui-1.5.1/bin/gogui-twogtp -black "$BLACK" -white "$WHITE" $ARGS
+bash $ROOT/controllers/gogui/bin/gogui-twogtp -black "$BLACK" -white "$WHITE" $ARGS
 
