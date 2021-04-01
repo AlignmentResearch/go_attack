@@ -51,6 +51,6 @@ cat "$ROOT/configs/katago/analysis_custom.cfg" >> "$FILEDIR/$MSG/analysis.cfg"
 echo "$ROOT/engines/KataGo-custom/cpp/katago analysis -config $FILEDIR/$MSG/analysis.cfg -model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz " \ 
 > "$FILEDIR/$MSG/analysis.log"
 
-$ROOT/engines/KataGo/cpp/katago analysis \
+$ROOT/engines/KataGo-custom/cpp/katago analysis \
 -config $FILEDIR/$MSG/analysis.cfg \
 -model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz 

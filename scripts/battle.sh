@@ -89,11 +89,11 @@ cat $BLACK_CONFIG_PATH >> $EXPDIR/black.cfg
 cat $WHITE_CONFIG_PATH >> $EXPDIR/white.cfg
 
 # Set BLACK and WHITE
-BLACK="$ROOT/engines/KataGo/cpp/katago gtp "
+BLACK="$ROOT/engines/KataGo-custom/cpp/katago gtp "
 BLACK+="-config $EXPDIR/black.cfg "
 BLACK+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"
 
-WHITE="$ROOT/engines/KataGo/cpp/katago gtp "
+WHITE="$ROOT/engines/KataGo-custom/cpp/katago gtp "
 WHITE+="-config $EXPDIR/white.cfg "
 WHITE+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"
 
