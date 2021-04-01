@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# CUDA_VISIBLE_DEVICES=0,1 ./scripts/battle.sh -e test -t 2 -n 2 -o -b gtp_black.cfg -w gtp_white.cfg
+
 # Variables
 ROOT=$( dirname $( dirname $( realpath "$0"  ) ) )
 FILEDIR="$ROOT/games"
