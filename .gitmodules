@@ -4,3 +4,6 @@
 [submodule "engines/KataGo"]
 	path = engines/KataGo
 	url = https://github.com/lightvector/KataGo.git
+[submodule "engines/--force"]
+	path = engines/--force
+	url = https://github.com/lightvector/KataGo.git
