@@ -17,11 +17,14 @@ TODO
     - `docker run --runtime=nvidia -v /path/to/goattack:/goattack -it humancompatibleai/goattack:latest`
 - Setup the controller
     - `cd /goattack/controller/gogui`
+    - `git checkout tags/v1.5.1`
     - `apt-get update && apt install gconf2 -y`
     - `./ubuntu_setup.sh`
     - `./install.sh -p /usr/local -j /usr/lib/jvm/java-11-openjdk-amd64`
 - Compile KataGo
-    - `cd /goattack/engines/KataGo/cpp/`
+    - `cd /goattack/engines/KataGo-custom/`
+    - `git checkout tags/v1.8.1`
+    - `cd /goattack/engines/KataGo-custom/cpp/`
     - `/base/cmake-3.12.4-Linux-x86_64/bin/cmake . -DUSE_BACKEND=CUDA -DBUILD_DISTRIBUTED=1`
     - `make`
 - Get the model weights
