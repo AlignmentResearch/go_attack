@@ -4,6 +4,7 @@ analysis_tmp
 games
 core
 models
+gtp_logs
 
 # Ignore certain scripts
 scripts/download.sh
@@ -67,7 +68,6 @@ engines/KataGo/CMakeCache.txt
 engines/KataGo/CMakeFiles/
 engines/KataGo/Makefile
 engines/KataGo/cmake_install.cmake
-
 engines/KataGo/.DS_Store
 engines/KataGo/GPATH
 engines/KataGo/GRTAGS
