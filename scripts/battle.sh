@@ -10,11 +10,12 @@ THREADS="1"
 CONFIG_PATH="$ROOT/configs/katago/gtp_example.cfg"
 OPENING=0
 ALTER=0
+FORCE=0
 
 # Help function
 help () {
   echo "./battle.sh -e for experiment name; -t for number of threads; 
-  -b for black config name; -w for white config name;
+  -b for black config name; -w for white config name; -f for force;
   -n for number of games; -a for alternating colors; -o for loading openings."
   exit 0
 }
@@ -34,6 +35,11 @@ case $key in
     ;;
     -n | --num)
     NUM="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -f | --force)
+    FORCE=1
     shift # past argument
     shift # past value
     ;;
@@ -74,6 +80,11 @@ case $key in
 esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
+
+if [[ $FORCE -eq 1 ]]
+then
+  rm -rf $EXPDIR
+fi
 
 # Building experiment directory
 FILENAME="$EXPDIR/game"
