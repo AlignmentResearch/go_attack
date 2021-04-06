@@ -23,9 +23,9 @@ TODO
     - `./install.sh -p /usr/local -j /usr/lib/jvm/java-11-openjdk-amd64`
 - Compile KataGo
     - `cd /goattack/engines/KataGo-custom/`
-    - `git checkout tags/v1.8.1`
+    - `git checkout -b attack`
     - `cd /goattack/engines/KataGo-custom/cpp/`
-    - `/base/cmake-3.12.4-Linux-x86_64/bin/cmake . -DUSE_BACKEND=CUDA -DBUILD_DISTRIBUTED=1`
+    - `cmake312 . -DUSE_BACKEND=CUDA -DBUILD_DISTRIBUTED=1`
     - `make`
 - Get the model weights
     - `cd /goattack/models`
@@ -34,5 +34,7 @@ TODO
     - `wget https://github.com/lightvector/KataGo/releases/download/v1.4.5/g170-b40c256x2-s5095420928-d1229425124.bin.gz`
     - `wget https://github.com/lightvector/KataGo/releases/download/v1.4.5/g170e-b20c256x2-s5303129600-d1228401921.bin.gz`
 - Test if the installation is successful
-    - `cd /goattack/engines/KataGo/cpp/ && ./katago benchmark -model /goattack/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /goattack/configs/katago/gtp_custom.cfg`
+    - `cd /goattack/engines/KataGo-custom/cpp/ && ./katago benchmark -model /goattack/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /goattack/configs/katago/gtp_custom.cfg`
     - `CUDA_VISIBLE_DEVICES=0,1 /goattack/scripts/battle.sh -e test -t 2 -n 2 -o -b gtp_black.cfg -w gtp_white.cfg`
+- Make changes to cpp code and then make the cpp code
+    - `make`

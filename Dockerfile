@@ -1,11 +1,11 @@
 # To just build the base:
 # docker build --target base -t humancompatibleai/goattack:base .
 # To mount in source code:
-# docker run -v /home/yawen/goattack:/goattack --rm -it humancompatibleai/goattack:base
+# docker run -v /home/yawen/go_attack:/goattack --rm -it humancompatibleai/goattack:base
 # To build everything:
 # docker build -t humancompatibleai/goattack:latest .
 # To run everything:
-# docker run --runtime=nvidia -v /home/yawen/goattack:/goattack -it humancompatibleai/goattack:latest
+# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack -it humancompatibleai/goattack:latest
 
  
 # Dockerfile, Image, Container
@@ -66,13 +66,9 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.12.4/cmake-3.12.4
 && cd cmake-3.12.4-Linux-x86_64 \
 && apt install
 
-# CUDA Runtime version
-# RUN rm -rf /usr/lib/x86_64-linux-gnu/libcuda.so.1 \
-# && ln -s /usr/lib/x86_64-linux-gnu/libcuda.so.440.118.02 /usr/lib/x86_64-linux-gnu/libcuda.so.1
-
+RUN echo "alias cmake312='/base/cmake-3.12.4-Linux-x86_64/bin/cmake'" >> /root/.bashrc
 
 WORKDIR /goattack
 
 ENTRYPOINT ["bash"]
- 
-# CMD ["--benchmark", "--benchmark-all", "--optimized-kernel-enable"]
+
