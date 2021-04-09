@@ -21,57 +21,57 @@ __pycache__
 
 tmp*.txt
 
-# Ignore stuff in KataGo
-engines/KataGo/cpp/write
-engines/KataGo/cpp/runtests
-engines/KataGo/cpp/example
-engines/KataGo/cpp/gtp
-engines/KataGo/cpp/gtp.log
-engines/KataGo/cpp/match
-engines/KataGo/cpp/matchcuda
-engines/KataGo/cpp/matchtensorflow
-engines/KataGo/cpp/match.log
-engines/KataGo/cpp/main
-engines/KataGo/cpp/maincuda
-engines/KataGo/cpp/mainopencl
-engines/KataGo/cpp/katago
-engines/KataGo/cpp/configs
-engines/KataGo/cpp/evalsgf
-engines/KataGo/cpp/runmatch.sh
-engines/KataGo/cpp/runmatchauto.sh
-engines/KataGo/cpp/runstuff.sh
-engines/KataGo/cpp/runwrite.sh
+# Ignore stuff in KataGo*
+engines/KataGo*/cpp/write
+engines/KataGo*/cpp/runtests
+engines/KataGo*/cpp/example
+engines/KataGo*/cpp/gtp
+engines/KataGo*/cpp/gtp.log
+engines/KataGo*/cpp/match
+engines/KataGo*/cpp/matchcuda
+engines/KataGo*/cpp/matchtensorflow
+engines/KataGo*/cpp/match.log
+engines/KataGo*/cpp/main
+engines/KataGo*/cpp/maincuda
+engines/KataGo*/cpp/mainopencl
+engines/KataGo*/cpp/KataGo
+engines/KataGo*/cpp/configs
+engines/KataGo*/cpp/evalsgf
+engines/KataGo*/cpp/runmatch.sh
+engines/KataGo*/cpp/runmatchauto.sh
+engines/KataGo*/cpp/runstuff.sh
+engines/KataGo*/cpp/runwrite.sh
 
-engines/KataGo/cpp/program/gitinfo.h
+engines/KataGo*/cpp/program/gitinfo.h
 
-engines/KataGo/data/
-engines/KataGo/versions/
-engines/KataGo/cpp/build
+engines/KataGo*/data/
+engines/KataGo*/versions/
+engines/KataGo*/cpp/build
 
-engines/KataGo/export_model_cuda.sh
-engines/KataGo/mixmodels.sh
-engines/KataGo/runfindposes.sh
-engines/KataGo/runtraining.sh
-engines/KataGo/runlztest*.sh
+engines/KataGo*/export_model_cuda.sh
+engines/KataGo*/mixmodels.sh
+engines/KataGo*/runfindposes.sh
+engines/KataGo*/runtraining.sh
+engines/KataGo*/runlztest*.sh
 
-engines/KataGo/tmp
-engines/KataGo/tmp.txt
-engines/KataGo/test.txt
-engines/KataGo/cpp/tmp
-engines/KataGo/out.txt
+engines/KataGo*/tmp
+engines/KataGo*/tmp.txt
+engines/KataGo*/test.txt
+engines/KataGo*/cpp/tmp
+engines/KataGo*/out.txt
 
 # For clion IDE
-engines/KataGo/.idea
+engines/KataGo*/.idea
 
 # For cmake
-engines/KataGo/CMakeCache.txt
-engines/KataGo/CMakeFiles/
-engines/KataGo/Makefile
-engines/KataGo/cmake_install.cmake
-engines/KataGo/.DS_Store
-engines/KataGo/GPATH
-engines/KataGo/GRTAGS
-engines/KataGo/GTAGS
+engines/KataGo*/CMakeCache.txt
+engines/KataGo*/CMakeFiles/
+engines/KataGo*/Makefile
+engines/KataGo*/cmake_install.cmake
+engines/KataGo*/.DS_Store
+engines/KataGo*/GPATH
+engines/KataGo*/GRTAGS
+engines/KataGo*/GTAGS
 
 # Ignore stuff in GoGUI
 controllers/gogui-1.5.1/build
