@@ -5,7 +5,7 @@
 # To build everything:
 # docker build -t humancompatibleai/goattack:latest .
 # To run everything:
-# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack -it humancompatibleai/goattack:latest
+# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack --user "$(id -u):$(id -g)" -it humancompatibleai/goattack:latest
 
  
 # Dockerfile, Image, Container
@@ -17,7 +17,6 @@ RUN apt-get update -q \
    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
    build-essential \
    curl \
-   git \
    gconf2 \
    libgl1-mesa-dev \
    libgl1-mesa-glx \
@@ -44,6 +43,7 @@ RUN apt-get update -q \
    xvfb \
    rsync \
    gcc \
+   gdb \
    tmux \
    zlib1g-dev \
    libzip-dev \
@@ -54,9 +54,11 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
  
 FROM base as binary-req
  
-# Installing Java for GoGUI
+# Installing updated version of packages 
 RUN add-apt-repository ppa:webupd8team/java \
+    && add-apt-repository -y ppa:git-core/ppa \
     && apt install -y openjdk-11-jre-headless \
+    git \
     && apt-get clean 
 
 # Installing cmake for compiling KataGo
