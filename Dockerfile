@@ -1,11 +1,11 @@
 # To just build the base:
-# docker build --target base -t humancompatibleai/goattack:base .
+# docker build --target base -t kmdanielduan/goattack:base .
 # To mount in source code:
-# docker run -v /home/yawen/go_attack:/goattack --rm -it humancompatibleai/goattack:base
+# docker run -v /home/yawen/go_attack:/goattack --rm -it kmdanielduan/goattack:base
 # To build everything:
-# docker build -t humancompatibleai/goattack:latest .
+# docker build -t kmdanielduan/goattack:latest .
 # To run everything:
-# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack --user "$(id -u):$(id -g)" -it humancompatibleai/goattack:latest
+# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack --user "$(id -u):$(id -g)" -it kmdanielduan/goattack:latest
 
  
 # Dockerfile, Image, Container
