@@ -5,12 +5,11 @@
 # To build everything:
 # docker build -t kmdanielduan/goattack:latest .
 # To run everything:
-# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack -it kmdanielduan/goattack:latest
+# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack -it --rm kmdanielduan/goattack:latest 
 
  
 # Dockerfile, Image, Container
 FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04 AS base
- 
  
 # Package Installation
 RUN apt-get update -q \
