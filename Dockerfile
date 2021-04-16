@@ -1,11 +1,11 @@
 # To just build the base:
-# docker build --target base -t humancompatibleai/goattack:base .
+# docker build --target base -t kmdanielduan/goattack:base .
 # To mount in source code:
-# docker run -v /home/yawen/go_attack:/goattack --rm -it humancompatibleai/goattack:base
+# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack --rm -it kmdanielduan/goattack:base
 # To build everything:
-# docker build -t humancompatibleai/goattack:latest .
+# docker build -t kmdanielduan/goattack:latest .
 # To run everything:
-# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack --user "$(id -u):$(id -g)" -it humancompatibleai/goattack:latest
+# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack -it kmdanielduan/goattack:latest
 
  
 # Dockerfile, Image, Container
@@ -16,36 +16,18 @@ FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04 AS base
 RUN apt-get update -q \
    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
    build-essential \
-   curl \
-   gconf2 \
-   libgl1-mesa-dev \
-   libgl1-mesa-glx \
-   libglew-dev \
-   libosmesa6-dev \
-   libssl-dev \
    software-properties-common \
-   net-tools \
-   unzip \
-   vim \
-   sudo \
-   virtualenv \
-   wget \
-   xpra \
-   xserver-xorg-dev \
-   libxrandr2 \
-   libxss1 \
-   libxcursor1 \
-   libxcomposite1 \
-   libasound2 \
-   libxi6 \
-   libxtst6 \
-   libegl1-mesa  \
-   xvfb \
-   rsync \
    gcc \
    gdb \
    tmux \
-   zlib1g-dev \
+   sudo \
+   unzip \
+   vim \
+   virtualenv \
+   wget \
+   gconf2 \
+   curl \
+   libssl-dev \
    libzip-dev \
    && apt-get clean \
    && rm -rf /var/lib/apt/lists/*
