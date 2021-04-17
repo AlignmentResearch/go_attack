@@ -5,7 +5,7 @@
 # To build everything:
 # docker build -t kmdanielduan/goattack:latest .
 # To run everything:
-# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack -it --rm kmdanielduan/goattack:latest 
+# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack -it kmdanielduan/goattack:latest 
 
  
 # Dockerfile, Image, Container

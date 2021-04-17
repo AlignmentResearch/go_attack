@@ -130,7 +130,7 @@ then
 fi
 
 # recording the shell command
-echo "$ROOT/controllers/gogui/bin/gogui-twogtp -black "$BLACK" -white "$WHITE" $ARGS" > "$EXPDIR/game.log"
+echo "$ROOT/controllers/gogui/bin/gogui-twogtp -komi 7.5 -black "$BLACK" -white "$WHITE" $ARGS" > "$EXPDIR/game.log"
 
 # adding experiment name to to_analyze.txt
 echo "$EXP" >> "$( dirname $EXPDIR )/finished_exp.txt"
