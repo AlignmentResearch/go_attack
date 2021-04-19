@@ -1,6 +1,7 @@
 #!/bin/bash
 
-# CUDA_VISIBLE_DEVICES=0,1 ./scripts/battle.sh -e test -t 2 -n 2 -o -b gtp_black.cfg -w gtp_white.cfg
+# CUDA_VISIBLE_DEVICES=1 /goattack/scripts/battle.sh -e komi7.5baseline-w1600b1600 -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg
+# CUDA_VISIBLE_DEVICES=2 /goattack/scripts/battle.sh -e komi7.5baseline-o-w1600b1600 -t 1 -n 50 -o -b gtp_black.cfg -w gtp_white.cfg
 
 # Variables
 ROOT=$( dirname $( dirname $( realpath "$0"  ) ) )

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# CUDA_VISIBLE_DEVICES=0 ./scripts/attack.sh -p white -e b40vb40-n50-w_atk1600b1600 -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg
+# CUDA_VISIBLE_DEVICES=1,2,3 /goattack/scripts/attack.sh -p black -st 100 -e softattack-dev -t 1 -n 1 -b gtp_black.cfg -w gtp_white.cfg
 # CUDA_VISIBLE_DEVICES=2,3 ./scripts/attack.sh -p white -e b40vb40-o-w_atk1600b1600 -t 1 -n 50 -o -b gtp_black.cfg -w gtp_white.cfg
 # CUDA_VISIBLE_DEVICES=2,3 ./scripts/attack.sh -p black -e b40vb40-o-w1600b_atk1600 -t 1 -n 50 -o -b gtp_black.cfg -w gtp_white.cfg
 
@@ -11,6 +11,7 @@ NUM="2"
 THREADS="1"
 CONFIG_PATH="$ROOT/configs/katago/gtp_example.cfg"
 ATTACK_PLA=""
+THRESHOLD="0"
 OPENING=0
 ALTER=0
 FORCE=0
@@ -38,6 +39,11 @@ case $key in
     ;;
     -p | --player)
     ATTACK_PLA="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -st | --soft_threshold)
+    THRESHOLD="$2"
     shift # past argument
     shift # past value
     ;;
@@ -98,20 +104,16 @@ fi
 FILENAME="$EXPDIR/game"
 mkdir -p $EXPDIR
 
-# diverting gtp log to the exp directory
+# removing previous configs
 rm -rf $EXPDIR/gtp_logs $EXPDIR/black.cfg $EXPDIR/white.cfg
-echo "logDir = $EXPDIR/gtp_logs    # Each run of KataGo will log to a separate file in this dir" \
-  >> "$EXPDIR/black.cfg"
-echo "logDir = $EXPDIR/gtp_logs    # Each run of KataGo will log to a separate file in this dir" \
-  >> "$EXPDIR/white.cfg"
-cat $BLACK_CONFIG_PATH >> $EXPDIR/black.cfg
-cat $WHITE_CONFIG_PATH >> $EXPDIR/white.cfg
 
 # Set BLACK and WHITE
 BLACK=""
 if [[ "$ATTACK_PLA" == "black" ]]
 then
   BLACK+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
+  echo "visitsThreshold2Attack = ${THRESHOLD}    # Soft threshold to apply soft attack" \
+  >> "$EXPDIR/black.cfg"
 else
   BLACK+="$ROOT/engines/KataGo/cpp/katago gtp "
 fi
@@ -122,6 +124,8 @@ WHITE=""
 if [[ "$ATTACK_PLA" == "white" ]]
 then
   WHITE+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
+  echo "visitsThreshold2Attack = ${THRESHOLD}    # Soft threshold to apply soft attack" \
+  >> "$EXPDIR/white.cfg"
 else
   WHITE+="$ROOT/engines/KataGo/cpp/katago gtp "
 fi
@@ -132,6 +136,15 @@ WHITE+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"
 # -model $ROOT/models/g170-b10c128-s197428736-d67404019.bin.gz
 # -model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz
 # -model $ROOT/models/g170e-b20c256x2-s5303129600-d1228401921.bin.gz
+
+# setting configs: diverting gtp log to the exp directory, setting soft threshold
+echo "logDir = $EXPDIR/gtp_logs    # Each run of KataGo will log to a separate file in this dir" \
+  >> "$EXPDIR/black.cfg"
+echo "logDir = $EXPDIR/gtp_logs    # Each run of KataGo will log to a separate file in this dir" \
+  >> "$EXPDIR/white.cfg"
+cat $BLACK_CONFIG_PATH >> $EXPDIR/black.cfg
+cat $WHITE_CONFIG_PATH >> $EXPDIR/white.cfg
+
 
 ARGS="-size 19 "
 ARGS+="-sgffile $FILENAME "
