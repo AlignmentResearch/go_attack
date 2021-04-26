@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# CUDA_VISIBLE_DEVICES=1 /goattack/scripts/battle.sh -e komi7.5baseline-w1600b1600-9x9 -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7.5 --gpu 1
+# CUDA_VISIBLE_DEVICES=0,1 /goattack/scripts/battle.sh -e test -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 19 --komi 7.5 --gpu 2
 # CUDA_VISIBLE_DEVICES=2 /goattack/scripts/battle.sh -e komi6.5baseline-w1600b1600-13x13 -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 13 --komi 6.5 --gpu 1
 # CUDA_VISIBLE_DEVICES=2 /goattack/scripts/battle.sh -e test-fp16 -t 1 -n 2 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 19 --komi 7.5 --gpu 1
 
 # Variables
 ROOT=$( dirname $( dirname $( realpath "$0"  ) ) )
-FILEDIR="$ROOT/games"
+FILEDIR="$ROOT/games_full"
 NUM="2"
 THREADS="1"
 CONFIG_PATH="$ROOT/configs/katago/gtp_example.cfg"
@@ -127,6 +127,8 @@ mkdir -p $EXPDIR
 rm -rf $EXPDIR/black.cfg $EXPDIR/white.cfg
 echo "logDir = $EXPDIR/gtp_logs    # Each run of KataGo will log to a separate file in this dir" >> "$EXPDIR/black.cfg"
 echo "logDir = $EXPDIR/gtp_logs    # Each run of KataGo will log to a separate file in this dir" >> "$EXPDIR/white.cfg"
+echo "jsonDir = $EXPDIR/data_logs" >> "$EXPDIR/black.cfg"
+echo "jsonDir = $EXPDIR/data_logs" >> "$EXPDIR/white.cfg"
 echo "maxPlayouts = $BLACK_PLAYOUTS " >> "$EXPDIR/black.cfg"
 echo "maxPlayouts = $WHITE_PLAYOUTS " >> "$EXPDIR/white.cfg"
 
