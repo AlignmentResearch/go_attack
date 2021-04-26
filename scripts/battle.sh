@@ -2,7 +2,7 @@
 
 # CUDA_VISIBLE_DEVICES=1 /goattack/scripts/battle.sh -e komi7.5baseline-w1600b1600-9x9 -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7.5 --gpu 1
 # CUDA_VISIBLE_DEVICES=2 /goattack/scripts/battle.sh -e komi6.5baseline-w1600b1600-13x13 -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 13 --komi 6.5 --gpu 1
-# CUDA_VISIBLE_DEVICES=2 /goattack/scripts/battle.sh -e komi7.5baseline-o-w1600b1600 -t 1 -n 50 -o -b gtp_black.cfg -w gtp_white.cfg
+# CUDA_VISIBLE_DEVICES=2 /goattack/scripts/battle.sh -e test-fp16 -t 1 -n 2 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 19 --komi 7.5 --gpu 1
 
 # Variables
 ROOT=$( dirname $( dirname $( realpath "$0"  ) ) )
