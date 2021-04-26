@@ -1,9 +1,9 @@
 [submodule "controllers/gogui"]
 	path = controllers/gogui
 	url = https://github.com/Remi-Coulom/gogui.git
-[submodule "engines/KataGo"]
-	path = engines/KataGo
-	url = https://github.com/lightvector/KataGo.git
 [submodule "engines/KataGo-custom"]
 	path = engines/KataGo-custom
+	url = https://github.com/kmdanielduan/KataGo-custom.git
+[submodule "engines/KataGo-raw"]
+	path = engines/KataGo-raw
 	url = https://github.com/kmdanielduan/KataGo-custom.git
