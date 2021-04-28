@@ -11,6 +11,10 @@ gtp_logs
 scripts/download.sh
 scripts/upload_to.sh
 
+# Ignore ipynb_checkpoints
+plot/.ipynb_checkpoints
+
+
 # For C++
 *.[oa]
 *.exe
