@@ -1,6 +1,10 @@
 #!/bin/bash
 
-# make && CUDA_VISIBLE_DEVICES=0,1,2,3 /goattack/scripts/attack.sh -p black -st 600 -e test -t 1 -n 2 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 19 --komi 7.5 --gpu 4 -f
+# make && CUDA_VISIBLE_DEVICES=0,1 /goattack/scripts/attack.sh -p black -st 25 -e debug -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 100 -wp 100 --size 19 --komi 7.5 --gpu 2 -f
+# make && CUDA_VISIBLE_DEVICES=0 /goattack/scripts/attack.sh -p black -st 1000 -e b40vb40-st1000-w1600b_atk1600-full -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 19 --komi 7.5 --gpu 1 -f
+# make && CUDA_VISIBLE_DEVICES=1 /goattack/scripts/attack.sh -p black -st 100 -e b40vb40-st100-w1600b_atk1600-full -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 19 --komi 7.5 --gpu 1 -f
+# make && CUDA_VISIBLE_DEVICES=2 /goattack/scripts/attack.sh -p black -st 1000 -e b40vb40-st1000-w1600b_atk1600-9x9 -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7.5 --gpu 1 -f
+# make && CUDA_VISIBLE_DEVICES=3 /goattack/scripts/attack.sh -p black -st 100 -e b40vb40-st100-w1600b_atk1600-9x9 -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7.5 --gpu 1 -f
 
 # Variables
 ROOT=$( dirname $( dirname $( realpath "$0"  ) ) )
@@ -145,7 +149,7 @@ then
   echo "visitsThreshold2Attack = ${THRESHOLD}    # Soft threshold to apply soft attack" \
   >> "$EXPDIR/black.cfg"
 else
-  BLACK+="$ROOT/engines/KataGo/cpp/katago gtp "
+  BLACK+="$ROOT/engines/KataGo-raw/cpp/katago gtp "
 fi
 BLACK+="-config $EXPDIR/black.cfg "
 BLACK+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"
@@ -157,7 +161,7 @@ then
   echo "visitsThreshold2Attack = ${THRESHOLD}    # Soft threshold to apply soft attack" \
   >> "$EXPDIR/white.cfg"
 else
-  WHITE+="$ROOT/engines/KataGo/cpp/katago gtp "
+  WHITE+="$ROOT/engines/KataGo-raw/cpp/katago gtp "
 fi
 WHITE+="-config $EXPDIR/white.cfg "
 WHITE+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"
@@ -168,7 +172,6 @@ WHITE+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"
 # -model $ROOT/models/g170e-b20c256x2-s5303129600-d1228401921.bin.gz
 
 # diverting gtp log to the exp directory
-rm -rf $EXPDIR/black.cfg $EXPDIR/white.cfg
 echo "logDir = $EXPDIR/gtp_logs    # Each run of KataGo will log to a separate file in this dir" >> "$EXPDIR/black.cfg"
 echo "logDir = $EXPDIR/gtp_logs    # Each run of KataGo will log to a separate file in this dir" >> "$EXPDIR/white.cfg"
 echo "jsonDir = $EXPDIR/data_logs" >> "$EXPDIR/black.cfg"
