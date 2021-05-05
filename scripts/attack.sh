@@ -1,10 +1,7 @@
 #!/bin/bash
 
-# make && CUDA_VISIBLE_DEVICES=0,1 /goattack/scripts/attack.sh -p black -st 25 -e debug -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 100 -wp 100 --size 19 --komi 7.5 --gpu 2 -f
-# make && CUDA_VISIBLE_DEVICES=0 /goattack/scripts/attack.sh -p black -st 1000 -e b40vb40-st1000-w1600b_atk1600-full -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 19 --komi 7.5 --gpu 1 -f
-# make && CUDA_VISIBLE_DEVICES=1 /goattack/scripts/attack.sh -p black -st 100 -e b40vb40-st100-w1600b_atk1600-full -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 19 --komi 7.5 --gpu 1 -f
-# make && CUDA_VISIBLE_DEVICES=2 /goattack/scripts/attack.sh -p black -st 1000 -e b40vb40-st1000-w1600b_atk1600-9x9 -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7.5 --gpu 1 -f
-# make && CUDA_VISIBLE_DEVICES=3 /goattack/scripts/attack.sh -p black -st 100 -e b40vb40-st100-w1600b_atk1600-9x9 -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7.5 --gpu 1 -f
+# attack
+# CUDA_VISIBLE_DEVICES=0,1 /goattack/scripts/attack.sh -p black -st 25 -e debug -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 100 -wp 100 --size 19 --komi 7.5 --gpu 2
 
 # Variables
 ROOT=$( dirname $( dirname $( realpath "$0"  ) ) )
@@ -14,6 +11,8 @@ THREADS="1"
 CONFIG_PATH="$ROOT/configs/katago/gtp_example.cfg"
 ATTACK_PLA=""
 THRESHOLD="0"
+THRESHOLD2="-1"
+ATK_EXPAND="false"
 OPENING=0
 ALTER=0
 FORCE=0
@@ -52,6 +51,11 @@ case $key in
     ;;
     -st | --soft_threshold)
     THRESHOLD="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -st2 | --soft_threshold2)
+    THRESHOLD2="$2"
     shift # past argument
     shift # past value
     ;;
@@ -102,6 +106,10 @@ case $key in
     OPENING=1
     shift # past argument
     ;;
+    -ae | --attack_expand)
+    ATK_EXPAND="true"
+    shift # past argument
+    ;;
     --size)
     SIZE="$2"
     shift # past argument
@@ -146,8 +154,9 @@ BLACK=""
 if [[ "$ATTACK_PLA" == "black" ]]
 then
   BLACK+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
-  echo "visitsThreshold2Attack = ${THRESHOLD}    # Soft threshold to apply soft attack" \
-  >> "$EXPDIR/black.cfg"
+  echo "visitsThreshold2Attack = ${THRESHOLD}    # Soft threshold to apply soft attack"  >> "$EXPDIR/black.cfg"
+  echo "optimismThreshold4Backup = ${THRESHOLD2}    # Optimism threshold to apply soft attack"  >> "$EXPDIR/black.cfg"
+  echo "attackExpand = ${ATK_EXPAND}    # Tree expansion according to attack value"  >> "$EXPDIR/black.cfg"
 else
   BLACK+="$ROOT/engines/KataGo-raw/cpp/katago gtp "
 fi
@@ -158,8 +167,10 @@ WHITE=""
 if [[ "$ATTACK_PLA" == "white" ]]
 then
   WHITE+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
-  echo "visitsThreshold2Attack = ${THRESHOLD}    # Soft threshold to apply soft attack" \
-  >> "$EXPDIR/white.cfg"
+  echo "visitsThreshold2Attack = ${THRESHOLD}    # Soft threshold to apply soft attack"  >> "$EXPDIR/white.cfg"
+  echo "optimismThreshold4Backup = ${THRESHOLD2}    # Optimism threshold to apply soft attack"  >> "$EXPDIR/white.cfg"
+  echo "attackExpand = ${ATK_EXPAND}    # Tree expansion according to attack value"  >> "$EXPDIR/white.cfg"
+
 else
   WHITE+="$ROOT/engines/KataGo-raw/cpp/katago gtp "
 fi
@@ -219,6 +230,10 @@ echo "$ROOT/controllers/gogui/bin/gogui-twogtp -black \$BLACK -white \$WHITE $AR
 
 # adding experiment name to to_analyze.txt
 echo "$EXP" >> "$( dirname $EXPDIR )/finished_exp.txt"
+
+# make each codebase first
+cd $ROOT/engines/KataGo-custom/cpp && make && pwd
+cd $ROOT/engines/KataGo-raw/cpp && make && pwd
 
 bash $ROOT/controllers/gogui/bin/gogui-twogtp -black "$BLACK" -white "$WHITE" $ARGS
 
