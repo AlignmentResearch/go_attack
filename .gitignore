@@ -3,6 +3,7 @@ analysis_logs
 analysis_tmp
 games
 games_full
+games_value
 core
 models
 gtp_logs
@@ -11,15 +12,16 @@ gtp_logs
 scripts/download.sh
 scripts/upload_to.sh
 
-# Ignore ipynb_checkpoints
-plot/.ipynb_checkpoints
+# For Python
+__pycache__
+*.ipynb
+*/.ipynb_checkpoints
 
 
 # For C++
 *.[oa]
 *.exe
 *~
-__pycache__
 *.h5
 *.log
 *.cbp
