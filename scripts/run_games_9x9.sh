@@ -1,0 +1,9 @@
+# CUDA_VISIBLE_DEVICES=1 /goattack/scripts/attack.sh -p black -st 999999 -st2 0 -e custom-code-battle-check-9x9 -t 1 -n 20 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7 --gpu 1
+CUDA_VISIBLE_DEVICES=2,3 /goattack/scripts/attack.sh -p black -st 0 -st2 0 -e b40vb40-st0-w1600b_atk1600-u-9x9 -t 1 -n 10 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7 --gpu 2
+CUDA_VISIBLE_DEVICES=2,3 /goattack/scripts/attack.sh -p black -st 100 -st2 0 -e b40vb40-st100-w1600b_atk1600-u-9x9 -t 1 -n 10 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7 --gpu 2
+CUDA_VISIBLE_DEVICES=2,3 /goattack/scripts/attack.sh -p black -st 200 -st2 0 -e b40vb40-st200-w1600b_atk1600-u-9x9 -t 1 -n 10 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7 --gpu 2
+CUDA_VISIBLE_DEVICES=2,3 /goattack/scripts/attack.sh -p black -st 400 -st2 0 -e b40vb40-st400-w1600b_atk1600-u-9x9 -t 1 -n 10 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7 --gpu 2
+CUDA_VISIBLE_DEVICES=2,3 /goattack/scripts/attack.sh -p black -st 800 -st2 0 -e b40vb40-st800-w1600b_atk1600-u-9x9 -t 1 -n 10 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7 --gpu 2
+CUDA_VISIBLE_DEVICES=2,3 /goattack/scripts/attack.sh -p black -st 1200 -st2 0 -e b40vb40-st1200-w1600b_atk1600-u-9x9 -t 1 -n 10 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7 --gpu 2
+CUDA_VISIBLE_DEVICES=2,3 /goattack/scripts/attack.sh -p black -st 1600 -st2 0 -e b40vb40-st1600-w1600b_atk1600-u-9x9 -t 1 -n 10 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7 --gpu 2
+CUDA_VISIBLE_DEVICES=2,3 /goattack/scripts/attack.sh -p black -st 99999 -st2 0 -e b40vb40-st99999-w1600b_atk1600-u-9x9 -t 1 -n 10 -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 --size 9 --komi 7 --gpu 2
