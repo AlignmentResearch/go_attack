@@ -2,8 +2,6 @@
 analysis_logs
 analysis_tmp
 games
-games_full
-games_value
 core
 models
 gtp_logs

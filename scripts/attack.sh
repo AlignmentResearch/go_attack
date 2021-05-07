@@ -1,18 +1,19 @@
 #!/bin/bash
 
 # attack
-# CUDA_VISIBLE_DEVICES=0,1 /goattack/scripts/attack.sh -p black -st 25 -e debug -t 1 -n 50 -b gtp_black.cfg -w gtp_white.cfg -bp 100 -wp 100 --size 19 --komi 7.5 --gpu 2
 
 # Variables
 ROOT=$( dirname $( dirname $( realpath "$0"  ) ) )
-FILEDIR="$ROOT/games_full"
+FILEDIR="$ROOT/games"
 NUM="2"
 THREADS="1"
 CONFIG_PATH="$ROOT/configs/katago/gtp_example.cfg"
 ATTACK_PLA=""
-THRESHOLD="0"
-THRESHOLD2="-1"
+SOFT_ATTACK="0"
+SOFT_BACKUP="-1"
 ATK_EXPAND="false"
+MINIMAX_SB="false"
+
 OPENING=0
 ALTER=0
 FORCE=0
@@ -49,13 +50,13 @@ case $key in
     shift # past argument
     shift # past value
     ;;
-    -st | --soft_threshold)
-    THRESHOLD="$2"
+    -sa | --soft_attack)
+    SOFT_ATTACK="$2"
     shift # past argument
     shift # past value
     ;;
-    -st2 | --soft_threshold2)
-    THRESHOLD2="$2"
+    -sb | --soft_backup)
+    SOFT_BACKUP="$2"
     shift # past argument
     shift # past value
     ;;
@@ -110,6 +111,10 @@ case $key in
     ATK_EXPAND="true"
     shift # past argument
     ;;
+    -ms | --minimax_softbackup)
+    MINIMAX_SB="true"
+    shift # past argument
+    ;;
     --size)
     SIZE="$2"
     shift # past argument
@@ -154,11 +159,13 @@ BLACK=""
 if [[ "$ATTACK_PLA" == "black" ]]
 then
   BLACK+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
-  echo "visitsThreshold2Attack = ${THRESHOLD}    # Soft threshold to apply soft attack"  >> "$EXPDIR/black.cfg"
-  echo "optimismThreshold4Backup = ${THRESHOLD2}    # Optimism threshold to apply soft attack"  >> "$EXPDIR/black.cfg"
+  echo "visitsThreshold2Attack = ${SOFT_ATTACK}    # Soft threshold to apply soft attack"  >> "$EXPDIR/black.cfg"
+  echo "optimismThreshold4Backup = ${SOFT_BACKUP}    # Optimism threshold to apply soft attack"  >> "$EXPDIR/black.cfg"
   echo "attackExpand = ${ATK_EXPAND}    # Tree expansion according to attack value"  >> "$EXPDIR/black.cfg"
+  echo "isMinimaxOptim4Backup = ${MINIMAX_SB}    # is minimax soft backup"  >> "$EXPDIR/black.cfg"
+  echo "attackPla = BLACK    # black player as the attack player"  >> "$EXPDIR/black.cfg"
 else
-  BLACK+="$ROOT/engines/KataGo-raw/cpp/katago gtp "
+  BLACK+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
 fi
 BLACK+="-config $EXPDIR/black.cfg "
 BLACK+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"
@@ -167,12 +174,13 @@ WHITE=""
 if [[ "$ATTACK_PLA" == "white" ]]
 then
   WHITE+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
-  echo "visitsThreshold2Attack = ${THRESHOLD}    # Soft threshold to apply soft attack"  >> "$EXPDIR/white.cfg"
-  echo "optimismThreshold4Backup = ${THRESHOLD2}    # Optimism threshold to apply soft attack"  >> "$EXPDIR/white.cfg"
+  echo "visitsThreshold2Attack = ${SOFT_ATTACK}    # Soft threshold to apply soft attack"  >> "$EXPDIR/white.cfg"
+  echo "optimismThreshold4Backup = ${SOFT_BACKUP}    # Optimism threshold to apply soft attack"  >> "$EXPDIR/white.cfg"
   echo "attackExpand = ${ATK_EXPAND}    # Tree expansion according to attack value"  >> "$EXPDIR/white.cfg"
-
+  echo "isMinimaxOptim4Backup = ${MINIMAX_SB}    # is minimax soft backup"  >> "$EXPDIR/white.cfg"
+  echo "attackPla = WHITE    # white player as the attack player"  >> "$EXPDIR/white.cfg"
 else
-  WHITE+="$ROOT/engines/KataGo-raw/cpp/katago gtp "
+  WHITE+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
 fi
 WHITE+="-config $EXPDIR/white.cfg "
 WHITE+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"
@@ -228,12 +236,9 @@ echo "BLACK=\"${BLACK}\"" >> "$EXPDIR/game.log"
 echo "WHITE=\"${WHITE}\"" >> "$EXPDIR/game.log"
 echo "$ROOT/controllers/gogui/bin/gogui-twogtp -black \$BLACK -white \$WHITE $ARGS" >> "$EXPDIR/game.log"
 
-# adding experiment name to to_analyze.txt
-echo "$EXP" >> "$( dirname $EXPDIR )/finished_exp.txt"
-
 # make each codebase first
 cd $ROOT/engines/KataGo-custom/cpp && make && pwd
-cd $ROOT/engines/KataGo-raw/cpp && make && pwd
+# cd $ROOT/engines/KataGo-raw/cpp && make && pwd
 
 bash $ROOT/controllers/gogui/bin/gogui-twogtp -black "$BLACK" -white "$WHITE" $ARGS
 
