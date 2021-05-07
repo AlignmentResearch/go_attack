@@ -153,8 +153,7 @@ def main(exp_dir, record_key_dict, plot_key_dict):
         for idx, player in enumerate(["Black", "White"]):
             pklName = f"game-{gameIdx}-{player}.pkl"
             savePath = str(Path(data_dir) / pklName)
-            # if pklName in json_list:
-            if False:
+            if pklName in json_list:
                 pass
             else:
                 plot_keys_p = plot_key_dict[player]
@@ -196,8 +195,8 @@ def main(exp_dir, record_key_dict, plot_key_dict):
                 if player == "Black":
                     attackMoveNums = df_p.index[df_p["attack?"]]
                 for xc in attackMoveNums:
-                    ax_all_sub.axvline(x=xc, c="pink", alpha=0.6)
-                    ax_game_sub.axvline(x=xc, c="pink", alpha=0.6)
+                    ax_all_sub.axvline(x=xc, c="red", alpha=0.4)
+                    ax_game_sub.axvline(x=xc, c="red", alpha=0.4)
         gamePlotName = f"game-{gameIdx}.jpg"
         fig_game.savefig(str(Path(plot_dir) / gamePlotName), dpi=100, format='jpg')
         print(f"{gamePlotName} plot finished ... ")
@@ -225,28 +224,34 @@ if __name__ == "__main__":
         "Black" : copy.copy(record_keys),
         "White" : copy.copy(record_keys)
     }
-    
 
     # set plot_keys
     plot_key_dict = {
-        "Black" : ['winrate', 'attackValue', 'moveAttackValue', 'minimaxValue', "attack?", 'scoreStdev/25', 'movePrior'],
-        "White" : ['winrate', 'effectiveWinValue', 'minimaxValue', "attack?", 'scoreStdev/25', 'movePrior']
+        "Black" : ['winrate', 'attackValue', 'moveAttackValue', 'minimaxValue', "attack?", 'scoreStdev/25'],
+        "White" : ['winrate', 'effectiveWinValue', 'minimaxValue', "attack?", 'scoreStdev/25'],
     }
+    record_key_dict["Black"] += ['attackUtility', 'effectiveUtility', 'minimaxUtility']
+    plot_key_dict["Black"] += ['attackUtility']
+    root = str(Path("..").resolve())
+    games_dir = str(Path(root) / "games")
 
-    for d in ["games_value", "games_full"]:
-        if d == "games_full":
-            record_key_dict["Black"] += ['attackUtility', 'effectiveUtility', 'minimaxUtility']
-            plot_key_dict["Black"] += ['attackUtility']
-        root = str(Path("..").resolve())
-        games_dir = str(Path(root) / d)
+    exp_strs = [
+        "b40vb40-mctsst50-w1600b_atk1600-atkexpand-9x9",
+        "b40vb40-mctsst100-w1600b_atk1600-atkexpand-9x9",
+        "b40vb40-mctsst200-w1600b_atk1600-atkexpand-9x9",
+        "b40vb40-mctsst1600-w1600b_atk1600-atkexpand-9x9",
+    ]
+    # exp_strs = os.listdir(games_dir)
+    exp_dirs = list(map(lambda exp_str: str(Path(games_dir) / exp_str), exp_strs))
 
-        # exp_strs = [
-        #     "b40vb40-st1000-w1600b_atk1600-full",
-        # ]
-        exp_strs = os.listdir(games_dir)
-        exp_dirs = list(map(lambda exp_str: str(Path(games_dir) / exp_str), exp_strs))
-
-        for exp_dir in exp_dirs:
-            if "finished_exp.txt" in exp_dir:
-                continue
+    for exp_dir in exp_dirs:
+        filelist = os.listdir(exp_dir)
+        if "game.dat" in filelist:
             main(exp_dir, record_key_dict, plot_key_dict)
+        else:
+            for exp in filelist:
+                tmp = os.path.join(exp_dir, exp)
+                main(tmp, record_key_dict, plot_key_dict)
+        if "finished_exp.txt" in exp_dir:
+            continue
+        
