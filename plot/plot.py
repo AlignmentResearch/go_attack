@@ -234,24 +234,25 @@ if __name__ == "__main__":
     plot_key_dict["Black"] += ['attackUtility']
     root = str(Path("..").resolve())
     games_dir = str(Path(root) / "games")
-
-    exp_strs = [
-        "b40vb40-mctsst50-w1600b_atk1600-atkexpand-9x9",
-        "b40vb40-mctsst100-w1600b_atk1600-atkexpand-9x9",
-        "b40vb40-mctsst200-w1600b_atk1600-atkexpand-9x9",
-        "b40vb40-mctsst1600-w1600b_atk1600-atkexpand-9x9",
+    folder_strs = [
+        "atkexpand",
+        "baseline",
+        "mctssb_atkexpand",
+        "minimaxsb_atkexpand",
+        "softatk",
+        "softatk_atkexpand"
     ]
-    # exp_strs = os.listdir(games_dir)
-    exp_dirs = list(map(lambda exp_str: str(Path(games_dir) / exp_str), exp_strs))
+    for fs in folder_strs:
+        exp_strs = os.listdir(games_dir + "/" + fs)
+        print(exp_strs)
+        exp_dirs = list(map(lambda exp_str: str(Path(games_dir) / fs / exp_str), exp_strs))
 
-    for exp_dir in exp_dirs:
-        filelist = os.listdir(exp_dir)
-        if "game.dat" in filelist:
-            main(exp_dir, record_key_dict, plot_key_dict)
-        else:
-            for exp in filelist:
-                tmp = os.path.join(exp_dir, exp)
-                main(tmp, record_key_dict, plot_key_dict)
-        if "finished_exp.txt" in exp_dir:
-            continue
-        
+        for exp_dir in exp_dirs:
+            filelist = os.listdir(exp_dir)
+            if "game.dat" in filelist:
+                main(exp_dir, record_key_dict, plot_key_dict)
+            else:
+                pass
+            if "finished_exp.txt" in exp_dir:
+                continue
+            
