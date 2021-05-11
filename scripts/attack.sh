@@ -11,6 +11,7 @@ CONFIG_PATH="$ROOT/configs/katago/gtp_example.cfg"
 ATTACK_PLA=""
 SOFT_ATTACK="0"
 SOFT_BACKUP="-1"
+SOFT_EXPAND="0"
 ATK_EXPAND="false"
 MINIMAX_SB="false"
 
