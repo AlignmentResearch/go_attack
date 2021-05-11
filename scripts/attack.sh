@@ -22,6 +22,7 @@ WHITE_PLAYOUTS="1600"
 SIZE="19"
 KOMI="7.5"
 GPU="1"
+START_GAME_IDX="0"
 
 # Help function
 help () {
@@ -57,6 +58,11 @@ case $key in
     ;;
     -sb | --soft_backup)
     SOFT_BACKUP="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -se | --soft_expand)
+    SOFT_EXPAND="$2"
     shift # past argument
     shift # past value
     ;;
@@ -130,6 +136,11 @@ case $key in
     shift # past argument
     shift # past value
     ;;
+    --start)
+    START_GAME_IDX="$2"
+    shift # past argument
+    shift # past value
+    ;;
     -h | --help)
     help
     ;;
@@ -155,32 +166,32 @@ mkdir -p $EXPDIR
 rm -rf $EXPDIR/gtp_logs $EXPDIR/black.cfg $EXPDIR/white.cfg
 
 # Set BLACK and WHITE
-BLACK=""
+BLACK="$ROOT/engines/KataGo-custom/cpp/katago gtp "
+echo "startGameIdx = ${START_GAME_IDX}    # Start game index"  >> "$EXPDIR/black.cfg"
 if [[ "$ATTACK_PLA" == "black" ]]
 then
-  BLACK+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
   echo "visitsThreshold2Attack = ${SOFT_ATTACK}    # Soft threshold to apply soft attack"  >> "$EXPDIR/black.cfg"
   echo "optimismThreshold4Backup = ${SOFT_BACKUP}    # Optimism threshold to apply soft attack"  >> "$EXPDIR/black.cfg"
-  echo "attackExpand = ${ATK_EXPAND}    # Tree expansion according to attack value"  >> "$EXPDIR/black.cfg"
+  echo "attackExpand = ${ATK_EXPAND}    # Soft expansion according to attack value"  >> "$EXPDIR/black.cfg"
+  echo "softExpandThreshold = ${SOFT_EXPAND}    # Tree expansion according to attack value"  >> "$EXPDIR/black.cfg"
   echo "isMinimaxOptim4Backup = ${MINIMAX_SB}    # is minimax soft backup"  >> "$EXPDIR/black.cfg"
   echo "attackPla = BLACK    # black player as the attack player"  >> "$EXPDIR/black.cfg"
-else
-  BLACK+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
+# else
 fi
 BLACK+="-config $EXPDIR/black.cfg "
 BLACK+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"
 
-WHITE=""
+WHITE="$ROOT/engines/KataGo-custom/cpp/katago gtp "
+echo "startGameIdx = ${START_GAME_IDX}    # Start game index"  >> "$EXPDIR/white.cfg"
 if [[ "$ATTACK_PLA" == "white" ]]
 then
-  WHITE+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
   echo "visitsThreshold2Attack = ${SOFT_ATTACK}    # Soft threshold to apply soft attack"  >> "$EXPDIR/white.cfg"
   echo "optimismThreshold4Backup = ${SOFT_BACKUP}    # Optimism threshold to apply soft attack"  >> "$EXPDIR/white.cfg"
   echo "attackExpand = ${ATK_EXPAND}    # Tree expansion according to attack value"  >> "$EXPDIR/white.cfg"
+  echo "softExpandThreshold = ${SOFT_EXPAND}    # Tree expansion according to attack value"  >> "$EXPDIR/white.cfg"
   echo "isMinimaxOptim4Backup = ${MINIMAX_SB}    # is minimax soft backup"  >> "$EXPDIR/white.cfg"
   echo "attackPla = WHITE    # white player as the attack player"  >> "$EXPDIR/white.cfg"
-else
-  WHITE+="$ROOT/engines/KataGo-custom/cpp/katago gtp "
+# else
 fi
 WHITE+="-config $EXPDIR/white.cfg "
 WHITE+="-model $ROOT/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz"

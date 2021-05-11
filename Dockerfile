@@ -22,6 +22,8 @@ RUN apt-get update -q \
    sudo \
    unzip \
    vim \
+   python3.8 \
+   python3-pip \
    virtualenv \
    wget \
    gconf2 \
@@ -50,6 +52,15 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.12.4/cmake-3.12.4
 && apt install
 
 RUN echo "alias cmake312='/base/cmake-3.12.4-Linux-x86_64/bin/cmake'" >> /root/.bashrc
+
+# create a virtual environment using Python interpreter python3.8
+RUN virtualenv -p /usr/bin/python3.8 venv
+RUN source venv/bin/activate
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir numpy \
+    pandas \
+    matplotlib
+
 
 WORKDIR /goattack
 
