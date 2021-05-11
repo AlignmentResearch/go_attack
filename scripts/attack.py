@@ -101,7 +101,7 @@ if __name__ == "__main__":
     parser.add_argument('-e', '--exp_name', type=str, default="test/test_scripts")
     parser.add_argument('-t', '--threads', type=int, default=1)
     parser.add_argument('--size', type=int, default=19)
-    parser.add_argument('--komi', type=int, default=7.5)
+    parser.add_argument('--komi', type=float, default=7.5)
     # parser.add_argument('--gpu', type=str, default="0")
     parser.add_argument('--gpu', type=int, nargs='+')
     parser.add_argument('-f', '--force', action='store_true')
