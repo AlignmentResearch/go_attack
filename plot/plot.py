@@ -16,20 +16,30 @@ def get_list(moveInfos, key):
 def get_stats(move_dict, key_list):
     stat_list = []
     for key in key_list:
+        move = move_dict['move']
+        children_dict = move_dict['Root']['moveInfos']
+        child_winrates = dict([(k, 1.0-v['winrate']) for k, v in children_dict.items()])
+
         if key == 'move':
-            stat = move_dict[key]
+            stat = move
         elif key == "movePrior":
-            move = move_dict['move']
-            children_dict = move_dict['Root']['moveInfos']
             movePrior = children_dict[move]['prior']
             stat = movePrior
         elif key == "moveAttackValue":
-            move = move_dict['move']
-            children_dict = move_dict['Root']['moveInfos']
             moveAttackValue = 1.0-children_dict[move]['effectiveWinValue']
             child_attack_values = dict([(k, 1.0-v['effectiveWinValue']) for k, v in children_dict.items()])
             assert moveAttackValue == child_attack_values[move]
             stat = moveAttackValue
+        elif key == "moveWinrate":
+            moveWinrate = 1.0-children_dict[move]['winrate']
+            assert moveWinrate == child_winrates[move]
+            stat = moveWinrate
+        elif key == "maxChildWinrate":
+            stat = max(child_winrates.values())
+        elif key == "minChildWinrate":
+            stat = min(child_winrates.values())
+        elif key == "childWinrateStd":
+            stat = np.std(list(child_winrates.values()))
         elif key == "attack?":
             stat = True if children_dict[move]['order'] != 0 else False
         else:
@@ -121,9 +131,33 @@ def sanity_check(keys_p, all_p):
         check_num_children(node_dict)
         check_value_cal(node_dict)
         
-# plot_one_exp from a json filepath
+# plot_one_exp from a df_p
 def plot_one_exp(df_p, plot_keys, ax, **kwargs):
     ax = df_p[plot_keys].plot(ax=ax, ylim=[-0.1,1.1], **kwargs)
+    ax.legend(fontsize=14)
+    ax.set_title(kwargs['title'], fontsize = 18)
+#     np.arange(-1.21, -0.79, 0.04)
+    ax.set_yticks(np.arange(-0.1, 1.1, 0.1))
+    ax.grid(True, linestyle='--', alpha=0.3)
+
+# plot_joint_exp from a json filepath
+def plot_joint_exp(df_dict, plot_keys, ax, **kwargs):
+    print(plot_keys)
+    plot_keys_p = {
+        "Black" : list(filter(lambda x:x.endswith("_Black"), plot_keys)),
+        "White" : list(filter(lambda x:x.endswith("_White"), plot_keys)),
+    }
+    for player in ['Black', 'White']:
+        plot_k = [x.split("_")[0] for x in plot_keys_p[player]]
+        for key in plot_k:
+            if key == "moveWinrateRange":
+                ax.fill_between(list(df_dict[player].index), 
+                df_dict[player]["minChildWinrate"], df_dict[player]["maxChildWinrate"], alpha=0.2)
+            else:
+                if key == "winrate" and player == "White":
+                    ax = (1.0 - df_dict[player][key]).plot(ax=ax, ylim=[-0.1,1.1], **kwargs, label=f'1-{key}_white')
+                else:
+                    ax = df_dict[player][key].plot(ax=ax, ylim=[-0.1,1.1], **kwargs, label=f'{key}_black')
     ax.legend(fontsize=14)
     ax.set_title(kwargs['title'], fontsize = 18)
 #     np.arange(-1.21, -0.79, 0.04)
@@ -150,45 +184,60 @@ def main(exp_dir, record_key_dict, plot_key_dict):
         assert f"game-{gameIdx}-White.json" in json_list, f"Error: game-{gameIdx}-White.json not in json_list"
 
         gameOutcome = game_result_dict[gameIdx][0]
+        df_dict = dict()
+        # loading raw dataframe for both player
         for idx, player in enumerate(["Black", "White"]):
             pklName = f"game-{gameIdx}-{player}.pkl"
             savePath = str(Path(data_dir) / pklName)
-            if pklName in json_list:
+            # if pklName in json_list:
+            if False:
                 pass
             else:
-                plot_keys_p = plot_key_dict[player]
                 json_p = str(Path(data_dir) / f"game-{gameIdx}-{player}.json")
                 all_p, keys_p = get_preprocessed_all_p(json_p)
-                df_p = dict2df(all_p, keys_p, record_key_dict[player])
-                if 'scoreStdev/25' in plot_keys_p:
-                    df_p['scoreStdev/25'] = df_p['scoreStdev'] / 25 
-                df_p.to_pickle(savePath)
+                df_dict[player] = dict2df(all_p, keys_p, record_key_dict[player])
+                if 'scoreStdev/25' in plot_key_dict[player]:
+                    df_dict[player]['scoreStdev/25'] = df_dict[player]['scoreStdev'] / 25 
+                df_dict[player].to_pickle(savePath)
                 print(f"{pklName} saved!")
-            
+
     # subplots arguments
     twoD = True if numFinishedGames > 1 else False
-    ncols = 2 
-    nrows = numFinishedGames*2 // ncols if twoD else 1
+    assert len(record_key_dict) == len(plot_key_dict)
+    ncols = len(record_key_dict)
+    nrows = numFinishedGames * ncols // ncols if twoD else 1
 
     fig_all, ax_all = plt.subplots(ncols=ncols, nrows=nrows, figsize=(ncols*8*1.5, nrows*6*1.5))
 
     # for each game
     for gameIdx in range(numFinishedGames):
+        # load df_dict first
+        df_dict = dict()
+        for idx, player in enumerate(["Black", "White"]): # ["Black", "White", "Joint"]
+            pklName = f"game-{gameIdx}-{player}.pkl"
+            savePath = str(Path(data_dir) / pklName)
+            with open(savePath, "rb") as file:
+                df_p = pickle.load(file)
+                df_dict[player] = df_p
+                print(f"{pklName} loaded!")
+
+        # initialize game figures and start plotting
         fig_game, ax_game = plt.subplots(ncols=ncols, nrows=1, figsize=(ncols*8*1.5, 1*6*1.5))
         gameOutcome = game_result_dict[gameIdx][0]
         attackMoveNums = None
-        for idx, player in enumerate(["Black", "White"]):
-            pklName = f"game-{gameIdx}-{player}.pkl"
-            savePath = str(Path(data_dir) / pklName)
-            plot_keys_p = plot_key_dict[player]
+
+        for idx, player in enumerate(["Black", "White", "Joint"]): # ["Black", "White", "Joint"]    
             ax_all_sub = ax_all[gameIdx, idx] if twoD else ax_all[idx]
-            ax_game_sub = ax_game[idx]
-            with open(savePath, "rb") as file:
-                df_p = pickle.load(file)
-                print(f"{pklName} loaded!")
+            ax_game_sub = ax_game[idx]            
             
-            plot_one_exp(df_p, plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
-            plot_one_exp(df_p, plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
+            plot_keys_p = plot_key_dict[player]
+            if player in ["Black", "White"]:
+                plot_one_exp(df_dict[player], plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
+                plot_one_exp(df_dict[player], plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
+            elif player in ["Joint"]:
+                plot_joint_exp(df_dict, plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
+                plot_joint_exp(df_dict, plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
+
             
             # plot attack positions
             if "attack?" in plot_keys_p:
@@ -197,6 +246,7 @@ def main(exp_dir, record_key_dict, plot_key_dict):
                 for xc in attackMoveNums:
                     ax_all_sub.axvline(x=xc, c="red", alpha=0.4)
                     ax_game_sub.axvline(x=xc, c="red", alpha=0.4)
+        
         gamePlotName = f"game-{gameIdx}.jpg"
         fig_game.savefig(str(Path(plot_dir) / gamePlotName), dpi=100, format='jpg')
         print(f"{gamePlotName} plot finished ... ")
@@ -219,19 +269,23 @@ if __name__ == "__main__":
     record_keys += ['numChildren', 'perspective']
     record_keys += ['scoreLead', 'scoreStdev', 'utility', 'weightSum']
     record_keys += ['moveAttackValue', 'attack?']
+    record_keys += ['moveWinrate', 'maxChildWinrate', 'minChildWinrate', 'childWinrateStd']
+    # record_keys += ['maxChildAttackValue', 'minChildAttackValue', 'childAttackValueStd']
     record_keys += ['movePrior']
     record_key_dict = {
         "Black" : copy.copy(record_keys),
-        "White" : copy.copy(record_keys)
+        "White" : copy.copy(record_keys),
+        "Joint" : copy.copy(record_keys)
     }
 
     # set plot_keys
     plot_key_dict = {
-        "Black" : ['winrate', 'attackValue', 'moveAttackValue', 'minimaxValue', "attack?", 'scoreStdev/25'],
-        "White" : ['winrate', 'effectiveWinValue', 'minimaxValue', "attack?", 'scoreStdev/25'],
+        "Black" : ['winrate', 'attackValue', 'moveAttackValue', 'minimaxValue', "attack?"],# 'scoreStdev/25'],
+        "White" : ['winrate', 'effectiveWinValue', 'minimaxValue', "attack?"],# 'scoreStdev/25'],
+        "Joint" : ['winrate_Black', 'winrate_White', 'moveWinrate_Black', 'moveWinrateRange_Black', 'childWinrateStd_Black', "attack?"],# 'scoreStdev/25'],
     }
     record_key_dict["Black"] += ['attackUtility', 'effectiveUtility', 'minimaxUtility']
-    plot_key_dict["Black"] += ['attackUtility']
+    # plot_key_dict["Black"] += ['attackUtility']
     root = str(Path("..").resolve())
     games_dir = str(Path(root) / "games")
     folder_strs = [
@@ -240,7 +294,9 @@ if __name__ == "__main__":
         "mctssb_atkexpand",
         "minimaxsb_atkexpand",
         "softatk",
-        "softatk_atkexpand"
+        "softatk_atkexpand",
+        "softatk_softexpand",
+        # "test-plot"
     ]
     for fs in folder_strs:
         exp_strs = os.listdir(games_dir + "/" + fs)
