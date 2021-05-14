@@ -1,39 +1,39 @@
 # Go Attack
 
 * [Overview](#overview)
-* [Setting Up and Running](#setting-up-and-running)
+* [Prerequisite & Dependencies](#prerequisite-&-dependencies)
 
 ## Overview
 
 TODO
 
-## Setting Up and Running
+## Prerequisite & Dependencies
 
-- Download the repo
-    - `git clone https://github.com/kmdanielduan/go_attack.git`
-    - `mkdir games models`
-- Setup the docker image and container
-    - make sure you are in svm.bair.berkeley.edu (TODO: change to pulling images from Docker Hub in the future)
-    - `docker run --runtime=nvidia -v /path/to/goattack:/goattack -it humancompatibleai/goattack:latest`
-- Setup the controller
-    - `cd /goattack/controllers/gogui`
-    - `git checkout tags/v1.5.1`
-    - `./ubuntu_setup.sh`
-    - `./install.sh -p /usr/local -j /usr/lib/jvm/java-11-openjdk-amd64`
-- Compile KataGo
-    - `cd /goattack/engines/KataGo-custom/`
-    - `git checkout --track origin/attack`
-    - `cd /goattack/engines/KataGo-custom/cpp/`
-    - `cmake312 . -DUSE_BACKEND=CUDA -DBUILD_DISTRIBUTED=1`
-    - `make`
-- Get the model weights
-    - `cd /goattack/models`
-    - `wget https://media.katagotraining.org/uploaded/networks/models/kata1/kata1-b40c256-s7186724608-d1743537710.bin.gz`
-    - `wget https://github.com/lightvector/KataGo/releases/download/v1.4.5/g170-b30c320x2-s4824661760-d1229536699.bin.gz`
-    - `wget https://github.com/lightvector/KataGo/releases/download/v1.4.5/g170-b40c256x2-s5095420928-d1229425124.bin.gz`
-    - `wget https://github.com/lightvector/KataGo/releases/download/v1.4.5/g170e-b20c256x2-s5303129600-d1228401921.bin.gz`
-- Test if the installation is successful
-    - `cd /goattack/engines/KataGo-custom/cpp/ && CUDA_VISIBLE_DEVICES=2 ./katago benchmark -model /goattack/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /goattack/configs/katago/gtp_custom.cfg`
-    - `CUDA_VISIBLE_DEVICES=2 /goattack/scripts/attack.sh -e test-image -t 1 -n 2 -a -b gtp_black.cfg -w gtp_white.cfg`
-- Make changes to cpp code and then make the cpp code
-    - `make`
+- **Summary**: For this project, we use **Docker** and **GitHub** repo to set up the dependencies and environment.
+- **Docker image**: kmdanielduan/goattack:latest
+- **GitHub repo**:
+    - Project code: https://github.com/kmdanielduan/go_attack
+    - Agent code: https://github.com/kmdanielduan/KataGo-custom
+    - Controller code: https://github.com/Remi-Coulom/gogui/tree/v1.5.1
+- **Setting up**
+    - Download the repo 
+        - `git clone --recurse-submodules https://github.com/kmdanielduan/go_attack.git goattack`
+        - `cd goattack && mkdir games`
+    - Pull the docker image and build container
+        - `docker pull kmdanielduan/goattack:latest`
+        - `docker run --runtime=nvidia -v ~/goattack:/goattack -it kmdanielduan/goattack:latest `
+    - Setup the controller
+        - `cd /goattack/controllers/gogui`
+        - `git checkout tags/v1.5.1`
+        - `./ubuntu_setup.sh`
+    - Compile KataGo agent
+        - `cd /goattack/engines/KataGo-custom/`
+        - `git checkout --track origin/attack`
+        - `cd /goattack/engines/KataGo-custom/cpp/`
+        - `cmake312 . -DUSE_BACKEND=CUDA -DBUILD_DISTRIBUTED=1`
+        - `make`
+    - Download models weights
+        - `cd /goattack/configs/katago && wget -i model_list.txt -P /goattack/models`
+    - Test if the installation is successful
+        - `cd /goattack/engines/KataGo-custom/cpp/ && CUDA_VISIBLE_DEVICES=2 ./katago benchmark -model /goattack/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /goattack/configs/katago/gtp_custom.cfg`
+        - `python3 /goattack/scripts/attack.py -b gtp_black.cfg -w gtp_white.cfg -bp 50 -wp 50 -t 1 --komi 7 --size 9 --n 10 -e test/test-code --gpu 1 2 3`
