@@ -19,6 +19,7 @@ def get_stats(move_dict, key_list):
         move = move_dict['move']
         children_dict = move_dict['Root']['moveInfos']
         child_winrates = dict([(k, 1.0-v['winrate']) for k, v in children_dict.items()])
+        child_attack_values = dict([(k, 1.0-v['effectiveWinValue']) for k, v in children_dict.items()])
 
         if key == 'move':
             stat = move
@@ -27,9 +28,15 @@ def get_stats(move_dict, key_list):
             stat = movePrior
         elif key == "moveAttackValue":
             moveAttackValue = 1.0-children_dict[move]['effectiveWinValue']
-            child_attack_values = dict([(k, 1.0-v['effectiveWinValue']) for k, v in children_dict.items()])
             assert moveAttackValue == child_attack_values[move]
             stat = moveAttackValue
+        elif key == "maxChildAttackValue":
+            stat = max(child_attack_values.values())
+        elif key == "minChildAttackValue":
+            stat = min(child_attack_values.values())
+        elif key == "childAttackValueStd":
+            stat = np.std(list(child_attack_values.values()))
+
         elif key == "moveWinrate":
             moveWinrate = 1.0-children_dict[move]['winrate']
             assert moveWinrate == child_winrates[move]
@@ -40,6 +47,7 @@ def get_stats(move_dict, key_list):
             stat = min(child_winrates.values())
         elif key == "childWinrateStd":
             stat = np.std(list(child_winrates.values()))
+
         elif key == "attack?":
             stat = True if children_dict[move]['order'] != 0 else False
         else:
@@ -142,7 +150,6 @@ def plot_one_exp(df_p, plot_keys, ax, **kwargs):
 
 # plot_joint_exp from a json filepath
 def plot_joint_exp(df_dict, plot_keys, ax, **kwargs):
-    print(plot_keys)
     plot_keys_p = {
         "Black" : list(filter(lambda x:x.endswith("_Black"), plot_keys)),
         "White" : list(filter(lambda x:x.endswith("_White"), plot_keys)),
@@ -153,9 +160,12 @@ def plot_joint_exp(df_dict, plot_keys, ax, **kwargs):
             if key == "moveWinrateRange":
                 ax.fill_between(list(df_dict[player].index), 
                 df_dict[player]["minChildWinrate"], df_dict[player]["maxChildWinrate"], alpha=0.2)
+            elif key == "moveAttackValueRange":
+                ax.fill_between(list(df_dict[player].index), 
+                df_dict[player]["minChildAttackValue"], df_dict[player]["maxChildAttackValue"], alpha=0.2)
             else:
                 if key == "winrate" and player == "White":
-                    ax = (1.0 - df_dict[player][key]).plot(ax=ax, ylim=[-0.1,1.1], **kwargs, label=f'1-{key}_white')
+                    ax = (1.0 - df_dict[player][key]).plot(ax=ax, ylim=[-0.1,1.1], **kwargs, label=f'1.0 - {key}_white')
                 else:
                     ax = df_dict[player][key].plot(ax=ax, ylim=[-0.1,1.1], **kwargs, label=f'{key}_black')
     ax.legend(fontsize=14)
@@ -189,8 +199,8 @@ def main(exp_dir, record_key_dict, plot_key_dict):
         for idx, player in enumerate(["Black", "White"]):
             pklName = f"game-{gameIdx}-{player}.pkl"
             savePath = str(Path(data_dir) / pklName)
-            # if pklName in json_list:
-            if False:
+            if pklName in json_list:
+            # if False:
                 pass
             else:
                 json_p = str(Path(data_dir) / f"game-{gameIdx}-{player}.json")
@@ -213,7 +223,7 @@ def main(exp_dir, record_key_dict, plot_key_dict):
     for gameIdx in range(numFinishedGames):
         # load df_dict first
         df_dict = dict()
-        for idx, player in enumerate(["Black", "White"]): # ["Black", "White", "Joint"]
+        for idx, player in enumerate(["Black", "White"]):
             pklName = f"game-{gameIdx}-{player}.pkl"
             savePath = str(Path(data_dir) / pklName)
             with open(savePath, "rb") as file:
@@ -226,7 +236,7 @@ def main(exp_dir, record_key_dict, plot_key_dict):
         gameOutcome = game_result_dict[gameIdx][0]
         attackMoveNums = None
 
-        for idx, player in enumerate(["Black", "White", "Joint"]): # ["Black", "White", "Joint"]    
+        for idx, player in enumerate(["Black", "White", "JointWin", "JointAttack"]): # ["Black", "White", "JointWin", "JointAttack"]
             ax_all_sub = ax_all[gameIdx, idx] if twoD else ax_all[idx]
             ax_game_sub = ax_game[idx]            
             
@@ -234,7 +244,7 @@ def main(exp_dir, record_key_dict, plot_key_dict):
             if player in ["Black", "White"]:
                 plot_one_exp(df_dict[player], plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
                 plot_one_exp(df_dict[player], plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
-            elif player in ["Joint"]:
+            elif player in ["JointWin", "JointAttack"]:
                 plot_joint_exp(df_dict, plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
                 plot_joint_exp(df_dict, plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
 
@@ -242,7 +252,7 @@ def main(exp_dir, record_key_dict, plot_key_dict):
             # plot attack positions
             if "attack?" in plot_keys_p:
                 if player == "Black":
-                    attackMoveNums = df_p.index[df_p["attack?"]]
+                    attackMoveNums = df_dict[player].index[df_dict[player]["attack?"]]
                 for xc in attackMoveNums:
                     ax_all_sub.axvline(x=xc, c="red", alpha=0.4)
                     ax_game_sub.axvline(x=xc, c="red", alpha=0.4)
@@ -270,19 +280,21 @@ if __name__ == "__main__":
     record_keys += ['scoreLead', 'scoreStdev', 'utility', 'weightSum']
     record_keys += ['moveAttackValue', 'attack?']
     record_keys += ['moveWinrate', 'maxChildWinrate', 'minChildWinrate', 'childWinrateStd']
-    # record_keys += ['maxChildAttackValue', 'minChildAttackValue', 'childAttackValueStd']
+    record_keys += ['maxChildAttackValue', 'minChildAttackValue', 'childAttackValueStd']
     record_keys += ['movePrior']
     record_key_dict = {
         "Black" : copy.copy(record_keys),
         "White" : copy.copy(record_keys),
-        "Joint" : copy.copy(record_keys)
+        "JointWin" : copy.copy(record_keys),
+        "JointAttack" : copy.copy(record_keys)
     }
 
     # set plot_keys
     plot_key_dict = {
         "Black" : ['winrate', 'attackValue', 'moveAttackValue', 'minimaxValue', "attack?"],# 'scoreStdev/25'],
         "White" : ['winrate', 'effectiveWinValue', 'minimaxValue', "attack?"],# 'scoreStdev/25'],
-        "Joint" : ['winrate_Black', 'winrate_White', 'moveWinrate_Black', 'moveWinrateRange_Black', 'childWinrateStd_Black', "attack?"],# 'scoreStdev/25'],
+        "JointWin" : ['winrate_Black', 'winrate_White', 'moveWinrate_Black', 'moveWinrateRange_Black', 'childWinrateStd_Black', "attack?"],# 'scoreStdev/25'],
+        "JointAttack" : ['attackValue_Black', 'winrate_White', 'moveAttackValue_Black', 'moveAttackValueRange_Black', 'childAttackValueStd_Black', "attack?"],# 'scoreStdev/25'],
     }
     record_key_dict["Black"] += ['attackUtility', 'effectiveUtility', 'minimaxUtility']
     # plot_key_dict["Black"] += ['attackUtility']
