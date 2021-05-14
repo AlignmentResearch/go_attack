@@ -1,16 +1,16 @@
 # To just build the base:
 # docker build --target base -t kmdanielduan/goattack:base .
 # To mount in source code:
-# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack --rm -it kmdanielduan/goattack:base
+# docker run --runtime=nvidia -v /home/yawen/goattack:/goattack --rm -it kmdanielduan/goattack:base
 # To build everything:
 # docker build -t kmdanielduan/goattack:latest .
 # To run everything:
-# docker run --runtime=nvidia -v /home/yawen/go_attack:/goattack -it kmdanielduan/goattack:latest 
+# docker run --runtime=nvidia -v /home/yawen/goattack:/goattack -it kmdanielduan/goattack:latest 
 
  
 # Dockerfile, Image, Container
 FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04 AS base
- 
+
 # Package Installation
 RUN apt-get update -q \
    && DEBIAN_FRONTEND=noninteractive apt-get install -y \
@@ -22,7 +22,6 @@ RUN apt-get update -q \
    sudo \
    unzip \
    vim \
-   python3.8 \
    python3-pip \
    virtualenv \
    wget \
@@ -53,16 +52,10 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.12.4/cmake-3.12.4
 
 RUN echo "alias cmake312='/base/cmake-3.12.4-Linux-x86_64/bin/cmake'" >> /root/.bashrc
 
-# create a virtual environment using Python interpreter python3.8
-RUN virtualenv -p /usr/bin/python3.8 venv
-RUN source venv/bin/activate
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir numpy \
-    pandas \
-    matplotlib
-
+# pip install all python dependencies
+COPY python-requirements.txt ./
+RUN pip3 install --no-cache-dir -r python-requirements.txt
 
 WORKDIR /goattack
 
 ENTRYPOINT ["bash"]
-
