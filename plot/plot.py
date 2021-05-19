@@ -165,13 +165,13 @@ def plot_joint_exp(df_dict, plot_keys, ax, **kwargs):
                 df_dict[player]["minChildAttackValue"], df_dict[player]["maxChildAttackValue"], alpha=0.2)
             else:
                 if key == "winrate" and player == "White":
-                    ax = (1.0 - df_dict[player][key]).plot(ax=ax, ylim=[-0.1,1.1], **kwargs, label=f'1.0 - {key}_white')
+                    ax = (1.0 - df_dict[player][key]).plot(ax=ax, ylim=[-0.1,1.1], label=f'1.0 - {key}_white')
                 else:
-                    ax = df_dict[player][key].plot(ax=ax, ylim=[-0.1,1.1], **kwargs, label=f'{key}_black')
+                    ax = df_dict[player][key].plot(ax=ax, label=f'{key}_{player}')
     ax.legend(fontsize=14)
     ax.set_title(kwargs['title'], fontsize = 18)
-#     np.arange(-1.21, -0.79, 0.04)
-    ax.set_yticks(np.arange(-0.1, 1.1, 0.1))
+    if 'yticks' in kwargs.keys():
+        ax.set_yticks(kwargs['yticks'])
     ax.grid(True, linestyle='--', alpha=0.3)
 
 
@@ -215,11 +215,13 @@ def main(exp_dir, record_key_dict, plot_key_dict):
     twoD = True if numFinishedGames > 1 else False
     assert len(record_key_dict) == len(plot_key_dict)
     ncols = len(record_key_dict)
-    nrows = numFinishedGames * ncols // ncols if twoD else 1
-
-    fig_all, ax_all = plt.subplots(ncols=ncols, nrows=nrows, figsize=(ncols*8*1.5, nrows*6*1.5))
+    # nrows = numFinishedGames (numFinishedGames // 25) * 25
+    nrows = 25
 
     # for each game
+    gameCount = 0
+    fig_all, ax_all = plt.subplots(ncols=ncols, nrows=nrows, figsize=(ncols*8*1.5, nrows*6*1.5))
+    fig_game, ax_game = plt.subplots(ncols=ncols, nrows=1, figsize=(ncols*8*1.5, 1*6*1.5))
     for gameIdx in range(numFinishedGames):
         # load df_dict first
         df_dict = dict()
@@ -232,12 +234,11 @@ def main(exp_dir, record_key_dict, plot_key_dict):
                 print(f"{pklName} loaded!")
 
         # initialize game figures and start plotting
-        fig_game, ax_game = plt.subplots(ncols=ncols, nrows=1, figsize=(ncols*8*1.5, 1*6*1.5))
         gameOutcome = game_result_dict[gameIdx][0]
         attackMoveNums = None
 
-        for idx, player in enumerate(["Black", "White", "JointWin", "JointAttack"]): # ["Black", "White", "JointWin", "JointAttack"]
-            ax_all_sub = ax_all[gameIdx, idx] if twoD else ax_all[idx]
+        for idx, player in enumerate(list(plot_key_dict.keys())): 
+            ax_all_sub = ax_all[gameIdx % 25, idx] if twoD else ax_all[idx]
             ax_game_sub = ax_game[idx]            
             
             plot_keys_p = plot_key_dict[player]
@@ -245,6 +246,10 @@ def main(exp_dir, record_key_dict, plot_key_dict):
                 plot_one_exp(df_dict[player], plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
                 plot_one_exp(df_dict[player], plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
             elif player in ["JointWin", "JointAttack"]:
+                yticks = np.arange(-0.1, 1.1, 0.1)
+                plot_joint_exp(df_dict, plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})", yticks=yticks)
+                plot_joint_exp(df_dict, plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})", yticks=yticks)
+            elif player in ["numChildren"]:
                 plot_joint_exp(df_dict, plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
                 plot_joint_exp(df_dict, plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
 
@@ -257,17 +262,24 @@ def main(exp_dir, record_key_dict, plot_key_dict):
                     ax_all_sub.axvline(x=xc, c="red", alpha=0.4)
                     ax_game_sub.axvline(x=xc, c="red", alpha=0.4)
         
-        gamePlotName = f"game-{gameIdx}.jpg"
-        fig_game.savefig(str(Path(plot_dir) / gamePlotName), dpi=100, format='jpg')
-        print(f"{gamePlotName} plot finished ... ")
+        # plot each game
+        gamePlotName = f"game-{gameIdx}"
+        fig_game.savefig(str(Path(plot_dir) / gamePlotName) + '.png', format='png')
         fig_game.clear()
+        print(f"{gamePlotName} plot finished ... ")
 
-    now = datetime.datetime.now()
-    allPlotName = "all_plots"
-    print(f"{allPlotName} plot finished ... ")
-    fig_all.savefig(str(Path(plot_dir) / allPlotName) + ".jpg", dpi=100, format='jpg')
-    # fig.savefig(str(Path(plot_dir) / plot_name) + '.pdf', format='pdf')
-    # plt.show()
+        # add one to gameCount
+        gameCount += 1
+
+        # plot 25 games
+        if gameCount == 25 or gameIdx == numFinishedGames:
+            allPlotName = f"all_plots{gameIdx-gameCount+1}-{gameIdx}"
+            fig_all.savefig(str(Path(plot_dir) / allPlotName) + '.png', format='png')
+            fig_all.clear()
+            print(f"{allPlotName} plot finished ... ")
+            gameCount = 0
+            # plt.show()
+    
     plt.close()
 
 if __name__ == "__main__":
@@ -286,7 +298,8 @@ if __name__ == "__main__":
         "Black" : copy.copy(record_keys),
         "White" : copy.copy(record_keys),
         "JointWin" : copy.copy(record_keys),
-        "JointAttack" : copy.copy(record_keys)
+        "JointAttack" : copy.copy(record_keys),
+        "numChildren" : copy.copy(record_keys),
     }
 
     # set plot_keys
@@ -295,20 +308,24 @@ if __name__ == "__main__":
         "White" : ['winrate', 'effectiveWinValue', 'minimaxValue', "attack?"],# 'scoreStdev/25'],
         "JointWin" : ['winrate_Black', 'winrate_White', 'moveWinrate_Black', 'moveWinrateRange_Black', 'childWinrateStd_Black', "attack?"],# 'scoreStdev/25'],
         "JointAttack" : ['attackValue_Black', 'winrate_White', 'moveAttackValue_Black', 'moveAttackValueRange_Black', 'childAttackValueStd_Black', "attack?"],# 'scoreStdev/25'],
+        "numChildren" : ['numChildren_Black', 'numChildren_White', 'attack?']
     }
     record_key_dict["Black"] += ['attackUtility', 'effectiveUtility', 'minimaxUtility']
     # plot_key_dict["Black"] += ['attackUtility']
     root = str(Path("..").resolve())
     games_dir = str(Path(root) / "games")
     folder_strs = [
-        "atkexpand",
-        "baseline",
-        "mctssb_atkexpand",
-        "minimaxsb_atkexpand",
-        "softatk",
-        "softatk_atkexpand",
-        "softatk_softexpand",
+        # "atkexpand",
+        # "baseline",
+        # "mctssb_atkexpand",
+        # "minimaxsb_atkexpand",
+        # "softatk",
+        # "softatk_atkexpand",
+        # "softatk_softexpand",
         # "test-plot"
+        # "baseline",
+        # "motiv",
+        "test"
     ]
     for fs in folder_strs:
         exp_strs = os.listdir(games_dir + "/" + fs)
