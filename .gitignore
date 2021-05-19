@@ -1,7 +1,7 @@
 # Ignore folders containing logs and data
 analysis_logs
 analysis_tmp
-games
+games*
 core
 models
 gtp_logs
