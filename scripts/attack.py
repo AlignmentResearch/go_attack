@@ -18,6 +18,9 @@ def main(args):
     print(f"config_dict: {config_dict}")
     print(args)
 
+    if args.motiv_gt:
+        assert (int(args.opening) + int(args.motiv_gt)) in [0, 2], "Motivation function must be accompanied by motivation board!"
+
     # if using -f flag, deleting the whole exp directory
     if args.force:
         os.system(f"rm -rf {EXP_DIR}")
@@ -48,6 +51,7 @@ def main(args):
                 file.write(f"visitsThreshold2Attack = {args.soft_attack}    # Soft threshold to apply soft attack\n")
                 file.write(f"optimismThreshold4Backup = {args.soft_backup}    # Optimism threshold to apply soft attack\n")
                 file.write(f"attackExpand = {str(args.attack_expand).lower()}    # Tree expansion according to attack value\n")
+                file.write(f"motivGroundTruth = {str(args.motiv_gt).lower()}    # Providing ground truth value function for motivation board\n")
                 file.write(f"softExpandThreshold = {args.soft_expand}    # Tree soft expansion according to attack value\n")
                 file.write(f"isMinimaxOptim4Backup = {str(args.minimax_softbackup).lower()}    # is minimax soft backup\n")
                 file.write(f"attackPla = {player.upper()}    # {player} player as the attack player\n")
@@ -75,6 +79,7 @@ def main(args):
         game_args += "-alternate "
     
     if args.opening:
+        # game_args += f"-openings {joinpath(ROOT, 'openings', f'motiv{args.size}')} "
         game_args += f"-openings {joinpath(ROOT, 'openings')} "
 
     # recording the shell command
@@ -117,8 +122,9 @@ if __name__ == "__main__":
 
     # Attack Params
     parser.add_argument('-ae', '--attack_expand', action='store_true')
-    parser.add_argument('-sa', '--soft_attack', type=int, default=0)
-    parser.add_argument('-sb', '--soft_backup', type=int, default=-1)
+    parser.add_argument('-gt', '--motiv_gt', action='store_true')
+    parser.add_argument('-sa', '--soft_attack', type=int, default=65536)
+    parser.add_argument('-sb', '--soft_backup', type=int, default=0)
     parser.add_argument('-se', '--soft_expand', type=int, default=0)
     parser.add_argument('-ms', '--minimax_softbackup', action='store_true')
 
