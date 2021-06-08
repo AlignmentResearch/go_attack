@@ -1,4 +1,5 @@
 import os 
+from os.path import join as joinpath
 import re
 import json
 import copy
@@ -13,7 +14,7 @@ import matplotlib.pyplot as plt
 def get_list(moveInfos, key):
     return [v[key] for k,v in moveInfos.items()]
 
-def get_stats(move_dict, key_list):
+def get_stats(move_dict, key_list, player):
     stat_list = []
     for key in key_list:
         move = move_dict['move']
@@ -36,6 +37,9 @@ def get_stats(move_dict, key_list):
             stat = min(child_attack_values.values())
         elif key == "childAttackValueStd":
             stat = np.std(list(child_attack_values.values()))
+
+        elif key == "nnWinValue":
+            stat = move_dict['Root']["nnWinValue(white)"] if player == "White" else 1.0 - move_dict['Root']["nnWinValue(white)"]
 
         elif key == "moveWinrate":
             moveWinrate = 1.0-children_dict[move]['winrate']
@@ -80,11 +84,11 @@ def json2dict(json_p):
     return all_p, keys_p
 
 # getting dataframe from dict
-def dict2df(all_p, keys_p, record_keys):
+def dict2df(all_p, keys_p, record_keys, player):
     data_p = dict()
     for k in keys_p:
         key = int(k.split('-')[-1])
-        data_p[key] = get_stats(all_p[k], record_keys)
+        data_p[key] = get_stats(all_p[k], record_keys, player)
     df_p = pd.DataFrame.from_dict(data_p, orient='index', columns=record_keys)
     return df_p
 
@@ -153,21 +157,30 @@ def plot_joint_exp(df_dict, plot_keys, ax, **kwargs):
     plot_keys_p = {
         "Black" : list(filter(lambda x:x.endswith("_Black"), plot_keys)),
         "White" : list(filter(lambda x:x.endswith("_White"), plot_keys)),
+        "Joint" : list(filter(lambda x:x.endswith("_Joint"), plot_keys)),
     }
-    for player in ['Black', 'White']:
+    # separate plots for black and white
+    for player in ['Black', 'White', 'Joint']:
         plot_k = [x.split("_")[0] for x in plot_keys_p[player]]
-        for key in plot_k:
-            if key == "moveWinrateRange":
-                ax.fill_between(list(df_dict[player].index), 
-                df_dict[player]["minChildWinrate"], df_dict[player]["maxChildWinrate"], alpha=0.2)
-            elif key == "moveAttackValueRange":
-                ax.fill_between(list(df_dict[player].index), 
-                df_dict[player]["minChildAttackValue"], df_dict[player]["maxChildAttackValue"], alpha=0.2)
-            else:
-                if key == "winrate" and player == "White":
-                    ax = (1.0 - df_dict[player][key]).plot(ax=ax, ylim=[-0.1,1.1], label=f'1.0 - {key}_white')
+        if player != 'Joint':
+            for key in plot_k:
+                if key == "moveWinrateRange":
+                    ax.fill_between(list(df_dict[player].index), 
+                    df_dict[player]["minChildWinrate"], df_dict[player]["maxChildWinrate"], alpha=0.2)
+                elif key == "moveAttackValueRange":
+                    ax.fill_between(list(df_dict[player].index), 
+                    df_dict[player]["minChildAttackValue"], df_dict[player]["maxChildAttackValue"], alpha=0.2)
                 else:
-                    ax = df_dict[player][key].plot(ax=ax, label=f'{key}_{player}')
+                    if key == "winrate" and player == "White":
+                        ax = (1.0 - df_dict[player][key]).plot(ax=ax, ylim=[-0.1,1.1], label=f'1.0 - {key}_white')
+                    else:
+                        ax = df_dict[player][key].plot(ax=ax, label=f'{key}_{player}')
+        else:
+            for key in plot_k:
+                joint_series = df_dict['Black'][key].copy()
+                joint_series.append(df_dict['White'][key])
+                ax = joint_series.plot(ax=ax, label=f'{key}_{player}')
+    
     ax.legend(fontsize=14)
     ax.set_title(kwargs['title'], fontsize = 18)
     if 'yticks' in kwargs.keys():
@@ -199,13 +212,13 @@ def main(exp_dir, record_key_dict, plot_key_dict):
         for idx, player in enumerate(["Black", "White"]):
             pklName = f"game-{gameIdx}-{player}.pkl"
             savePath = str(Path(data_dir) / pklName)
-            if pklName in json_list:
-            # if False:
+            # if pklName in json_list:
+            if False:
                 pass
             else:
                 json_p = str(Path(data_dir) / f"game-{gameIdx}-{player}.json")
                 all_p, keys_p = get_preprocessed_all_p(json_p)
-                df_dict[player] = dict2df(all_p, keys_p, record_key_dict[player])
+                df_dict[player] = dict2df(all_p, keys_p, record_key_dict[player], player)
                 if 'scoreStdev/25' in plot_key_dict[player]:
                     df_dict[player]['scoreStdev/25'] = df_dict[player]['scoreStdev'] / 25 
                 df_dict[player].to_pickle(savePath)
@@ -239,7 +252,7 @@ def main(exp_dir, record_key_dict, plot_key_dict):
 
         for idx, player in enumerate(list(plot_key_dict.keys())): 
             ax_all_sub = ax_all[gameIdx % 25, idx] if twoD else ax_all[idx]
-            ax_game_sub = ax_game[idx]            
+            ax_game_sub = ax_game[idx]
             
             plot_keys_p = plot_key_dict[player]
             if player in ["Black", "White"]:
@@ -282,6 +295,23 @@ def main(exp_dir, record_key_dict, plot_key_dict):
     
     plt.close()
 
+def plot_recursive(exp_dir, record_key_dict, plot_key_dict):
+    filelist = [joinpath(exp_dir, x) for x in os.listdir(exp_dir)]
+    subdir_list = list(filter(lambda x: os.path.isdir(x), filelist))
+    # print(f"filelist: {filelist}")
+    # print(f"subdir_list: {subdir_list}")
+    if joinpath(exp_dir, "game.dat") in filelist:
+        main(exp_dir, record_key_dict, plot_key_dict)
+        return 
+    if len(subdir_list) == 0:
+        return
+    # recurse
+    for sd in subdir_list:
+        try:
+            plot_recursive(sd, record_key_dict, plot_key_dict)
+        except Exception as e:
+            print(f"Error {e} occurred during plotting!")
+
 if __name__ == "__main__":
 
     # set record_keys
@@ -293,6 +323,7 @@ if __name__ == "__main__":
     record_keys += ['moveAttackValue', 'attack?']
     record_keys += ['moveWinrate', 'maxChildWinrate', 'minChildWinrate', 'childWinrateStd']
     record_keys += ['maxChildAttackValue', 'minChildAttackValue', 'childAttackValueStd']
+    record_keys += ['nnWinValue', 'nnWinValue(white)']
     record_keys += ['movePrior']
     record_key_dict = {
         "Black" : copy.copy(record_keys),
@@ -312,6 +343,11 @@ if __name__ == "__main__":
     }
     record_key_dict["Black"] += ['attackUtility', 'effectiveUtility', 'minimaxUtility']
     # plot_key_dict["Black"] += ['attackUtility']
+    plot_key_dict["Black"] += ['nnWinValue']
+    plot_key_dict["White"] += ['nnWinValue']
+    plot_key_dict["JointWin"] += ['nnWinValue(white)_Joint']
+    plot_key_dict["JointAttack"] += ['nnWinValue(white)_Joint']
+
     root = str(Path("..").resolve())
     games_dir = str(Path(root) / "games")
     folder_strs = [
@@ -325,19 +361,19 @@ if __name__ == "__main__":
         # "test-plot"
         # "baseline",
         # "motiv",
-        "test"
+        # "test",
+        "full-motiv-gt",
+        "motiv",
+        "motiv-gt",
+        "baseline"
     ]
-    for fs in folder_strs:
-        exp_strs = os.listdir(games_dir + "/" + fs)
-        print(exp_strs)
-        exp_dirs = list(map(lambda exp_str: str(Path(games_dir) / fs / exp_str), exp_strs))
 
-        for exp_dir in exp_dirs:
-            filelist = os.listdir(exp_dir)
-            if "game.dat" in filelist:
-                main(exp_dir, record_key_dict, plot_key_dict)
-            else:
-                pass
-            if "finished_exp.txt" in exp_dir:
-                continue
+    exp_dirs = [joinpath(games_dir, fs) for fs in folder_strs]
+    for idx, exp_dir in enumerate(exp_dirs):
+        print(f"--------------- Plotting ({idx}, {exp_dir}) ---------------")
+        try:
+            plot_recursive(exp_dir, record_key_dict, plot_key_dict)
+        except Exception as e:
+            print(f"Error {e} occurred during plotting!")
+        
             
