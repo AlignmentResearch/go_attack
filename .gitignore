@@ -5,6 +5,7 @@ games*
 core
 models
 gtp_logs
+sgf4test
 
 # Ignore certain scripts
 scripts/download.sh
