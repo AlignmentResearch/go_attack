@@ -158,11 +158,12 @@ def plot_joint_exp(df_dict, plot_keys, ax, **kwargs):
         "Black" : list(filter(lambda x:x.endswith("_Black"), plot_keys)),
         "White" : list(filter(lambda x:x.endswith("_White"), plot_keys)),
         "Joint" : list(filter(lambda x:x.endswith("_Joint"), plot_keys)),
+        "JointCount" : list(filter(lambda x:x.endswith("_JointCount"), plot_keys)),
     }
     # separate plots for black and white
-    for player in ['Black', 'White', 'Joint']:
+    for player in ['Black', 'White', 'Joint', 'JointCount']:
         plot_k = [x.split("_")[0] for x in plot_keys_p[player]]
-        if player != 'Joint':
+        if player in ['Black', 'White']:
             for key in plot_k:
                 if key == "moveWinrateRange":
                     ax.fill_between(list(df_dict[player].index), 
@@ -175,11 +176,24 @@ def plot_joint_exp(df_dict, plot_keys, ax, **kwargs):
                         ax = (1.0 - df_dict[player][key]).plot(ax=ax, ylim=[-0.1,1.1], label=f'1.0 - {key}_white')
                     else:
                         ax = df_dict[player][key].plot(ax=ax, label=f'{key}_{player}')
-        else:
+        elif player == 'Joint':
             for key in plot_k:
                 joint_series = df_dict['Black'][key].copy()
                 joint_series.append(df_dict['White'][key])
                 ax = joint_series.plot(ax=ax, label=f'{key}_{player}')
+        elif player == 'JointCount':
+            if len(plot_keys_p['JointCount']) > 0:
+                winCount = df_dict["Black"]['winCountMotivGT(white)'] + df_dict["Black"]['winCountPass(white)'] 
+                lossCount = df_dict["Black"]['lossCountMotivGT(white)'] + df_dict["Black"]['lossCountPass(white)'] 
+                # print(df_dict['Black'].columns)
+                ax.fill_between(list(df_dict['Black'].index), 
+                        len(lossCount) * [0], lossCount, alpha=0.2)
+                ax = lossCount.plot(ax=ax, label=f'lossCount(white)_{player}')
+                ax.fill_between(list(df_dict['Black'].index), 
+                        lossCount, lossCount + winCount, alpha=0.2)
+                ax = (lossCount + winCount).plot(ax=ax, label=f'winCount(white)_{player}')
+        else:
+            raise
     
     ax.legend(fontsize=14)
     ax.set_title(kwargs['title'], fontsize = 18)
@@ -229,7 +243,7 @@ def main(exp_dir, record_key_dict, plot_key_dict):
     assert len(record_key_dict) == len(plot_key_dict)
     ncols = len(record_key_dict)
     # nrows = numFinishedGames (numFinishedGames // 25) * 25
-    nrows = 25
+    nrows = min(numFinishedGames, 25)
 
     # for each game
     gameCount = 0
@@ -262,6 +276,22 @@ def main(exp_dir, record_key_dict, plot_key_dict):
                 yticks = np.arange(-0.1, 1.1, 0.1)
                 plot_joint_exp(df_dict, plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})", yticks=yticks)
                 plot_joint_exp(df_dict, plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})", yticks=yticks)
+            elif player in ["JointCount"]:
+                plot_joint_exp(df_dict, plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
+                plot_joint_exp(df_dict, plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
+            elif player in ["JointRatio"]:
+                winCount = df_dict["Black"]['winCountMotivGT(white)'] + df_dict["Black"]['winCountPass(white)'] 
+                lossCount = df_dict["Black"]['lossCountMotivGT(white)'] + df_dict["Black"]['lossCountPass(white)'] 
+                if 'win/allCountGT(white)_Black' in plot_keys_p:
+                    df_dict["Black"]['win/allCountGT(white)'] = winCount / (winCount + lossCount)
+                    # print(df_dict["Black"]['win/allCountGT(white)'])
+                if 'loss/allCountGT(white)_Black' in plot_keys_p:
+                    df_dict["Black"]['loss/allCountGT(white)'] = lossCount / (winCount + lossCount)
+                    # print(df_dict["Black"]['loss/allCountGT(white)'])
+                
+                yticks = np.arange(-0.1, 1.1, 0.1)
+                plot_joint_exp(df_dict, plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})", yticks=yticks)
+                plot_joint_exp(df_dict, plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})", yticks=yticks)
             elif player in ["numChildren"]:
                 plot_joint_exp(df_dict, plot_keys_p, ax_all_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
                 plot_joint_exp(df_dict, plot_keys_p, ax_game_sub, title=f"game-{gameIdx}-{player}.json ({gameOutcome})")
@@ -285,7 +315,7 @@ def main(exp_dir, record_key_dict, plot_key_dict):
         gameCount += 1
 
         # plot 25 games
-        if gameCount == 25 or gameIdx == numFinishedGames:
+        if gameCount == 25 or gameIdx + 1 == numFinishedGames:
             allPlotName = f"all_plots{gameIdx-gameCount+1}-{gameIdx}"
             fig_all.savefig(str(Path(plot_dir) / allPlotName) + '.png', format='png')
             fig_all.clear()
@@ -307,10 +337,10 @@ def plot_recursive(exp_dir, record_key_dict, plot_key_dict):
         return
     # recurse
     for sd in subdir_list:
-        try:
-            plot_recursive(sd, record_key_dict, plot_key_dict)
-        except Exception as e:
-            print(f"Error {e} occurred during plotting!")
+        # try:
+        plot_recursive(sd, record_key_dict, plot_key_dict)
+        # except Exception as e:
+        #     print(f"Error {e} occurred during plotting!")
 
 if __name__ == "__main__":
 
@@ -330,7 +360,9 @@ if __name__ == "__main__":
         "White" : copy.copy(record_keys),
         "JointWin" : copy.copy(record_keys),
         "JointAttack" : copy.copy(record_keys),
-        "numChildren" : copy.copy(record_keys),
+        "JointCount" : copy.copy(record_keys),
+        "JointRatio" : copy.copy(record_keys),
+        # "numChildren" : copy.copy(record_keys),
     }
 
     # set plot_keys
@@ -339,14 +371,20 @@ if __name__ == "__main__":
         "White" : ['winrate', 'effectiveWinValue', 'minimaxValue', "attack?"],# 'scoreStdev/25'],
         "JointWin" : ['winrate_Black', 'winrate_White', 'moveWinrate_Black', 'moveWinrateRange_Black', 'childWinrateStd_Black', "attack?"],# 'scoreStdev/25'],
         "JointAttack" : ['attackValue_Black', 'winrate_White', 'moveAttackValue_Black', 'moveAttackValueRange_Black', 'childAttackValueStd_Black', "attack?"],# 'scoreStdev/25'],
-        "numChildren" : ['numChildren_Black', 'numChildren_White', 'attack?']
+        "JointCount" : ['winCountRange(white)_JointCount', 'lossCountRange(white)_JointCount'], #, 'winValueAvgMotivGT(black)_Black'],
+        "JointRatio" : ['winValueAvgMotivGT(white)_Black'] #, 'winValueAvgMotivGT(black)_Black'],
+
+        # "numChildren" : ['numChildren_Black', 'numChildren_White', 'attack?']
     }
     record_key_dict["Black"] += ['attackUtility', 'effectiveUtility', 'minimaxUtility']
-    # plot_key_dict["Black"] += ['attackUtility']
+    record_key_dict["Black"] += ['winCountMotivGT(white)', 'winCountPass(white)', 'lossCountMotivGT(white)', 'lossCountPass(white)', 'winValueAvgMotivGT(black)', 'winValueAvgMotivGT(white)']
+
+    plot_key_dict["Black"] += ['winValueAvgMotivGT(black)']
     plot_key_dict["Black"] += ['nnWinValue']
     plot_key_dict["White"] += ['nnWinValue']
     plot_key_dict["JointWin"] += ['nnWinValue(white)_Joint']
     plot_key_dict["JointAttack"] += ['nnWinValue(white)_Joint']
+    plot_key_dict["JointRatio"] += ['win/allCountGT(white)_Black', 'loss/allCountGT(white)_Black']
 
     root = str(Path("..").resolve())
     games_dir = str(Path(root) / "games")
@@ -362,18 +400,19 @@ if __name__ == "__main__":
         # "baseline",
         # "motiv",
         # "test",
-        "full-motiv-gt",
-        "motiv",
-        "motiv-gt",
-        "baseline"
+        # "full-motiv-gt",
+        # "motiv",
+        # "motiv-gt",
+        # "baseline",
+        "motiv-gt-vo"
     ]
 
     exp_dirs = [joinpath(games_dir, fs) for fs in folder_strs]
     for idx, exp_dir in enumerate(exp_dirs):
         print(f"--------------- Plotting ({idx}, {exp_dir}) ---------------")
-        try:
-            plot_recursive(exp_dir, record_key_dict, plot_key_dict)
-        except Exception as e:
-            print(f"Error {e} occurred during plotting!")
+        # try:
+        plot_recursive(exp_dir, record_key_dict, plot_key_dict)
+        # except Exception as e:
+        #     print(f"Error {e} occurred during plotting!")
         
             

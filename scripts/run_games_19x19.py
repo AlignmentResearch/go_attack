@@ -59,33 +59,45 @@ def addCmds(cmds):
 
     # Motivation Ground Truth
 
-    for numPlayouts in [200, 1600]:
-        # gt_visible
-        cmds.append(f"python3 /goattack/scripts/attack.py -p black -b gtp_black.cfg -w gtp_white.cfg -bp {numPlayouts} -wp {numPlayouts} -t 1 " +
-            f"--komi 7.5 --size 19 -n 25 -e full-motiv-gt/w{numPlayouts}b_atk{numPlayouts}-gt-19x19 -gt -o -f")
+    # for numPlayouts in [200, 1600]:
+    #     # gt_visible
+    #     cmds.append(f"python3 /goattack/scripts/attack.py -p black -b gtp_black.cfg -w gtp_white.cfg -bp {numPlayouts} -wp {numPlayouts} -t 1 " +
+    #         f"--komi 7.5 --size 19 -n 25 -e full-motiv-gt/w{numPlayouts}b_atk{numPlayouts}-gt-19x19 -gt -o -f")
 
-        # cmds.append(f"python3 /goattack/scripts/attack.py -p white -b gtp_black.cfg -w gtp_white.cfg -bp {numPlayouts} -wp {numPlayouts} -t 1 " + 
-        #     f"--komi 7.5 --size 19 -n 25 -e full-motiv-gt/w_atk{numPlayouts}b{numPlayouts}-gt-19x19 -gt -o")
+    #     # cmds.append(f"python3 /goattack/scripts/attack.py -p white -b gtp_black.cfg -w gtp_white.cfg -bp {numPlayouts} -wp {numPlayouts} -t 1 " + 
+    #     #     f"--komi 7.5 --size 19 -n 25 -e full-motiv-gt/w_atk{numPlayouts}b{numPlayouts}-gt-19x19 -gt -o")
 
-        # gt_attack
-        cmds.append(f"python3 /goattack/scripts/attack.py -p black -b gtp_black.cfg -w gtp_white.cfg -bp {numPlayouts} -wp {numPlayouts} -t 1 " + 
-            f"--komi 7.5 --size 19 -n 25 -sa 0 -e full-motiv-gt/sa0-w{numPlayouts}b_atk{numPlayouts}-gt-19x19 -gt -o -f")
+    #     # gt_attack
+    #     cmds.append(f"python3 /goattack/scripts/attack.py -p black -b gtp_black.cfg -w gtp_white.cfg -bp {numPlayouts} -wp {numPlayouts} -t 1 " + 
+    #         f"--komi 7.5 --size 19 -n 25 -sa 0 -e full-motiv-gt/sa0-w{numPlayouts}b_atk{numPlayouts}-gt-19x19 -gt -o -f")
 
-        # cmds.append(f"python3 /goattack/scripts/attack.py -p white -b gtp_black.cfg -w gtp_white.cfg -bp {numPlayouts} -wp {numPlayouts} -t 1 " +
-        #     f"--komi 7.5 --size 19 -n 25 -sa 0 -e full-motiv-gt/sa0-w_atk{numPlayouts}b{numPlayouts}-gt-19x19 -gt -o")
+    #     # cmds.append(f"python3 /goattack/scripts/attack.py -p white -b gtp_black.cfg -w gtp_white.cfg -bp {numPlayouts} -wp {numPlayouts} -t 1 " +
+    #     #     f"--komi 7.5 --size 19 -n 25 -sa 0 -e full-motiv-gt/sa0-w_atk{numPlayouts}b{numPlayouts}-gt-19x19 -gt -o")
 
-        # motiv_baseline
-        cmds.append(f"python3 /goattack/scripts/attack.py -b gtp_black.cfg -w gtp_white.cfg -bp {numPlayouts} -wp {numPlayouts} -t 1 " + 
-            f"--komi 7.5 --size 19 -n 25 -e motiv/w{numPlayouts}b{numPlayouts}-motiv-19x19 -o -f")
+    #     # motiv_baseline
+    #     cmds.append(f"python3 /goattack/scripts/attack.py -b gtp_black.cfg -w gtp_white.cfg -bp {numPlayouts} -wp {numPlayouts} -t 1 " + 
+    #         f"--komi 7.5 --size 19 -n 25 -e motiv/w{numPlayouts}b{numPlayouts}-motiv-19x19 -o -f")
 
-    for blackNumPlayouts in [1, 50, 100, 200, 400, 800, 1200]:
+    # for blackNumPlayouts in [1, 50, 100, 200, 400, 800, 1200]:
+    #     cmds.append(f"python3 /goattack/scripts/attack.py -p black -b gtp_black.cfg -w gtp_white.cfg -bp {blackNumPlayouts} -wp 1600 -t 1 " + 
+    #         f"--komi 7.5 --size 19 -n 25 -e full-motiv-gt/w1600b_atk{blackNumPlayouts}-motiv-gt-19x19 -gt -o -f")
+
+    # # for blackNumPlayouts in [1, 100, 200, 400, 800, 1200]:
+    #     # motiv_baseline
+    #     cmds.append(f"python3 /goattack/scripts/attack.py -b gtp_black.cfg -w gtp_white.cfg -bp {blackNumPlayouts} -wp 1600 -t 1 " + 
+    #         f"--komi 7.5 --size 19 -n 25 -e motiv/w1600b{blackNumPlayouts}-motiv-19x19 -o -f")
+
+    
+    # Motivation Ground Truth Visible Only
+
+    for blackNumPlayouts in [1600, 800, 1200]: # 1, 50, 100, 200, 400,
         cmds.append(f"python3 /goattack/scripts/attack.py -p black -b gtp_black.cfg -w gtp_white.cfg -bp {blackNumPlayouts} -wp 1600 -t 1 " + 
-            f"--komi 7.5 --size 19 -n 25 -e full-motiv-gt/w1600b_atk{blackNumPlayouts}-motiv-gt-19x19 -gt -o -f")
+            f"--komi 7.5 --size 19 -n 5 -e motiv-gt-vo/w1600b_atk{blackNumPlayouts}-motiv-gt-vo-19x19 -gt_vo -o -f")
 
-    # for blackNumPlayouts in [1, 100, 200, 400, 800, 1200]:
-        # motiv_baseline
-        cmds.append(f"python3 /goattack/scripts/attack.py -b gtp_black.cfg -w gtp_white.cfg -bp {blackNumPlayouts} -wp 1600 -t 1 " + 
-            f"--komi 7.5 --size 19 -n 25 -e motiv/w1600b{blackNumPlayouts}-motiv-19x19 -o -f")
+    # # for blackNumPlayouts in [1, 100, 200, 400, 800, 1200]:
+    #     # motiv_baseline
+    #     cmds.append(f"python3 /goattack/scripts/attack.py -b gtp_black.cfg -w gtp_white.cfg -bp {blackNumPlayouts} -wp 1600 -t 1 " + 
+    #         f"--komi 7.5 --size 19 -n 25 -e motiv/w1600b{blackNumPlayouts}-motiv-19x19 -o -f")
 
     # # Tests and Debug
 
@@ -96,7 +108,7 @@ def addCmds(cmds):
     #     f"--komi 7.5 --size 19 -n 2 -e test/test-new-print --gpu 0")
 
     # cmds.append(f"python3 /goattack/scripts/attack.py -p black -b gtp_black.cfg -w gtp_white.cfg -bp 1600 -wp 1600 -t 1 " +
-    #     f"--komi 7.5 --size 19 -n 25 -sa 9999 -e full-motiv-gt/sa9999-w_atk100b100-19x19 -n 50 -gt -o -f")
+    #     f"--komi 7.5 --size 19 -n 10 -e motiv-gt-vo/motiv-gt-visible-only2 -gt_vo -o -f")
 
     # cmds.append(f"python3 /goattack/scripts/attack.py -p black -b gtp_black.cfg -w gtp_white.cfg -bp 1 -wp 1600 -t 1 " + 
     #         f"--komi 7.5 --size 19 -n 1 -e test/w1600b_atk1-motiv-gt-19x19 -gt -o -f")
@@ -133,6 +145,6 @@ def main(cmds, gpus):
 
 if __name__ == "__main__":
     cmds = deque([])
-    gpus = deque([0, 1, 2])
+    gpus = deque([0])
     cmds = addCmds(cmds)
     main(cmds, gpus)
