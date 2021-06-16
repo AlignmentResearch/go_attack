@@ -9,6 +9,7 @@
 
  
 # Dockerfile, Image, Container
+
 FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04 AS base
 
 # Package Installation
@@ -22,7 +23,9 @@ RUN apt-get update -q \
    sudo \
    unzip \
    vim \
-   python3-pip \
+   python3-dev \ 
+   python3-pip \ 
+   python3-venv \
    virtualenv \
    wget \
    gconf2 \
@@ -33,9 +36,9 @@ RUN apt-get update -q \
    && rm -rf /var/lib/apt/lists/*
  
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
- 
-FROM base as binary-req
- 
+
+FROM base AS binary-req
+
 # Installing updated version of packages 
 RUN add-apt-repository ppa:webupd8team/java \
     && add-apt-repository -y ppa:git-core/ppa \
@@ -53,8 +56,11 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.12.4/cmake-3.12.4
 RUN echo "alias cmake312='/base/cmake-3.12.4-Linux-x86_64/bin/cmake'" >> /root/.bashrc
 
 # pip install all python dependencies
+# RUN python3 -m venv --system-site-packages /base/venv \
+RUN virtualenv --system-site-packages --python=python3 venv
+
 COPY python-requirements.txt ./
-RUN pip3 install --no-cache-dir -r python-requirements.txt
+RUN /base/venv/bin/pip3 install --no-cache-dir -r python-requirements.txt
 
 WORKDIR /goattack
 
