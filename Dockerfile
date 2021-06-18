@@ -10,7 +10,8 @@
  
 # Dockerfile, Image, Container
 
-FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04 AS base
+# FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04 AS base
+FROM nvidia/cuda:10.0-cudnn7-devel-ubuntu18.04 AS base
 
 # Package Installation
 RUN apt-get update -q \
@@ -56,11 +57,14 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.12.4/cmake-3.12.4
 RUN echo "alias cmake312='/base/cmake-3.12.4-Linux-x86_64/bin/cmake'" >> /root/.bashrc
 
 # pip install all python dependencies
-# RUN python3 -m venv --system-site-packages /base/venv \
-RUN virtualenv --system-site-packages --python=python3 venv
+RUN python3 -m venv --system-site-packages /base/venv 
+# RUN virtualenv --system-site-packages --python=python3 venv
 
 COPY python-requirements.txt ./
+RUN /base/venv/bin/pip3 install --upgrade pip setuptools
 RUN /base/venv/bin/pip3 install --no-cache-dir -r python-requirements.txt
+
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64
 
 WORKDIR /goattack
 
