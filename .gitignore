@@ -6,7 +6,7 @@ core
 models
 gtp_logs
 sgf4test
-selfplay
+selfplay-exps
 
 # Ignore certain scripts
 scripts/download.sh
