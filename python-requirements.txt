@@ -1,4 +1,5 @@
 numpy
 pandas
 matplotlib
-tensorflow==1.15
+tensorflow-gpu==1.15
+psutil
