@@ -54,7 +54,7 @@ def main(args):
 
     # Gatekeeper (C++ - cpp/katago gatekeeper) 
     if USE_GATING:
-        script_dict['gatekeeper'] = f"{ROOT}/engines/{katago_used}/cpp/katago gatekeeper " + \
+        script_dict['gatekeeper'] = f"CUDA_VISIBLE_DEVICES=0 {ROOT}/engines/{katago_used}/cpp/katago gatekeeper " + \
             f"-rejected-models-dir {BASEDIR}/rejectedmodels " + \
             f"-accepted-models-dir {BASEDIR}/models/ " + \
             f"-sgf-output-dir {BASEDIR}/gatekeepersgf/ " + \
@@ -74,7 +74,7 @@ def main(args):
 
     while True:
         try:
-            sleep(50)
+            sleep(60)
         except KeyboardInterrupt:
             print("Sending signals to kill all processes!")
             for p in sp_list:
@@ -83,7 +83,7 @@ def main(args):
     
 
 if __name__ == "__main__":
-    # CUDA_VISIBLE_DEVICES=0,1,2,3 python3 scripts/finetune.py -f --min_rows 25000 --use_gating
+    # CUDA_VISIBLE_DEVICES=0,1 python3 scripts/finetune.py --min_rows 25000 --use_gating -f
     import argparse
     parser = argparse.ArgumentParser()
     

@@ -36,9 +36,12 @@ def main(args):
 
     # Setting BLACK and WHITE configs
     katago = joinpath(ROOT, "engines/KataGo-custom/cpp/katago")
-    BLACK = f"{katago} gtp -model {ROOT}/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz "
+    # BLACK = f"{katago} gtp -model {ROOT}/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz "
+    BLACK = f"{katago} gtp -model {ROOT}/models/kata1-b6c96-s175395328-d26788732.txt.gz "
     BLACK += f"-config {EXP_DIR}/black.cfg"
-    WHITE = f"{katago} gtp -model {ROOT}/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz "
+    
+    # WHITE = f"{katago} gtp -model {ROOT}/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz "
+    WHITE = f"{katago} gtp -model {ROOT}/models/kata1-b6c96-s175395328-d26788732.txt.gz "
     WHITE += f"-config {EXP_DIR}/white.cfg"
 
     # get start game index
