@@ -29,7 +29,7 @@ def main(args):
 
     # Selfplay engine (C++ - cpp/katago selfplay)
     MAX_GAME_TOTAL = args.max_game_selfplay
-    script_dict['selfplay'] = f"{ROOT}/engines/{katago_used}/cpp/katago selfplay " + \
+    script_dict['selfplay'] = f"CUDA_VISIBLE_DEVICES=0,1 {ROOT}/engines/{katago_used}/cpp/katago selfplay " + \
                     f"-output-dir {BASEDIR}/selfplay " + \
                     f"-models-dir {BASEDIR}/models " + \
                     f"-max-games-total {MAX_GAME_TOTAL} " + \
@@ -49,12 +49,12 @@ def main(args):
 
     # Training (python - python/train.py) 
     TRAININGNAME = args.training_name
-    script_dict['train'] =  f"cd {ROOT}/engines/{katago_used}/python; ./selfplay/train.sh " + \
+    script_dict['train'] =  f"cd {ROOT}/engines/{katago_used}/python; CUDA_VISIBLE_DEVICES=2 ./selfplay/train.sh " + \
                             f"{BASEDIR} {TRAININGNAME} b6c96 {BATCH_SIZE} main -lr-scale 1.0"
 
     # Gatekeeper (C++ - cpp/katago gatekeeper) 
     if USE_GATING:
-        script_dict['gatekeeper'] = f"CUDA_VISIBLE_DEVICES=0 {ROOT}/engines/{katago_used}/cpp/katago gatekeeper " + \
+        script_dict['gatekeeper'] = f"CUDA_VISIBLE_DEVICES=3 {ROOT}/engines/{katago_used}/cpp/katago gatekeeper " + \
             f"-rejected-models-dir {BASEDIR}/rejectedmodels " + \
             f"-accepted-models-dir {BASEDIR}/models/ " + \
             f"-sgf-output-dir {BASEDIR}/gatekeepersgf/ " + \
