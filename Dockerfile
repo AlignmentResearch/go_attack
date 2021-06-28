@@ -27,7 +27,7 @@ RUN apt-get update -q \
    python3-dev \ 
    python3-pip \ 
    python3-venv \
-   virtualenv \
+#    virtualenv \
    wget \
    gconf2 \
    curl \
@@ -64,7 +64,7 @@ COPY python-requirements.txt ./
 RUN /base/venv/bin/pip3 install --upgrade pip setuptools
 RUN /base/venv/bin/pip3 install --no-cache-dir -r python-requirements.txt
 
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64
+# ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64
 
 WORKDIR /goattack
 
