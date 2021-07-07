@@ -60,10 +60,13 @@ def main(args):
 
     TRAININGNAME = args.training_name
     LR_SCALE = args.lr_scale
-    MAX_EPOCHS_THIS_INSTANCE = args.max_epoch
     script_dict['train'] =  f"cd {ROOT}/engines/{katago_used}/python; CUDA_VISIBLE_DEVICES={args.gpu} ./selfplay/train.sh " + \
-                            f"{BASEDIR} {TRAININGNAME} b6c96 {BATCH_SIZE} main -lr-scale {str(LR_SCALE)} -max-epochs-this-instance {MAX_EPOCHS_THIS_INSTANCE}"
-
+                            f"{BASEDIR} {TRAININGNAME} b6c96 {BATCH_SIZE} main -lr-scale {str(LR_SCALE)} "
+    if args.max_epoch:
+        MAX_EPOCHS_THIS_INSTANCE = args.max_epoch
+        script_dict['train'] += f"-max-epochs-this-instance {MAX_EPOCHS_THIS_INSTANCE}"
+                            # f"{BASEDIR} {TRAININGNAME} b40c256 {BATCH_SIZE} main -lr-scale {str(LR_SCALE)} -max-epochs-this-instance {MAX_EPOCHS_THIS_INSTANCE}"
+    
     # Running scripts
     for key in ['shuffle_export', 'train']:
         if key not in script_dict.keys():
@@ -101,7 +104,7 @@ if __name__ == "__main__":
     parser.add_argument("--load_initial_weights", type=str, default=None, help="Path to the initial weights file")
     parser.add_argument('--training_name', type=str, default="baseline", required=True)
     parser.add_argument('--lr-scale', type=float, default=1.0)
-    parser.add_argument('--max_epoch', type=int, default=1)
+    parser.add_argument('--max_epoch', type=int, default=None)
 
     parser.add_argument('-f', '--force', action='store_true')
     
