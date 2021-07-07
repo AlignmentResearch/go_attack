@@ -52,6 +52,7 @@ def main(args):
 
         initial_model_name = os.listdir(f"{BASEDIR}/tmp")[0]
         shutil.copytree(f"{BASEDIR}/tmp/{initial_model_name}/saved_model/variables", init_weight_dir)
+        shutil.copy(f"{BASEDIR}/tmp/{initial_model_name}/saved_model/model.config.json", traindir)
         for var_name in os.listdir(init_weight_dir):
             model_name = re.sub("variables", "model", var_name)
             os.rename(joinpath(init_weight_dir, var_name), joinpath(init_weight_dir, model_name))
