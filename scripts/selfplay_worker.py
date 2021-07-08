@@ -30,6 +30,9 @@ def main(args):
             os.system(f"unzip {args.load_initial_model} -d {BASEDIR}/models")
 
     # Selfplay engine (C++ - cpp/katago selfplay)
+    if args.mode == 'master':
+        os.system(f"chmod 777 -R {BASEDIR}/models")
+        os.system(f"chmod 777 -R {BASEDIR}/selfplay")
     script = f"CUDA_VISIBLE_DEVICES={','.join(args.gpus)} {ROOT}/engines/{katago_used}/cpp/katago selfplay " + \
                     f"-output-dir {BASEDIR}/selfplay " + \
                     f"-models-dir {BASEDIR}/models " + \
@@ -42,6 +45,9 @@ def main(args):
 
     while True:
         try:
+            if args.mode == 'master':
+                os.system(f"chmod 777 -R {BASEDIR}/models")
+                os.system(f"chmod 777 -R {BASEDIR}/selfplay")
             sleep(60)
         except KeyboardInterrupt:
             print("Sending signals to kill all processes!")
@@ -59,6 +65,7 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--load_initial_model', type=str, default=None)
     parser.add_argument('-g', '--gpus', nargs='+', type=str, required=True)
     parser.add_argument('--max_game_selfplay', type=int, default=10000)
+    parser.add_argument('--mode', type=str, default='worker')
     parser.add_argument('-f', '--force', action='store_true')
     args = parser.parse_args()
 
