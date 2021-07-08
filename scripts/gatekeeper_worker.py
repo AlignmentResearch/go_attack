@@ -5,6 +5,7 @@ from subprocess import Popen
 
 import signal
 import subprocess
+import shutil
 from time import sleep
 
 def main(args):
@@ -15,7 +16,7 @@ def main(args):
     katago_used = "KataGo-custom"
 
     if args.force:
-        for d in ["gatekeepersgf", "rejectedmodels"]:
+        for d in ["gatekeepersgf", "rejectedmodels", "activemodel"]:
             os.system(f"rm -rf {joinpath(BASEDIR, d)}")
 
     # Gatekeeper (C++ - cpp/katago gatekeeper) 
@@ -33,6 +34,16 @@ def main(args):
 
     while True:
         try:
+            modeldir = joinpath(BASEDIR, "models")
+            model_mtime_list = [(name, os.path.getmtime(joinpath(modeldir, name))) for name in os.listdir(f"{BASEDIR}/models/")]
+            model_mtime_list.sort(key=lambda x: x[-1], reverse=True)
+            latest_model_name = model_mtime_list[0][0]
+            
+            os.makedirs(joinpath(BASEDIR, "activemodel"), exist_ok=True)
+            if not os.path.exists(joinpath(BASEDIR, "activemodel", latest_model_name)):
+                os.system(f"rm -rf {joinpath(BASEDIR, 'activemodel/*')}")
+                shutil.copytree(joinpath(modeldir, latest_model_name), joinpath(BASEDIR, "activemodel", latest_model_name))
+                print(f"Copying {latest_model_name} to activemodel ...")
             sleep(60)
         except KeyboardInterrupt:
             print("Sending signals to kill all processes!")
