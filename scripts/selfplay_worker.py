@@ -56,7 +56,7 @@ def main(args):
     
 
 if __name__ == "__main__":
-    # python3 scripts/selfplay_worker.py --base_dir /goattack/selfplay-exps/dist-test --gpus 0 -m /goattack/models/kata1-b6c96-s165180416-d25130434.zip
+    # python3 scripts/selfplay_worker.py --base_dir /goattack/selfplay-exps/dist-test --gpus 2 --mode master -m /goattack/models/kata1-b6c96-s165180416-d25130434.zip
     import argparse
     parser = argparse.ArgumentParser()
     

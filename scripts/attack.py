@@ -98,7 +98,7 @@ def main(args):
         log.write(f"WHITE=\"{WHITE}\"\n")
         log.write(f"{ROOT}/controllers/gogui/bin/gogui-twogtp -black $BLACK -white $WHITE {game_args}")
 
-    # make each codebase first
+    # compile each codebase first
     os.system(f"cd {ROOT}/engines/KataGo-custom/cpp && make && pwd")
     # os.system("cd $ROOT/engines/KataGo-raw/cpp && make && pwd")
     # print(f"bash {ROOT}/controllers/gogui/bin/gogui-twogtp -black \"{BLACK}\" -white \"{WHITE}\" {game_args}")
@@ -111,32 +111,31 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
     # Game Params
-    parser.add_argument('-n', '--num_games', type=int, default=2)
-    parser.add_argument('-e', '--exp_name', type=str, default="test/test_scripts")
-    parser.add_argument('-t', '--threads', type=int, default=1)
-    parser.add_argument('--size', type=int, default=19)
-    parser.add_argument('--komi', type=float, default=7.5)
-    # parser.add_argument('--gpu', type=str, default="0")
-    parser.add_argument('--gpu', type=int, nargs='+')
-    parser.add_argument('-f', '--force', action='store_true')
-    parser.add_argument('-a', '--alternate', action='store_true')
-    parser.add_argument('-o', '--opening', action='store_true')
+    parser.add_argument('-n', '--num_games', type=int, default=2, help='Specify the number of games to play in this experiment')
+    parser.add_argument('-e', '--exp_name', type=str, default="test/test_scripts", help='Specify directory name of current experiment, postfix to /goattack/games/')
+    parser.add_argument('-t', '--threads', type=int, default=1, help='Specify the number of threads to play games simultaneously')
+    parser.add_argument('--size', type=int, default=19, help='Specify board size')
+    parser.add_argument('--komi', type=float, default=7.5, help='Specify komi')
+    parser.add_argument('--gpu', type=int, nargs='+', help='Specify GPU indices to use')
+    parser.add_argument('-f', '--force', action='store_true', help='Delete the whole experiment directory if specified')
+    parser.add_argument('-a', '--alternate', action='store_true', help='Alternate white/black player after each game if specified')
+    parser.add_argument('-o', '--opening', action='store_true', help='Starting the game from board state contained in /goattack/openings (e.g. Motivation board) if specified')
 
     # Player Params
-    parser.add_argument('-bp', '--black_playouts', type=int, default=1600)
-    parser.add_argument('-wp', '--white_playouts', type=int, default=1600)
-    parser.add_argument('-b', '--black', type=str, default="gtp_black.cfg")
-    parser.add_argument('-w', '--white', type=str, default="gtp_white.cfg")
-    parser.add_argument('-p', '--attack_player', type=str, default=None)
+    parser.add_argument('-bp', '--black_playouts', type=int, default=1600, help='Specify number of playouts for black')
+    parser.add_argument('-wp', '--white_playouts', type=int, default=1600, help='Specify number of playouts for white')
+    parser.add_argument('-b', '--black', type=str, default="gtp_black.cfg", help='Specify the basic config file from /goattack/configs/katago for black, this file will be copied to the experiment directory and be modified. The agent loads the modified config file instead of this one.')
+    parser.add_argument('-w', '--white', type=str, default="gtp_white.cfg", help='Specify the basic config file from /goattack/configs/katago for white, this file will be copied to the experiment directory and be modified. The agent loads the modified config file instead of this one.')
+    parser.add_argument('-p', '--attack_player', type=str, default=None, help='Specify the player to attack, can select from \"white\", \"black\". Both will be regular agent if not specified.')
 
-    # Attack Params
-    parser.add_argument('-ae', '--attack_expand', action='store_true')
-    parser.add_argument('-gt', '--motiv_gt', action='store_true')
-    parser.add_argument('-gt_vo', '--motiv_gt_vo', action='store_true')
-    parser.add_argument('-sa', '--soft_attack', type=int, default=65536)
-    parser.add_argument('-sb', '--soft_backup', type=int, default=0)
-    parser.add_argument('-se', '--soft_expand', type=int, default=0)
-    parser.add_argument('-ms', '--minimax_softbackup', action='store_true')
+    # Attack Params -- parameters below can only be activated only if '--attack_player' is specified
+    parser.add_argument('-gt', '--motiv_gt', action='store_true', help='Provide the attack agent with Ground Truth Value, if specified.')
+    parser.add_argument('-gt_vo', '--motiv_gt_vo', action='store_true', help='Provide the attack agent with visibility of Ground Truth Value, but not taking actions using this, if specified.')
+    parser.add_argument('-sa', '--soft_attack', type=int, default=65536, help='Consider a child as an attack candidate if number of its node visits > this threshold. The attack will happen when this child’s attackValue > the regular move’s attackValue.')
+    parser.add_argument('-ae', '--attack_expand', action='store_true', help='During tree expansion, expand its children according to its attack value, if specified.')
+    parser.add_argument('-se', '--soft_expand', type=int, default=0, help='Apply attack expansion on nodes with number of visits higher than this threshold, while apply regular expansion on less visited nodes, if specified. This only works if --attack_expand is specified.')
+    parser.add_argument('-sb', '--soft_backup', type=int, default=0, help='During backup, replace the attackValue of a child as MCTS value if the child\'s nodeVisits < this threshold.')
+    parser.add_argument('-ms', '--minimax_softbackup', action='store_true', help='Use minimaxValue as replacement in soft backup instead of MCTS value.')
 
     args = parser.parse_args()
 

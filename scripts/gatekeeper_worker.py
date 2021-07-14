@@ -28,6 +28,11 @@ def main(args):
         f"-selfplay-dir {BASEDIR}/selfplay/ " + \
         f"-config {CONFIG_DIR}/gatekeeper1.cfg "
 
+    # TODO: check if adding this flag really works
+    if args.test_older:
+        print("Able to test older models...")
+        script += "-no-autoreject-old-models "
+
     # Running scripts
     p = Popen(script, shell=True)
     print(f"Running {script}")
@@ -59,6 +64,7 @@ if __name__ == "__main__":
     # Gatekeeper Params
     parser.add_argument('--base_dir', type=str, required=True)
     parser.add_argument('-g', '--gpu', type=str, required=True)
+    parser.add_argument('--test_older', action='store_true')
     parser.add_argument('-f', '--force', action='store_true')
 
     args = parser.parse_args()
