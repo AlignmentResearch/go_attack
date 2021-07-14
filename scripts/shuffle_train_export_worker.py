@@ -30,7 +30,7 @@ def main(args):
     USE_GATING = args.use_gating
 
     script_dict['shuffle_export'] = f"cd {ROOT}/engines/{katago_used}/python; " + \
-                                    f"./selfplay/shuffle_and_export_loop.sh " + \
+                                    f"CUDA_VISIBLE_DEVICES={args.export_gpu} ./selfplay/shuffle_and_export_loop.sh " + \
                                     f"{NAMEOFRUN} {BASEDIR} {BASEDIR}/scratch {NUM_THREADS} {BATCH_SIZE} " + \
                                     f"{MIN_ROWS} {int(USE_GATING)}"
 
@@ -87,7 +87,7 @@ def main(args):
     
 
 if __name__ == "__main__":
-    # python3 scripts/shuffle_train_export_worker.py --base_dir /goattack/selfplay-exps/dist-test --min_rows 250000 --name_of_run dist --use_gating -g 1 --training_name dist1 --load_initial_weights /goattack/models/kata1-b6c96-s165180416-d25130434.zip
+    # python3 scripts/shuffle_train_export_worker.py --base_dir /goattack/selfplay-exps/dist-test --min_rows 250000 --name_of_run dist --use_gating --training_name dist1 --load_initial_weights /goattack/models/kata1-b6c96-s165180416-d25130434.zip --lr-scale 0.1 -g 0 --export_gpu 2
     import argparse
     parser = argparse.ArgumentParser()
     
@@ -101,6 +101,7 @@ if __name__ == "__main__":
 
     # Training Params
     parser.add_argument('-g', '--gpu', type=str, required=True)
+    parser.add_argument('--export_gpu', type=str, required=True)
     parser.add_argument("--load_initial_weights", type=str, default=None, help="Path to the initial weights file")
     parser.add_argument('--training_name', type=str, default="baseline", required=True)
     parser.add_argument('--lr-scale', type=float, default=1.0)
