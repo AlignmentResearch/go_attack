@@ -12,16 +12,16 @@ def main(args):
     selfplay_dir = f"/home/{args.user}{BASEDIR}/selfplay"
 
     # make necessary directories for selfplay
-    os.makedirs(f"/home/{args.user}{BASEDIR}", exist_ok=True)
-    os.makedirs(models_dir, exist_ok=True)
-    os.makedirs(selfplay_dir, exist_ok=True)
+    os.makedirs(BASEDIR, exist_ok=True)
+    os.makedirs(joinpath(BASEDIR, "models"), exist_ok=True)
+    os.makedirs(joinpath(BASEDIR, "selfplay"), exist_ok=True)
 
     # subprocess list
     script_dict = {}
     sp_list = []
 
-    script_dict['models'] = f"sshfs {args.user}@{args.server}:{models_dir} {BASEDIR}/models -o IdentityFile=/base/id_rsa,auto_cache,reconnect"
-    script_dict['selfplay'] = f"sshfs {args.user}@{args.server}:{selfplay_dir} {BASEDIR}/selfplay -o IdentityFile=/base/id_rsa,auto_cache,reconnect"
+    script_dict['models'] = f"sshfs {args.user}@{args.server}:{models_dir} {joinpath(BASEDIR, 'models')} -o IdentityFile=/base/id_rsa,auto_cache,reconnect"
+    script_dict['selfplay'] = f"sshfs {args.user}@{args.server}:{selfplay_dir} {joinpath(BASEDIR, 'selfplay')} -o IdentityFile=/base/id_rsa,auto_cache,reconnect"
 
     print("\n----------------------------------------")
     print(f"Mounting {args.user}@{args.server}:{models_dir} to {BASEDIR}/models")
