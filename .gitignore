@@ -8,6 +8,8 @@ gtp_logs
 sgf4test
 selfplay-exps
 selfplay-test
+match_logs
+match_sgfs
 
 # Ignore certain scripts
 scripts/download.sh
