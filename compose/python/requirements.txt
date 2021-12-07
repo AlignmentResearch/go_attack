@@ -1,0 +1,9 @@
+# Needed by KataGo
+psutil
+scipy
+tensorflow-gpu==1.15
+
+# Helpful libraries
+gpustat
+matplotlib
+pandas

@@ -20,10 +20,11 @@ __pycache__
 *.h5
 *.log
 *.cbp
+*.DS_Store
 
 tmp*.txt
 
-# Ignore stuff in KataGo*
+# Ignore stuff in engines/KataGo*/
 engines/KataGo*/cpp/write
 engines/KataGo*/cpp/runtests
 engines/KataGo*/cpp/example
@@ -36,44 +37,30 @@ engines/KataGo*/cpp/match.log
 engines/KataGo*/cpp/main
 engines/KataGo*/cpp/maincuda
 engines/KataGo*/cpp/mainopencl
-engines/KataGo*/cpp/KataGo
+engines/KataGo*/cpp/katago
 engines/KataGo*/cpp/configs
 engines/KataGo*/cpp/evalsgf
 engines/KataGo*/cpp/runmatch.sh
 engines/KataGo*/cpp/runmatchauto.sh
 engines/KataGo*/cpp/runstuff.sh
 engines/KataGo*/cpp/runwrite.sh
-
+engines/KataGo*/cpp/external/httplib/cpp-httplib/
+engines/KataGo*/cpp/external/nlohmann_json/nlohmann_json
 engines/KataGo*/cpp/program/gitinfo.h
-
-engines/KataGo*/data/
-engines/KataGo*/versions/
 engines/KataGo*/cpp/build
-
-engines/KataGo*/export_model_cuda.sh
-engines/KataGo*/mixmodels.sh
-engines/KataGo*/runfindposes.sh
-engines/KataGo*/runtraining.sh
-engines/KataGo*/runlztest*.sh
-
-engines/KataGo*/tmp
-engines/KataGo*/tmp.txt
-engines/KataGo*/test.txt
 engines/KataGo*/cpp/tmp
-engines/KataGo*/out.txt
 
 # For clion IDE
-engines/KataGo*/.idea
+engines/*/.idea
 
 # For cmake
-engines/KataGo*/CMakeCache.txt
-engines/KataGo*/CMakeFiles/
-engines/KataGo*/Makefile
-engines/KataGo*/cmake_install.cmake
-engines/KataGo*/.DS_Store
-engines/KataGo*/GPATH
-engines/KataGo*/GRTAGS
-engines/KataGo*/GTAGS
+engines/KataGo*/cpp/CMakeCache.txt
+engines/KataGo*/cpp/CMakeFiles/
+engines/KataGo*/cpp/Makefile
+engines/KataGo*/cpp/cmake_install.cmake
+engines/KataGo*/cpp/GPATH
+engines/KataGo*/cpp/GRTAGS
+engines/KataGo*/cpp/GTAGS
 
 # Ignore stuff in GoGUI
 controllers/gogui-1.5.1/build
