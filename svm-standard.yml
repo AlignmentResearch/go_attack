@@ -16,7 +16,6 @@ version: "3"
 
 services:
   selfplay:
-    scale: 2
     image: humancompatibleai/goattack:cpp
     build:
       context: .
@@ -42,7 +41,7 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              count: 1
+              device_ids: ["0", "1"]
 
   train:
     image: humancompatibleai/goattack:python
@@ -73,7 +72,7 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              count: 1
+              device_ids: ["2"]
 
   shuffle-and-export:
     image: humancompatibleai/goattack:python
@@ -100,6 +99,13 @@ services:
     # shuffle_and_export_loop.sh handles its own logging.
     # It also disowns subprocesses and exits, which is why we sleep at the end
     # so the docker container doesn't exit.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["3"]
 
   # Not launched by default, must specify '--profile use_gating'
   gatekeeper:
@@ -133,4 +139,4 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              count: 1
+              device_ids: ["3"]
