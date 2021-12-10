@@ -10,6 +10,7 @@ selfplay-exps
 selfplay-test
 match_logs
 match_sgfs
+selfplay-training
 
 # Ignore certain scripts
 scripts/download.sh
@@ -19,6 +20,7 @@ scripts/upload_to.sh
 __pycache__
 *.ipynb
 */.ipynb_checkpoints
+venv
 
 
 # For C++

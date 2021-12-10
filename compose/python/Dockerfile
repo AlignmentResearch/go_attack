@@ -18,6 +18,7 @@ RUN apt-get update -q \
   sudo \
   tmux \
   unzip \
+  uuid-runtime \
   vim \
   wget \
   # Clean up
@@ -50,4 +51,14 @@ RUN pip install --no-cache-dir -r /downloads/requirements.txt
 # Copy over KataGo python files
 COPY ./engines/KataGo-raw/python /engines/KataGo-raw/python
 
-ENTRYPOINT ["bash"]
+# Make /engines/KataGo-raw a git repo to make scripts run nicely.
+# TODO: Make this less hacky...
+WORKDIR /engines/KataGo-raw
+RUN git init . \
+  && git add . \
+  && git config user.name dummy_name \
+  && git config user.email dummy@email.com \
+  && git commit -m "Dummy commit"
+
+# Reset working directory
+WORKDIR /

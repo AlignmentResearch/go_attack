@@ -56,6 +56,7 @@ RUN apt-get update -q \
   sudo \
   tmux \
   unzip \
+  uuid-runtime \
   vim \
   wget \
   # KataGo runtime libraries
@@ -68,6 +69,14 @@ RUN apt-get update -q \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy over binary
-COPY --from=build /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/katago
+COPY --from=build /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
 
-ENTRYPOINT ["bash"]
+# Copy over configs
+COPY ./configs /configs
+
+# Make /engines/KataGo-raw a git repo to make scripts run nicely.
+WORKDIR /engines/KataGo-raw
+RUN git init .
+
+# Reset working directory
+WORKDIR /
