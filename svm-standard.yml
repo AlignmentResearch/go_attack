@@ -125,7 +125,7 @@ services:
         -selfplay-dir /outputs/selfplay/ \
         -config $GATEKEEPER_CONFIG \
         2>&1 \
-        >>/outputs/$REL_LOG_PATH/selfplay-`date '+%Y-%m-%d-%H-%M'`-`uuidgen -t | head -c8`.log
+        >>/outputs/$REL_LOG_PATH/gatekeeper-`date '+%Y-%m-%d-%H-%M'`-`uuidgen -t | head -c8`.log
       "
     deploy:
       resources:

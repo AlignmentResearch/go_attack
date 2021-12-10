@@ -71,12 +71,12 @@ RUN apt-get update -q \
 # Copy over binary
 COPY --from=build /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
 
-# Copy over configs
-COPY ./configs /configs
-
 # Make /engines/KataGo-raw a git repo to make scripts run nicely.
 WORKDIR /engines/KataGo-raw
 RUN git init .
+
+# Copy over configs
+COPY ./configs /configs
 
 # Reset working directory
 WORKDIR /
