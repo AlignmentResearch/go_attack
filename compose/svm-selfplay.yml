@@ -10,7 +10,7 @@
 # run commands with `sh -c`.
 #
 # Launch command on svm (run from repo root).
-# docker-compose -f svm-standard.yml --profile gating up
+# docker-compose -f compose/svm-selfplay.yml --env-file compose/svm-selfplay.env --profile use_gating up
 
 version: "3"
 
@@ -18,7 +18,7 @@ services:
   selfplay:
     image: humancompatibleai/goattack:cpp
     build:
-      context: .
+      context: ..
       dockerfile: ./compose/cpp/Dockerfile
     volumes:
       - type: bind
@@ -26,14 +26,12 @@ services:
         target: /outputs
     command: >
       sh -c "
-        mkdir -p /outputs/$REL_LOG_PATH &&
         cd /engines/KataGo-raw &&
         ./cpp/katago selfplay \
         -output-dir /outputs/selfplay \
         -models-dir /outputs/models \
         -config $SELFPLAY_CONFIG \
-        2>&1 \
-        >>/outputs/$REL_LOG_PATH/selfplay-`date '+%Y-%m-%d-%H-%M'`-`uuidgen -t | head -c8`.log
+        2>&1
       "
     deploy:
       resources:
@@ -46,7 +44,7 @@ services:
   train:
     image: humancompatibleai/goattack:python
     build:
-      context: .
+      context: ..
       dockerfile: ./compose/python/Dockerfile
     volumes:
       - type: bind
@@ -54,7 +52,6 @@ services:
         target: /outputs
     command: >
       sh -c "
-        mkdir -p /outputs/$REL_LOG_PATH &&
         cd /engines/KataGo-raw/python &&
         ./selfplay/train.sh \
         /outputs/ \
@@ -63,8 +60,7 @@ services:
         $BATCH_SIZE \
         main \
         -lr-scale 1.0 \
-        2>&1 \
-        >>/outputs/$REL_LOG_PATH/train-`date '+%Y-%m-%d-%H-%M'`-`uuidgen -t | head -c8`.log
+        2>&1
       "
     deploy:
       resources:
@@ -77,7 +73,7 @@ services:
   shuffle-and-export:
     image: humancompatibleai/goattack:python
     build:
-      context: .
+      context: ..
       dockerfile: ./compose/python/Dockerfile
     volumes:
       - type: bind
@@ -85,7 +81,6 @@ services:
         target: /outputs
     command: >
       sh -c "
-        mkdir -p /outputs/$REL_LOG_PATH &&
         cd /engines/KataGo-raw/python &&
         ./selfplay/shuffle_and_export_loop.sh \
         $NAMEOFRUN \
@@ -96,9 +91,8 @@ services:
         $USE_GATING &&
         sleep infinity
       "
-    # shuffle_and_export_loop.sh handles its own logging.
-    # It also disowns subprocesses and exits, which is why we sleep at the end
-    # so the docker container doesn't exit.
+    # shuffle_and_export_loop.sh disowns subprocesses and exits, which is why we
+    # sleep at the end so the docker container doesn't exit.
     deploy:
       resources:
         reservations:
@@ -113,7 +107,7 @@ services:
       - use_gating
     image: humancompatibleai/goattack:cpp
     build:
-      context: .
+      context: ..
       dockerfile: ./compose/cpp/Dockerfile
     volumes:
       - type: bind
@@ -121,7 +115,6 @@ services:
         target: /outputs
     command: >
       sh -c "
-        mkdir -p /outputs/$REL_LOG_PATH &&
         cd /engines/KataGo-raw &&
         ./cpp/katago gatekeeper \
         -rejected-models-dir /outputs/rejectedmodels \
@@ -130,8 +123,7 @@ services:
         -test-models-dir /outputs/modelstobetested/ \
         -selfplay-dir /outputs/selfplay/ \
         -config $GATEKEEPER_CONFIG \
-        2>&1 \
-        >>/outputs/$REL_LOG_PATH/gatekeeper-`date '+%Y-%m-%d-%H-%M'`-`uuidgen -t | head -c8`.log
+        2>&1
       "
     deploy:
       resources:
