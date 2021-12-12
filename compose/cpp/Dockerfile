@@ -1,9 +1,13 @@
 # To build, navigate to the *root* of this repo and run:
 # docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp
-
+#
+# Commands to build alternative targets:
+# docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp-build-deps --target build-deps
+# docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp-build --target build
+#
 # KataGo has been tested on CUDA 11.1 with CUDNN 8.0.4
 # See https://github.com/lightvector/KataGo/blob/master/Compiling.md.
-FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04 AS build
+FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04 AS build-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -34,6 +38,8 @@ RUN apt-get update -q \
 # Instructions from https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html
 RUN wget -qO- "https://cmake.org/files/v3.22/cmake-3.22.0-linux-x86_64.tar.gz" \
   | tar --strip-components=1 -xz -C /usr/local
+
+FROM build-deps as build
 
 # Copy over KataGo cpp files and compile. Only keep binary artifact.
 # See https://github.com/lightvector/KataGo/blob/master/Compiling.md.

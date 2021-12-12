@@ -1,3 +1,5 @@
+.vscode
+
 # Ignore folders containing logs and data
 analysis_logs
 analysis_tmp
@@ -11,6 +13,7 @@ selfplay-test
 match_logs
 match_sgfs
 selfplay-training
+victimplay-training
 
 # Ignore certain scripts
 scripts/download.sh
@@ -21,7 +24,6 @@ __pycache__
 *.ipynb
 */.ipynb_checkpoints
 venv
-
 
 # For C++
 *.[oa]

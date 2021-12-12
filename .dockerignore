@@ -1,4 +1,6 @@
 .gitignore
+.vscode
+venv # Python virtualenv
 
 # Ignore folders containing logs and data
 analysis_logs
@@ -7,6 +9,10 @@ games
 core
 models
 gtp_logs
+match_logs
+match_sgfs
+selfplay-training
+victimplay-training
 
 # Ignore certain scripts
 scripts/download.sh
