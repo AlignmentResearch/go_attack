@@ -2,8 +2,7 @@
 # docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp
 #
 # Commands to build alternative targets:
-# docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp-build-deps --target build-deps
-# docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp-build --target build
+# docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp-build-deps --target build-*
 #
 # KataGo has been tested on CUDA 11.1 with CUDNN 8.0.4
 # See https://github.com/lightvector/KataGo/blob/master/Compiling.md.
@@ -39,23 +38,25 @@ RUN apt-get update -q \
 RUN wget -qO- "https://cmake.org/files/v3.22/cmake-3.22.0-linux-x86_64.tar.gz" \
   | tar --strip-components=1 -xz -C /usr/local
 
-FROM build-deps as build
-
 # Copy over KataGo cpp files and compile.
 # See https://github.com/lightvector/KataGo/blob/master/Compiling.md.
-COPY ./engines/KataGo-custom/cpp /engines/KataGo-custom/cpp
-WORKDIR /engines/KataGo-custom/cpp
-RUN cmake . -DUSE_BACKEND=CUDA -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1
-RUN make clean && make -j
 
+FROM build-deps as build-raw
 COPY ./engines/KataGo-raw/cpp /engines/KataGo-raw/cpp
 WORKDIR /engines/KataGo-raw/cpp
 RUN cmake . -DUSE_BACKEND=CUDA -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1
 RUN make clean && make -j
 
+FROM build-deps as build-custom
+COPY ./engines/KataGo-custom/cpp /engines/KataGo-custom/cpp
+WORKDIR /engines/KataGo-custom/cpp
+RUN cmake . -DUSE_BACKEND=CUDA -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1
+RUN make clean && make -j
 
 # Actual production image, without development headers.
 FROM nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu20.04 AS prod
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install useful apt packages
 RUN apt-get update -q \
@@ -64,6 +65,8 @@ RUN apt-get update -q \
   curl \
   git \
   gpustat \
+  htop \
+  rsync \
   sudo \
   tmux \
   unzip \
@@ -80,8 +83,8 @@ RUN apt-get update -q \
   && rm -rf /var/lib/apt/lists/*
 
 # Copy over binaries
-COPY --from=build /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
-COPY --from=build /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
+COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
+COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
 
 # Copy over configs
 COPY ./configs /configs

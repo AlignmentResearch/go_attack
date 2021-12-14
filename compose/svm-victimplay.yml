@@ -34,8 +34,7 @@ services:
         ./cpp/katago victimplay \
         -output-dir /outputs/selfplay \
         -models-dir /outputs/models \
-        -config $VICTIMPLAY_CONFIG \
-        2>&1
+        -config $VICTIMPLAY_CONFIG
       "
     deploy:
       resources:
@@ -63,8 +62,7 @@ services:
         b6c96 \
         $BATCH_SIZE \
         main \
-        -lr-scale 1.0 \
-        2>&1
+        -lr-scale 1.0
       "
     deploy:
       resources:

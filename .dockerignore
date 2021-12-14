@@ -1,6 +1,10 @@
+.git
 .gitignore
+.ssh
 .vscode
-venv # Python virtualenv
+
+# Python virtualenv
+venv
 
 # Ignore folders containing logs and data
 analysis_logs
@@ -22,7 +26,7 @@ scripts/upload_to.sh
 *.[oa]
 *.exe
 *~
-__pycache__
+**/__pycache__
 *.h5
 *.log
 *.cbp
@@ -61,7 +65,7 @@ engines/*/.idea
 
 # For cmake
 engines/KataGo*/cpp/CMakeCache.txt
-engines/KataGo*/cpp/CMakeFiles/
+engines/KataGo*/cpp/CMakeFiles
 engines/KataGo*/cpp/Makefile
 engines/KataGo*/cpp/cmake_install.cmake
 engines/KataGo*/cpp/GPATH
