@@ -22,7 +22,6 @@ scripts/upload_to.sh
 
 # For Python
 __pycache__
-*.ipynb
 */.ipynb_checkpoints
 venv
 
