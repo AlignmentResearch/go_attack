@@ -10,6 +10,9 @@
 # run commands with `sh -c`.
 #
 # Launch command on svm (run from repo root).
+# docker-compose -f compose/svm-selfplay.yml --env-file compose/svm-selfplay.env up
+#
+# Or with gating:
 # docker-compose -f compose/svm-selfplay.yml --env-file compose/svm-selfplay.env --profile use_gating up
 
 version: "3"
@@ -26,7 +29,7 @@ services:
         target: /outputs
     command: >
       sh -c "
-        cd /engines/KataGo-raw &&
+        cd /engines/KataGo-custom &&
         ./cpp/katago selfplay \
         -output-dir /outputs/selfplay \
         -models-dir /outputs/models \
@@ -38,7 +41,7 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["0", "1"]
+              device_ids: ["0", "1", "2"]
 
   train:
     image: humancompatibleai/goattack:python
@@ -51,7 +54,7 @@ services:
         target: /outputs
     command: >
       sh -c "
-        cd /engines/KataGo-raw/python &&
+        cd /engines/KataGo-custom/python &&
         ./selfplay/train.sh \
         /outputs/ \
         $TRAININGNAME \
@@ -66,7 +69,7 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["2"]
+              device_ids: ["3"]
 
   shuffle-and-export:
     image: humancompatibleai/goattack:python
@@ -79,7 +82,7 @@ services:
         target: /outputs
     command: >
       sh -c "
-        cd /engines/KataGo-raw/python &&
+        cd /engines/KataGo-custom/python &&
         ./selfplay/shuffle_and_export_loop.sh \
         $NAMEOFRUN \
         /outputs/ \
@@ -113,7 +116,7 @@ services:
         target: /outputs
     command: >
       sh -c "
-        cd /engines/KataGo-raw &&
+        cd /engines/KataGo-custom &&
         ./cpp/katago gatekeeper \
         -rejected-models-dir /outputs/rejectedmodels \
         -accepted-models-dir /outputs/models/ \

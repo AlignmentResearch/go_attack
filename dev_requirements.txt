@@ -1,0 +1,19 @@
+# For KataGo
+psutil
+scipy
+tensorflow-gpu==1.15
+
+# Computational libraries
+matplotlib
+numpy
+pandas
+
+# Formatting
+black
+isort
+
+# Other
+docker-compose
+gpustat
+jupyterlab
+tqdm
