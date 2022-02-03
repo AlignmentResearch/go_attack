@@ -25,15 +25,18 @@ services:
       dockerfile: ./compose/cpp/Dockerfile
     volumes:
       - type: bind
-        source: $HOST_OUTPUT_DIR
+        source: ${HOST_OUTPUT_DIR}
         target: /outputs
+      - type: bind
+        source: ${HOST_CONFIG_DIR}
+        target: /configs
     command: >
       sh -c "
         cd /engines/KataGo-custom &&
         ./cpp/katago selfplay \
         -output-dir /outputs/selfplay \
         -models-dir /outputs/models \
-        -config $SELFPLAY_CONFIG
+        -config ${SELFPLAY_CONFIG}
       "
     deploy:
       resources:
@@ -50,16 +53,16 @@ services:
       dockerfile: ./compose/python/Dockerfile
     volumes:
       - type: bind
-        source: $HOST_OUTPUT_DIR
+        source: ${HOST_OUTPUT_DIR}
         target: /outputs
     command: >
       sh -c "
         cd /engines/KataGo-custom/python &&
         ./selfplay/train.sh \
         /outputs/ \
-        $TRAININGNAME \
+        ${TRAININGNAME} \
         b6c96 \
-        $BATCH_SIZE \
+        ${BATCH_SIZE} \
         main \
         -lr-scale 1.0
       "
@@ -78,18 +81,18 @@ services:
       dockerfile: ./compose/python/Dockerfile
     volumes:
       - type: bind
-        source: $HOST_OUTPUT_DIR
+        source: ${HOST_OUTPUT_DIR}
         target: /outputs
     command: >
       sh -c "
         cd /engines/KataGo-custom/python &&
         ./selfplay/shuffle_and_export_loop.sh \
-        $NAMEOFRUN \
+        ${NAMEOFRUN} \
         /outputs/ \
-        $SCRATCH_DIRECTORY \
-        $NUM_THREADS \
-        $BATCH_SIZE \
-        $USE_GATING &&
+        ${SCRATCH_DIRECTORY} \
+        ${NUM_THREADS} \
+        ${BATCH_SIZE} \
+        ${USE_GATING} &&
         sleep infinity
       "
     # shuffle_and_export_loop.sh disowns subprocesses and exits, which is why we
@@ -112,8 +115,11 @@ services:
       dockerfile: ./compose/cpp/Dockerfile
     volumes:
       - type: bind
-        source: $HOST_OUTPUT_DIR
+        source: ${HOST_OUTPUT_DIR}
         target: /outputs
+      - type: bind
+        source: ${HOST_CONFIG_DIR}
+        target: /configs
     command: >
       sh -c "
         cd /engines/KataGo-custom &&
@@ -123,7 +129,7 @@ services:
         -sgf-output-dir /outputs/gatekeepersgf/ \
         -test-models-dir /outputs/modelstobetested/ \
         -selfplay-dir /outputs/selfplay/ \
-        -config $GATEKEEPER_CONFIG
+        -config ${GATEKEEPER_CONFIG}
       "
     deploy:
       resources:

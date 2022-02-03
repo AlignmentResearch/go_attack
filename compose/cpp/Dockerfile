@@ -87,8 +87,5 @@ RUN apt-get update -q \
 COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
 COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
 
-# Copy over configs
-COPY ./configs /configs
-
 # Reset working directory
 WORKDIR /
