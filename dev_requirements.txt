@@ -1,7 +1,9 @@
+# Python 3.7 (the most recent version of python compatible with tf 1.15)
+
 # For KataGo
 psutil
 scipy
-tensorflow-gpu==1.15
+tensorflow-gpu==1.15.5
 
 # Computational libraries
 matplotlib
