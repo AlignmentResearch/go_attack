@@ -37,6 +37,7 @@ services:
         ./cpp/katago victimplay \
         -output-dir /outputs/selfplay \
         -models-dir /outputs/models \
+        -nn-victim-file ${VICTIM_FILE} \
         -config ${VICTIMPLAY_CONFIG}
       "
     deploy:
@@ -45,7 +46,7 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["0", "1", "2"]
+              device_ids: ["2"]
 
   train:
     image: humancompatibleai/goattack:python
