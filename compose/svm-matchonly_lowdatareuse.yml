@@ -1,0 +1,37 @@
+# Standard KataGo self-play training with unbounded data reuse factor (depends on number of self-play workers).
+# See https://github.com/lightvector/KataGo/blob/master/SelfplayTraining.md.
+#
+# CoreWeeave rseources:
+#   - 4 V100 GPUs
+#
+# See https://stackoverflow.com/a/52641495/1337463 for documentation on how to
+# run commands with `sh -c`.
+#
+# Launch command on svm (run from repo root).
+# docker-compose -f compose/svm-selfplay.yml --env-file compose/svm-selfplay.env up
+#
+# Or with gating:
+# docker-compose -f compose/svm-selfplay.yml --env-file compose/svm-selfplay.env --profile use_gating up
+
+version: "3"
+
+services:
+  selfplay:
+    image: humancompatibleai/goattack:cpp
+    build:
+      context: ..
+      dockerfile: ./compose/cpp/Dockerfile
+    volumes:
+      - type: bind
+        source: $HOST_OUTPUT_DIR
+        target: /outputs
+    command: bash
+    stdin_open: true
+    tty: true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["3"]
