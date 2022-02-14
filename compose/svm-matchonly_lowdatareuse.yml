@@ -34,4 +34,4 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["3"]
+              device_ids: ["0", "1", "2", "3"]
