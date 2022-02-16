@@ -4,9 +4,8 @@
 # KataGo is most stable with TF 1.15
 # See https://github.com/lightvector/KataGo/blob/master/SelfplayTraining.md.
 #
-# TF 1.15 is most compatible with CUDA 10.0 and CUDNN 7.4
-# See cuda compatibility: https://www.tensorflow.org/install/source#gpu.
-FROM nvidia/cuda:10.0-cudnn7-runtime-ubuntu18.04
+# https://docs.nvidia.com/deeplearning/frameworks/tensorflow-release-notes/rel_22-01.html
+FROM nvcr.io/nvidia/tensorflow:22.01-tf1-py3
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -15,6 +14,7 @@ RUN apt-get update -q \
   && apt-get install -y \
   curl \
   git \
+  python3-venv \
   sudo \
   tmux \
   unzip \
@@ -25,22 +25,10 @@ RUN apt-get update -q \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Install Python 3.7, which is the latest version compatible with TF 1.15
-# Following guide here: https://docs.python-guide.org/starting/install3/linux/
-RUN apt-get update -q \
-  && apt-get install -y software-properties-common \
-  && add-apt-repository ppa:deadsnakes/ppa \
-  && apt-get update -q \
-  && apt-get install -y python3.7 python3.7-venv python3-pip \
-  && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.7 42 \
-  # Clean up
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
-
 # Create virtualenv and 'activate' it by adjusting PATH.
 # See https://pythonspeed.com/articles/activate-virtualenv-dockerfile/.
 ENV VIRTUAL_ENV=/opt/venv
-RUN python3 -m venv $VIRTUAL_ENV
+RUN python3 -m venv $VIRTUAL_ENV --system-site-packages
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Install python requirements within virtualenv

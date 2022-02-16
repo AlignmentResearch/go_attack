@@ -1,7 +1,8 @@
-# Needed by KataGo
+# tensorflow 1.15 comes with container
+
+# Libs needed by KataGo
 psutil
 scipy
-tensorflow-gpu==1.15
 
 # Helpful libraries
 gpustat
