@@ -18,4 +18,5 @@ isort
 docker-compose
 gpustat
 jupyterlab
+simple-parsing
 tqdm
