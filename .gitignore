@@ -11,10 +11,9 @@ gtp_logs
 sgf4test
 selfplay-exps
 selfplay-test
-match_logs
-match_sgfs
 selfplay-training
 victimplay-training
+matches
 
 # Ignore certain scripts
 scripts/download.sh

@@ -1,0 +1,43 @@
+# Runs KataGo matches for benchmarking.
+#
+# See https://stackoverflow.com/a/52641495/1337463 for documentation on how to
+# run commands with `sh -c`.
+#
+# Launch command on svm (run from repo root).
+# docker-compose -f compose/match.yml --env-file compose/match.env up
+#
+# After running matches, you can analyze the matches with the command
+# python engines/KataGo-raw/python/summarize_sgfs.py [match-directory]
+
+version: "3"
+
+services:
+  match:
+    image: humancompatibleai/goattack:cpp
+    build:
+      context: ..
+      dockerfile: ./compose/cpp/Dockerfile
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      - type: bind
+        source: ${HOST_MODEL_DIR}
+        target: /models
+      - type: bind
+        source: ${HOST_CONFIG_DIR}
+        target: /configs
+    command: >
+      sh -c "
+        /engines/KataGo-custom/cpp/katago match \
+        -config ${MATCH_CONFIG} \
+        -log-file /outputs/match.log \
+        -sgf-output-dir /outputs/
+      "
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["0"]
