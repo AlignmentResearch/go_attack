@@ -17,6 +17,7 @@ isort
 # Other
 docker-compose
 gpustat
+ipywidgets
 jupyterlab
 simple-parsing
 tqdm
