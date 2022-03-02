@@ -42,6 +42,8 @@ services:
             - capabilities: ["gpu"]
               driver: nvidia
               device_ids: ["1", "2", "3", "4", "5", "6", "7"]
+    cap_add:
+      - SYS_PTRACE
 
   train:
     image: humancompatibleai/goattack:python

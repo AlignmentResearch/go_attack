@@ -64,6 +64,7 @@ RUN apt-get update -q \
   # Utilities
   cron \
   curl \
+  gdb \
   git \
   gpustat \
   htop \
