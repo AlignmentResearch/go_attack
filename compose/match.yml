@@ -29,7 +29,7 @@ services:
         target: /configs
     command: >
       sh -c "
-        /engines/KataGo-custom/cpp/katago match \
+        /engines/KataGo-raw/cpp/katago match \
         -config ${MATCH_CONFIG} \
         -log-file /outputs/match.log \
         -sgf-output-dir /outputs/
@@ -40,4 +40,4 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["0"]
+              device_ids: ["0", "1", "2", "3", "4", "5", "6", "7"]
