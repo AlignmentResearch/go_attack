@@ -6,7 +6,7 @@
     "configurations": [
         {
             // See https://github.com/andyneff/hello-world-gdb/blob/master/.vscode/launch.json
-            "name": "compose_victimplay_1_gdb",
+            "name": "victimplay_attach",
             "type": "cppdbg",
             "request": "attach",
             "program": "/engines/KataGo-custom/cpp/katago-debug",
@@ -25,6 +25,48 @@
             },
             "sourceFileMap": {
                 "/engines/KataGo-custom": "${workspaceFolder}/engines/KataGo-custom"
+            },
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            // See https://github.com/andyneff/hello-world-gdb/blob/master/.vscode/launch.json
+            "name": "victimplay_launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "cwd": "/cpp",
+            "program": "katago",
+            "args": [
+                "victimplay",
+                "-output-dir",
+                "/outputs/selfplay",
+                "-models-dir",
+                "/outputs/models",
+                "-nn-victim-file",
+                "/models/kata1-b6c96-s1248000-d550347.txt.gz",
+                "-config",
+                "/configs/svm/victimplay1_debug.cfg"
+            ],
+            "pipeTransport": {
+                "pipeCwd": "${workspaceFolder}/engines/KataGo-custom/cpp",
+                "pipeProgram": "docker",
+                "pipeArgs": [
+                    "exec",
+                    "-i",
+                    "compose_cpp_1",
+                    "sh",
+                    "-c"
+                ],
+                "debuggerPath": "/usr/bin/gdb"
+            },
+            "sourceFileMap": {
+                "/cpp": "${workspaceFolder}/engines/KataGo-custom/cpp"
             },
             "MIMode": "gdb",
             "setupCommands": [

@@ -15,6 +15,7 @@ RUN apt-get update -q \
   && apt-get install -y \
   # Utilities
   curl \
+  gdb \
   git \
   gpustat \
   sudo \
@@ -60,7 +61,7 @@ RUN cmake . -DUSE_BACKEND=CUDA -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1 -DBUILD_DEBU
 RUN make clean && make -j
 
 # Actual production image, without development headers.
-FROM nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu20.04 AS prod
+FROM nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu20.04 AS runtime-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -90,10 +91,12 @@ RUN apt-get update -q \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Copy over binaries
-COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
-COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
-COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago-debug
-
 # Reset working directory
 WORKDIR /
+
+FROM runtime-deps as debug
+COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
+
+FROM runtime-deps as prod
+COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
+COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
