@@ -37,8 +37,8 @@ COPY ./compose/python/requirements.txt /downloads/requirements.txt
 RUN pip install --no-cache-dir -r /downloads/requirements.txt
 
 # Copy over KataGo python files
-COPY ./engines/KataGo-custom/python /engines/KataGo-custom/python
 COPY ./engines/KataGo-raw/python /engines/KataGo-raw/python
+COPY ./engines/KataGo-custom/python /engines/KataGo-custom/python
 
 # Make /engines/KataGo-* git repos to make scripts run nicely.
 # TODO: Make this less hacky...
