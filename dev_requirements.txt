@@ -9,6 +9,7 @@ tensorflow-gpu==1.15.5
 matplotlib
 numpy
 pandas
+seaborn
 
 # Formatting
 black
