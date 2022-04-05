@@ -1,17 +1,12 @@
-# KataGo victimplay training on svm.
+# KataGo victimplay training.
 # Based off of selfplay training documented at
 # https://github.com/lightvector/KataGo/blob/master/SelfplayTraining.md.
-#
-# svm resources:
-#   - 64 CPUs
-#   - 4 GPUs
-#     - NVIDIA GeForce GTX 1080 Ti, 11178 MB of memory
 #
 # See https://stackoverflow.com/a/52641495/1337463 for documentation on how to
 # run commands with `sh -c`.
 #
-# Launch command on svm (run from repo root).
-# docker-compose -f compose/svm-victimplay.yml --env-file compose/svm-victimplay.env up
+# Launch command (run from repo root):
+# docker-compose -f compose/victimplay.yml --env-file compose/victimplay.env up
 
 version: "3"
 
@@ -21,6 +16,7 @@ services:
     build:
       context: ..
       dockerfile: ./compose/cpp/Dockerfile
+      target: prod
     volumes:
       - type: bind
         source: ${HOST_OUTPUT_DIR}
@@ -46,7 +42,9 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["2"]
+              device_ids: ["1", "2", "3", "4", "5", "6", "7"]
+    cap_add:
+      - SYS_PTRACE
 
   train:
     image: humancompatibleai/goattack:python
@@ -66,7 +64,8 @@ services:
         b6c96 \
         ${BATCH_SIZE} \
         main \
-        -lr-scale 1.0
+        -lr-scale 1.0 \
+        -max-train-bucket-per-new-data ${MAX_TRAIN_RATIO}
       "
     deploy:
       resources:
@@ -74,7 +73,7 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["3"]
+              device_ids: ["0"]
 
   shuffle-and-export:
     image: humancompatibleai/goattack:python
@@ -105,4 +104,4 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["3"]
+              device_ids: ["0"]
