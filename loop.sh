@@ -16,7 +16,7 @@ for i in {0..100}; do
         >${output_dir}/compose.stdout \
         2>${output_dir}/compose.stderr&
 
-    wait_time=30
+    wait_time=45
 	echo "Waiting for ${wait_time} seconds"
     for i in $(seq $wait_time)
     do
