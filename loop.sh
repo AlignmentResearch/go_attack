@@ -3,15 +3,15 @@
 for i in {0..100}; do
 	echo "*** Iteration ${i} ***"
 
-	output_dir=victimplay-bug-repro/run-${i}
+	output_dir=bug-repro-logs/run-${i}
 	mkdir -p ${output_dir}
-    mv victimplay-bug-repro/active victimplay-bug-repro/active.bak >/dev/null 2>&1
-	ln -s run-${i} victimplay-bug-repro/active
+    mv bug-repro-logs/active bug-repro-logs/active.bak >/dev/null 2>&1
+	ln -s run-${i} bug-repro-logs/active
 
 	echo "Starting Docker compose"
 	docker-compose \
-        -f compose/victimplay.yml \
-        --env-file compose/victimplay.env \
+        -f compose/crash.yml \
+        --env-file compose/crash.env \
         up \
         >${output_dir}/compose.stdout \
         2>${output_dir}/compose.stderr&
@@ -25,8 +25,8 @@ for i in {0..100}; do
     done
     echo -e "\nDone waiting."
 
-	echo "Trying to bring victimplay down now."
+	echo "Trying to bring docker service down now."
 	echo "If this hangs, then bug detected!"
-	docker-compose -f compose/victimplay.yml --env-file compose/victimplay.env down
+	docker-compose -f compose/crash.yml --env-file compose/crash.env down
 	wait
 done
