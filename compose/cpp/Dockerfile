@@ -17,6 +17,10 @@ RUN echo "deb http://archive.ubuntu.com/ubuntu focal-proposed main" >> /etc/apt/
  && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
  && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
 
+# Fix Nvidia key issues: https://forums.developer.nvidia.com/t/notice-cuda-linux-repository-key-rotation/212771/10
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
+
 # Install apt packages
 RUN apt-get update -q \
   && apt-get install -y \
@@ -83,6 +87,10 @@ RUN echo "deb http://archive.ubuntu.com/ubuntu focal-proposed main" >> /etc/apt/
  && echo "Package: *"                                               >> /etc/apt/preferences \
  && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
  && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
+
+# Fix Nvidia key issues: https://forums.developer.nvidia.com/t/notice-cuda-linux-repository-key-rotation/212771/10
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/3bf863cc.pub
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/7fa2af80.pub
 
 # Install useful apt packages
 RUN apt-get update -q \
