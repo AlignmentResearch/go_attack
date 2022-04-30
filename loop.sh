@@ -1,5 +1,6 @@
 #!/bin/bash
 
+docker-compose --version
 for i in {0..100}; do
 	echo "*** Iteration ${i} ***"
 
