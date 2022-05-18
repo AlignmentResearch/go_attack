@@ -41,3 +41,4 @@ services:
             - capabilities: ["gpu"]
               driver: nvidia
               device_ids: ["0"]
+    stop_grace_period: 60s

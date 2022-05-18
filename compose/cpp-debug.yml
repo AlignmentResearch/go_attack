@@ -38,3 +38,4 @@ services:
     cap_add:
       - SYS_PTRACE  # to enable gdb debugging
     tty: true
+    stop_grace_period: 60s
