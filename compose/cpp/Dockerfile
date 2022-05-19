@@ -10,6 +10,9 @@ FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04 AS build-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Update Nvidia signing key
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
+
 # Add focal-proposed for libc6 patch
 # See https://wiki.ubuntu.com/Testing/EnableProposed for details.
 RUN echo "deb http://archive.ubuntu.com/ubuntu focal-proposed main" >> /etc/apt/sources.list \
@@ -76,6 +79,9 @@ RUN make clean && make -j
 FROM nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu20.04 AS runtime-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Update Nvidia signing key
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
 
 # Add focal-proposed for libc6 patch
 # See https://wiki.ubuntu.com/Testing/EnableProposed for details.
