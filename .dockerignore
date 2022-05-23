@@ -17,6 +17,7 @@ match_logs
 match_sgfs
 selfplay-training
 victimplay-training
+debug-output
 
 # Ignore certain scripts
 scripts/download.sh
