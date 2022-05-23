@@ -13,6 +13,7 @@ selfplay-exps
 selfplay-test
 selfplay-training
 victimplay-training
+debug-output
 matches
 
 # Ignore certain scripts

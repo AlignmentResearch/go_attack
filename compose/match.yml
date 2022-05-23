@@ -24,9 +24,11 @@ services:
       - type: bind
         source: ${HOST_MODEL_DIR}
         target: /models
+        read_only: true
       - type: bind
         source: ${HOST_CONFIG_DIR}
         target: /configs
+        read_only: true
     command: >
       sh -c "
         /engines/KataGo-custom/cpp/katago match \
