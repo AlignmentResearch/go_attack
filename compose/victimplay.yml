@@ -47,7 +47,7 @@ services:
               device_ids: ["1", "2", "3", "4", "5", "6", "7"]
     cap_add:
       - SYS_PTRACE
-    stop_grace_period: 60s
+    stop_grace_period: 120s
 
   train:
     image: humancompatibleai/goattack:python
