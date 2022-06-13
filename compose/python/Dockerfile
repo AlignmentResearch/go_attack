@@ -5,7 +5,7 @@
 # See https://github.com/lightvector/KataGo/blob/master/SelfplayTraining.md.
 #
 # https://docs.nvidia.com/deeplearning/frameworks/tensorflow-release-notes/rel_22-01.html
-FROM nvcr.io/nvidia/tensorflow:22.01-tf1-py3
+FROM nvcr.io/nvidia/tensorflow:22.01-tf1-py3 AS build-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -31,11 +31,13 @@ ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV --system-site-packages
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
+FROM build-deps as python-deps
 # Install python requirements within virtualenv
 RUN pip install --no-cache-dir --upgrade pip setuptools
 COPY ./compose/python/requirements.txt /downloads/requirements.txt
 RUN pip install --no-cache-dir -r /downloads/requirements.txt
 
+FROM python-deps as prod
 # Copy over KataGo python files
 COPY ./engines/KataGo-raw/python /engines/KataGo-raw/python
 COPY ./engines/KataGo-custom/python /engines/KataGo-custom/python
