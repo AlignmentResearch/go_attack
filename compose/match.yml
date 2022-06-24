@@ -38,7 +38,7 @@ services:
         /engines/KataGo-raw/cpp/katago match \
         -config ${MATCH_CONFIG} \
         -log-file /outputs/match.log \
-        -sgf-output-dir /outputs/ && sleep 120
+        -sgf-output-dir /outputs/
       "
     deploy:
       resources:
