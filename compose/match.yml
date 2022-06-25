@@ -17,6 +17,7 @@ services:
     build:
       context: ..
       dockerfile: ./compose/cpp/Dockerfile
+      target: prod
     volumes:
       - type: bind
         source: ${HOST_OUTPUT_DIR}
@@ -35,7 +36,7 @@ services:
         read_only: true
     command: >
       sh -c "
-        /engines/KataGo-raw/cpp/katago match \
+        /engines/KataGo-custom/cpp/katago match \
         -config ${MATCH_CONFIG} \
         -log-file /outputs/match.log \
         -sgf-output-dir /outputs/
