@@ -121,9 +121,12 @@ workflows:
   version: 2
   test:
     jobs:
-      - cpp-unit-test:
+      - lint:
           context:
-          - docker-hub-creds
-      - python-lint:
+            - docker-hub-creds
+      - type:
+          context:
+            - docker-hub-creds
+      - unit-test:
           context:
             - docker-hub-creds
