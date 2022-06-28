@@ -51,6 +51,7 @@ setup(
         "numpy",
         "pandas",
         "seaborn",
+        "sgfmill",
         "tqdm",
     ],
     tests_require=TESTS_REQUIRE,
