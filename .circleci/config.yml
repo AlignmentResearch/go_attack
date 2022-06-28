@@ -15,6 +15,9 @@ executors:
     docker:
       - image: cimg/python:3.7.13
     resource_class: large
+    environment:
+      SRC_FILES: src/ notebooks/ setup.py
+      NUM_CPUS: 4
 
 commands:
   dependencies:
@@ -52,7 +55,7 @@ jobs:
   lint:
     executor: python
     steps:
-      - checkout
+      - dependencies
 
       # Lint a select few files that we maintain (not upstream).
       - run:
@@ -70,7 +73,7 @@ jobs:
   type:
     executor: python
     steps:
-      - checkout
+      - dependencies
 
       - run:
           name: pytype
@@ -79,7 +82,7 @@ jobs:
   unit-test:
     executor: python
     steps:
-      - checkout
+      - dependencies
 
       - run:
           name: Memory Monitor
