@@ -30,7 +30,7 @@ commands:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "setup.py" }}
+            - v2-dependencies-{{ checksum "setup.py" }}
 
       - run:
           name: install dependencies
@@ -40,7 +40,7 @@ commands:
       - save_cache:
           paths:
             - /home/circleci/venv
-          key: v1-dependencies-{{ checksum "setup.py" }}
+          key: v2-dependencies-{{ checksum "setup.py" }}
 
       - run:
           name: Set PATH to include venv
