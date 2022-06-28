@@ -37,11 +37,14 @@ commands:
           # Only create venv if it's not been restored from cache
           command: "[[ -d /venv ]] || ./ci/build_and_activate_venv.sh /home/circleci/venv"
 
-
       - save_cache:
           paths:
             - /venv
           key: v1-dependencies-{{ checksum "setup.py" }}
+
+      - run:
+          name: Set PATH to include venv
+          command: "export PATH=/venv/bin:$PATH"
 
       - run:
           name: install go_attack
