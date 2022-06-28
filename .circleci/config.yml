@@ -1,0 +1,129 @@
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1.0.5
+
+defaults: &defaults
+  docker:
+      auth:
+        username: $DOCKERHUB_USERNAME
+        password: $DOCKERHUB_PASSWORD
+  working_directory: /engines/KataGo-custom
+
+executors:
+  python:
+    <<: *defaults
+    docker:
+      - image: cimg/python:3.7.13
+    resource_class: large
+
+commands:
+  dependencies:
+    # You must still manually update the Docker image if any
+    # binary (non-Python) dependencies change.
+    description: "Check out and update Python dependencies."
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "setup.py" }}
+
+      - run:
+          name: install dependencies
+          # Only create venv if it's not been restored from cache
+          command: "[[ -d /venv ]] || ./ci/build_and_activate_venv.sh /venv"
+
+
+      - save_cache:
+          paths:
+            - /venv
+          key: v1-dependencies-{{ checksum "setup.py" }}
+
+      - run:
+          name: install go_attack
+          command: pip install .
+
+      - run:
+          name: print installed packages
+          command: pip freeze --all
+
+jobs:
+  lint:
+    executor: python
+    steps:
+      - checkout
+
+      # Lint a select few files that we maintain (not upstream).
+      - run:
+          name: flake8
+          command: flake8 --version && flake8 -j "${NUM_CPUS}" ${SRC_FILES}
+
+      - run:
+          name: black
+          command: black --version && black --check --diff ${SRC_FILES}
+
+      - run:
+          name: codespell
+          command: codespell -I .codespell.skip --skip='*.pyc,*.ipynb' ./python/
+
+  type:
+    executor: python
+    steps:
+      - checkout
+
+      - run:
+          name: pytype
+          command: pytype --version && pytype -j "${NUM_CPUS}" ${SRC_FILES[@]}
+
+  unit-test:
+    executor: python
+    steps:
+      - checkout
+
+      - run:
+          name: Memory Monitor
+          command: |
+            mkdir /tmp/resource-usage
+            export FILE=/tmp/resource-usage/memory.txt
+            while true; do
+              ps -u root eo pid,%cpu,%mem,args,uname --sort=-%mem >> $FILE
+              echo "----------" >> $FILE
+              sleep 1
+            done
+          background: true
+
+      - run:
+          name: run tests
+          command: |
+            pytest -n ${NUM_CPUS} --cov=/venv/lib/python3.8/site-packages/go_attack \
+                   --cov=tests --junitxml=/tmp/test-reports/junit.xml \
+                    -vv tests/
+            mv .coverage .coverage.go_attack
+            coverage combine  # rewrite paths from virtualenv to src/
+
+      - codecov/upload
+
+      - store_artifacts:
+          path: /tmp/test-reports
+          destination: test-reports
+
+      - store_test_results:
+          path: /tmp/test-reports
+          unit-test:
+
+      - store_artifacts:
+          path: /tmp/resource-usage
+          destination: resource-usage
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - cpp-unit-test:
+          context:
+          - docker-hub-creds
+      - python-lint:
+          context:
+            - docker-hub-creds
