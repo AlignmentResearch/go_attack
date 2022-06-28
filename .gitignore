@@ -1,5 +1,6 @@
 .ssh
 .vscode
+.idea
 
 # Ignore folders containing logs and data
 analysis_logs
