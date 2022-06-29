@@ -4,7 +4,7 @@ import dataclasses
 import os
 import pathlib
 import re
-from typing import Optional, Sequence
+from typing import Any, Mapping, Optional, Sequence
 
 import tqdm
 from sgfmill import sgf
@@ -73,6 +73,24 @@ class GameInfo:
     def lose_color(self) -> Optional[str]:
         """Color of loser."""
         return {"b": "w", "w": "b", None: None}[self.win_color]
+
+    @property
+    def win_name(self) -> Optional[str]:
+        """Name of winning agent."""
+        return {"b": self.b_name, "w": self.w_name, None: None}[self.win_color]
+
+    @property
+    def lose_name(self) -> Optional[str]:
+        """Name of losing agent."""
+        return {"b": self.b_name, "w": self.w_name, None: None}[self.lose_color]
+
+    def to_dict(self) -> Mapping[str, Any]:
+        """Convert to dict, including @property methods (derived fields)."""
+        res = dataclasses.asdict(self)
+        for k, v in self.__class__.__dict__.items():
+            if isinstance(v, property):
+                res[k] = getattr(self, k)
+        return res
 
 
 @dataclasses.dataclass
