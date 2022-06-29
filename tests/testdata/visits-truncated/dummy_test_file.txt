@@ -1,0 +1,1 @@
+I exist only to not be returned by find_sgf_files.
