@@ -6,7 +6,7 @@ import pathlib
 import re
 from typing import Any, Mapping, Optional, Sequence
 
-import tqdm
+import tqdm.auto as tqdm
 from sgfmill import sgf
 
 
@@ -22,7 +22,7 @@ def find_sgf_files(root: pathlib.Path) -> Sequence[pathlib.Path]:
 def read_and_concat_all_files(paths: Sequence[pathlib.Path]) -> Sequence[str]:
     """Returns concatenated contents of all files in `paths`."""
     result = []
-    for path in tqdm.auto.tqdm(paths):
+    for path in tqdm.tqdm(paths):
         with open(path, "r") as f:
             for line in f.readlines():
                 result.append(line.strip())
