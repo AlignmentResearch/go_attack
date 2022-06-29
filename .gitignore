@@ -1,5 +1,6 @@
 .ssh
 .vscode
+.idea
 
 # Ignore folders containing logs and data
 analysis_logs
@@ -23,6 +24,7 @@ scripts/upload_to.sh
 __pycache__
 */.ipynb_checkpoints
 venv
+*.egg-info
 
 # For C++
 *.[oa]
