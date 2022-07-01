@@ -27,7 +27,6 @@ RUN apt-get update -q \
   curl \
   gdb \
   git \
-  gpustat \
   sudo \
   tmux \
   unzip \
