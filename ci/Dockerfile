@@ -1,6 +1,6 @@
 # Dockerfile for local, CircleCI runner
 # To build, run:
-# docker build . -f ci/Dockerfile.runner -t humancompatibleai/goattack:runner
+# docker build . -f ci/Dockerfile -t humancompatibleai/goattack:runner
 # Note you first need to build humancompatibleai/goattack:cpp-build-deps
 # See compose/cpp/Dockerfile for instructions.
 
