@@ -99,7 +99,6 @@ def main(args):
         log.write(f"{ROOT}/controllers/gogui/bin/gogui-twogtp -black $BLACK -white $WHITE {game_args}")
 
     # compile each codebase first
-    os.system(f"cd {ROOT}/engines/KataGo-custom/cpp && make && pwd")
     # os.system("cd $ROOT/engines/KataGo-raw/cpp && make && pwd")
     # print(f"bash {ROOT}/controllers/gogui/bin/gogui-twogtp -black \"{BLACK}\" -white \"{WHITE}\" {game_args}")
     os.system(f"bash {ROOT}/controllers/gogui/bin/gogui-twogtp -black \"{BLACK}\" -white \"{WHITE}\" {game_args}")

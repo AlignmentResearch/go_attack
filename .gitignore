@@ -96,3 +96,6 @@ controllers/gogui-1.5.1/TAGS
 controllers/gogui-1.5.1/.settings
 controllers/gogui-1.5.1/.*.swp
 controllers/gogui-1.5.1/gogui*.exe
+
+# For macOS
+.DS_Store
