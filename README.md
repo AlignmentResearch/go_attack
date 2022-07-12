@@ -8,7 +8,6 @@ Modifications to KataGo *are not* tracked in this repository. Rather they should
 
 KataGo-custom has the following significant branches:
 
-- `KataGo-custom/stable` is our latest stable version of KataGo that we run baselines with.
 - `KataGo-custom/victimplay` contains code related to victimplay.
 - `KataGo-custom/master` tracks https://github.com/lightvector/KataGo.
 
@@ -40,8 +39,6 @@ parameters of the run (
 # Helpful notebooks
 - [notebooks/sgf-explorer.ipynb](notebooks/sgf-explorer.ipynb) loads self/victim-play games into a pandas dataframe and lets you do some data analysis. One thing I use this file for is to pick out specific games I then load into a visualizer.
 
-These notebooks require the dependencies in `dev_requirements.txt` to run.
-
 # Prerequisite & Dependencies
 
 - **Summary**: For this project, we use **Docker** and **GitHub** repo to set up the dependencies and environment.
@@ -54,7 +51,7 @@ These notebooks require the dependencies in `dev_requirements.txt` to run.
     - Download the repo
         - `git clone --recurse-submodules https://github.com/HumanCompatibleAI/go_attack.git`
         - `cd go_attack && mkdir games`
-    - Build C++ and Python docker containers
+    - Build C++ and Python docker containers, and run the C++ container. A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory inside the container.
         - `docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp`
         - `docker build . -f compose/python/Dockerfile -t humancompatibleai/goattack:python`
         - `docker run --gpus all -v ~/go_attack:/go_attack -it humancompatibleai/goattack:cpp`
