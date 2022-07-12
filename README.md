@@ -8,7 +8,7 @@ Modifications to KataGo *are not* tracked in this repository. Rather they should
 
 KataGo-custom has the following significant branches:
 
-- `KataGo-custom/victimplay` contains code related to victimplay.
+- `KataGo-custom/stable` contains our changes to the stable version of KataGo.
 - `KataGo-custom/master` tracks https://github.com/lightvector/KataGo.
 
 # Development / testing
