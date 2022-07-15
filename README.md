@@ -8,7 +8,7 @@ Modifications to KataGo *are not* tracked in this repository. Rather they should
 
 KataGo-custom has the following significant branches:
 
-- `KataGo-custom/victimplay` contains code related to victimplay.
+- `KataGo-custom/stable` contains our changes to the stable version of KataGo.
 - `KataGo-custom/master` tracks https://github.com/lightvector/KataGo.
 
 # Development / testing
@@ -62,4 +62,4 @@ parameters of the run (
     - Download model weights
         - `cd /go_attack/configs/katago && wget -i model_list.txt -P /go_attack/models`
     - Test if the installation is successful
-        - `cd engines/KataGo-custom/cpp/ && CUDA_VISIBLE_DEVICES=2 ./katago benchmark -model /go_attack/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /go_attack/configs/katago/gtp_custom.cfg`
+        - `cd /engines/KataGo-custom/cpp/ && CUDA_VISIBLE_DEVICES=2 ./katago benchmark -model /go_attack/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /go_attack/configs/katago/gtp_custom.cfg`
