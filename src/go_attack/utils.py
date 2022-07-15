@@ -1,22 +1,31 @@
-# Uses pynvml to select the index of the least-used GPU with sufficient free memory.
-# The `min_free_memory` argument is interpreted in gigabytes
-def select_best_gpu(min_free_memory: float) -> int:
-    # There's only one GPU available, just
-    from torch.cuda import device_count
+"""The future home of various utility functions."""
 
-    if device_count() <= 1:
-        return 0
+
+def select_best_gpu(min_free_memory: float) -> int:
+    """Uses pynvml to select the index of the least-used GPU with sufficient free memory.
+
+    Args:
+        min_free_memory: The minimum amount of free memory in gigabytes
+
+    Returns:
+        The index of a GPU with at least `min_free_memory` gigabytes of free memory.
+        Among the GPUs with sufficient free memory, the least-used one is selected.
+    """
+    from time import sleep
 
     from pynvml import (
-        nvmlInit,
         nvmlDeviceGetCount,
         nvmlDeviceGetHandleByIndex,
         nvmlDeviceGetIndex,
         nvmlDeviceGetMemoryInfo,
         nvmlDeviceGetUtilizationRates,
+        nvmlInit,
         nvmlShutdown,
     )
-    from time import sleep
+    from torch.cuda import device_count
+
+    if device_count() <= 1:
+        return 0
 
     nvmlInit()
     num_gpus = nvmlDeviceGetCount()
@@ -31,14 +40,14 @@ def select_best_gpu(min_free_memory: float) -> int:
                 lambda handle: nvmlDeviceGetMemoryInfo(handle).free
                 >= min_free_memory * 1e9,
                 handles,
-            )
+            ),
         )
         if not candidates:
             if not polling_msg_shown:
                 polling_msg_shown = True
                 print(
                     f"No devices are available with at least {min_free_memory} GB of"
-                    f"free memory. Polling every 10 sec until a suitable GPU is found."
+                    f"free memory. Polling every 10 sec until a suitable GPU is found.",
                 )
 
             sleep(10.0)
