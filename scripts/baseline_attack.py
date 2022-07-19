@@ -1,10 +1,10 @@
 from argparse import ArgumentParser
+from go_attack.adversarial_policy import POLICIES, PassingWrapper
 from go_attack.utils import select_best_gpu
 from pathlib import Path
 from subprocess import PIPE, Popen
 from tqdm import tqdm
-from typing import List, Literal, Optional
-import numpy as np
+from typing import Literal
 import random
 import re
 import sente
@@ -16,14 +16,18 @@ def main():
     )
     parser.add_argument("--config", type=Path, default=None, help="Path to config file")
     parser.add_argument(
-        "-e", "--experiment", type=str, default="test", help="experiment"
-    )
-    parser.add_argument(
         "--executable", type=Path, default=None, help="Path to KataGo executable"
     )
-    parser.add_argument("-k", "--komi", type=float, default=7.5, help="komi")
     parser.add_argument("--model", type=Path, default=None, help="model")
-    parser.add_argument("-n", "--num-games", type=int, default=10, help="num games")
+    parser.add_argument(
+        "-n", "--num-games", type=int, default=100, help="Number of games"
+    )
+    parser.add_argument(
+        "--num-playouts",
+        type=int,
+        default=512,
+        help="Maximum number of MCTS playouts KataGo is allowed to use",
+    )
     parser.add_argument(
         "--log-dir", type=Path, default=None, help="Where to save logged games"
     )
@@ -32,8 +36,8 @@ def main():
     parser.add_argument(
         "--strategy",
         type=str,
-        choices=("edges", "pass", "random", "spiral"),
-        default="random",
+        choices=tuple(POLICIES),
+        default="edge",
         help="Adversarial policy to use",
     )
     parser.add_argument(
@@ -53,6 +57,11 @@ def main():
         help="The player to attack (black or white)",
     )
     args = parser.parse_args()
+
+    # The mirror strategy only makes sense when we're attacking black because we need
+    # the victim to play first in order to know where to play next
+    if args.strategy == "mirror" and args.victim != "B":
+        raise ValueError("Mirror strategy only works when victim == black")
 
     # Try to find the config file automatically
     config_path = args.config
@@ -95,6 +104,8 @@ def main():
             "gtp",
             "-model",
             str(model_path),
+            "-override-config",
+            f"maxPlayouts={args.num_playouts}",
             "-config",
             str(config_path),
         ],
@@ -143,40 +154,31 @@ def main():
         game_iter = tqdm(game_iter, desc="Playing", unit="games")
 
     random.seed(args.seed)
+    policy_cls = POLICIES[args.strategy]
+    victim = letter_to_stone(args.victim)
     scores = []
 
     for i in game_iter:
         maybe_print(f"\n--- Game {i + 1} of {args.num_games} ---")
         game = sente.Game(args.size)
+        policy = PassingWrapper(
+            policy_cls(game, opponent(victim)), args.turns_before_pass
+        )
 
         # Returns False iff we passed
         def take_turn() -> bool:
-            move = None
-            if args.strategy in ("edges", "spiral"):
-                coords = edge_strategy(
-                    game.get_legal_moves(),
-                    args.size,
-                    randomized=args.strategy == "edges",
-                )
-                if coords is not None:
-                    move = sente.Move(*coords, letter_to_stone(attacker))
+            move = policy.next_move()
+            game.play(move)
 
-            elif args.strategy == "pass":
+            if move is None:
                 send_msg(f"play {attacker} pass\n")
                 maybe_print("Passing")
-
-            elif args.strategy == "random":
-                legal = [
-                    move
-                    for move in game.get_legal_moves()
-                    if in_bounds(move, args.size)
-                ]
-                move = random.choice(legal) if legal else None
-
-            game.play(move)
-            vertex = f"{letters[move.get_x()]}{move.get_y() + 1}" if move else "pass"
-            send_msg(f"play {attacker} {vertex}\n")
-            maybe_print(f"Playing move {vertex}")
+            else:
+                vertex = (
+                    f"{letters[move.get_x()]}{move.get_y() + 1}" if move else "pass"
+                )
+                send_msg(f"play {attacker} {vertex}\n")
+                maybe_print(f"Playing move {vertex}")
             return move is not None
 
         # Play first iff we're black
@@ -184,29 +186,15 @@ def main():
             take_turn()
 
         stdin.write(f"genmove {args.victim}\n".encode("ascii"))
-        did_pass = False
         turn = 1
         while True:
             hit = get_msg(move_regex)
             victim_move = hit.group(1)
 
-            should_pass = False
-            if victim_move == "pass":
-                game.play(None)
-                game.play(None)
+            if victim_move == "resign":
+                game.resign()
 
-                outcome = game.score()
-                our_score = outcome[letter_to_stone(attacker)]
-                their_score = outcome[letter_to_stone(args.victim)]
-                should_pass = our_score > their_score
-
-                game.step_up()
-                game.step_up()
-
-            if victim_move == "resign" or (
-                (did_pass or should_pass or turn > args.turns_before_pass)
-                and victim_move == "pass"
-            ):
+            if game.is_over():
                 stdin.write("final_score\n".encode("ascii"))
 
                 hit = get_msg(score_regex)
@@ -237,7 +225,7 @@ def main():
             maybe_print(f"\nTurn {turn}")
             maybe_print(f"KataGo played: {victim_move}")
 
-            did_pass = not take_turn()
+            take_turn()
 
             turn += 1
             stdin.write(f"genmove {args.victim}\n".encode("ascii"))
@@ -245,44 +233,12 @@ def main():
     print(f"\nAverage score: {sum(scores) / len(scores)}")
 
 
-def in_bounds(move: sente.Move, size: int) -> bool:
-    return move.get_x() < size or move.get_y() < size
-
-
-def is_edge(move: sente.Move, size: int) -> bool:
-    col_edge = move.get_x() in (0, size - 1)
-    row_edge = move.get_y() in (0, size - 1)
-    return col_edge or row_edge
+def opponent(player: sente.stone) -> sente.stone:
+    return sente.stone.BLACK if player == sente.stone.WHITE else sente.stone.WHITE
 
 
 def letter_to_stone(letter: Literal["B", "W"]) -> sente.stone:
     return sente.stone.BLACK if letter == "B" else sente.stone.WHITE
-
-
-def edge_strategy(
-    moves: List[sente.Move], size: int, randomized: bool = False
-) -> Optional[tuple[int, int]]:
-    coords = [(move.get_x(), move.get_y()) for move in moves if in_bounds(move, size)]
-    if not coords:
-        return None
-
-    # Only consider vertices that are in the outermost L-inf box from the center
-    center_vertex = np.array([size // 2, size // 2])
-    centered = coords - center_vertex
-    inf_norm = np.linalg.norm(centered, axis=1, ord=np.inf)
-    max_norm = np.max(inf_norm)
-
-    # Randomly select from this box
-    if randomized:
-        return random.choice([c for c, n in zip(coords, inf_norm) if n == max_norm])
-    else:
-        centered = centered[inf_norm == max_norm]
-        next_vertex = max(centered, key=lambda c: np.arctan2(c[1], c[0]), default=None)
-        return next_vertex + center_vertex if next_vertex is not None else None
-
-
-def random_strategy(moves: List[sente.Move]) -> sente.Move:
-    return random.choice(moves) if moves else None
 
 
 if __name__ == "__main__":
