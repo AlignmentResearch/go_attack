@@ -1,11 +1,15 @@
-from go_attack.board_utils import mirror_move
+"""Unit tests for the `board_utils` module."""
 from itertools import product
+
 import pytest
 import sente
+
+from go_attack.board_utils import mirror_move
 
 
 @pytest.mark.parametrize("board_size", [9, 13, 19])
 def test_mirror_move(board_size: int):
+    """Make sure `mirror_move` is an involution."""
     stones = (sente.stone.BLACK, sente.stone.WHITE)
     for x, y, stone in product(range(board_size), range(board_size), stones):
         move = sente.Move(x, y, stone)
