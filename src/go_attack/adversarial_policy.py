@@ -2,7 +2,7 @@
 import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import ClassVar, Dict, List, Optional, Type
+from typing import ClassVar, Dict, IO, List, Optional, Type
 
 import numpy as np
 import sente
@@ -12,6 +12,14 @@ from .board_utils import l1_distance, mirror_move
 
 class AdversarialPolicy(ABC):
     """Abstract base class for adversarial policies."""
+
+    def query_gtp(self, stream: IO[bytes]):
+        """Query the GTP engine for information needed to make a move.
+        
+        For most policies this is a no-op that can be omitted, but the
+        OOD uses it to call `kata-raw-nn` to get the policy network output.
+        """
+        pass
 
     @abstractmethod
     def next_move(self) -> Optional[sente.Move]:

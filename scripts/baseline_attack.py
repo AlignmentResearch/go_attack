@@ -161,12 +161,16 @@ def main():
     for i in game_iter:
         maybe_print(f"\n--- Game {i + 1} of {args.num_games} ---")
         game = sente.Game(args.size)
+
+        # Add comment to the SGF file
+        strat_title = args.strategy.capitalize()
+        victim_title = "Black" if args.victim == "B" else "White"
+        game.comment = f"{strat_title} attack; {victim_title} victim"
         policy = PassingWrapper(
             policy_cls(game, opponent(victim)), args.turns_before_pass
         )
 
-        # Returns False iff we passed
-        def take_turn() -> bool:
+        def take_turn():
             move = policy.next_move()
             game.play(move)
 
@@ -179,7 +183,6 @@ def main():
                 )
                 send_msg(f"play {attacker} {vertex}\n")
                 maybe_print(f"Playing move {vertex}")
-            return move is not None
 
         # Play first iff we're black
         if attacker == "B":
