@@ -1,5 +1,10 @@
 from argparse import ArgumentParser
-from go_attack.adversarial_policy import POLICIES, PassingWrapper
+from go_attack.adversarial_policy import (
+    POLICIES,
+    MyopicWhiteBoxPolicy,
+    NonmyopicWhiteBoxPolicy,
+    PassingWrapper,
+)
 from go_attack.utils import select_best_gpu
 from pathlib import Path
 from subprocess import PIPE, Popen
@@ -144,7 +149,11 @@ def main():
         stdin.write(f"{msg}\n".encode("ascii"))
 
     # Alphabet without I
+    import numpy as np
+
+    np.set_printoptions(linewidth=150)
     letters = "ABCDEFGHJKLMNOPQRSTUVWXYZ"[: args.size]
+    send_msg(f"boardsize {args.size}\n")
     if args.log_dir:
         args.log_dir.mkdir(exist_ok=True)
         print(f"Logging SGF game files to '{str(args.log_dir)}'")
@@ -166,13 +175,22 @@ def main():
         strat_title = args.strategy.capitalize()
         victim_title = "Black" if args.victim == "B" else "White"
         game.comment = f"{strat_title} attack; {victim_title} victim"
-        policy = PassingWrapper(
-            policy_cls(game, opponent(victim)), args.turns_before_pass
-        )
+
+        if policy_cls in (MyopicWhiteBoxPolicy, NonmyopicWhiteBoxPolicy):
+            policy = policy_cls(game, opponent(victim), stdin, stdout)
+        else:
+            policy = policy_cls(game, opponent(victim))
+
+        policy = PassingWrapper(policy, args.turns_before_pass)
 
         def take_turn():
             move = policy.next_move()
-            game.play(move)
+            try:
+                game.play(move)
+            # Sometimes happens with ownership policy for some reason
+            except sente.exceptions.IllegalMoveException:
+                move = None
+                game.play(move)
 
             if move is None:
                 send_msg(f"play {attacker} pass\n")

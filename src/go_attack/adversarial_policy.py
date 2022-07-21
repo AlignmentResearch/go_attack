@@ -2,24 +2,16 @@
 import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import ClassVar, Dict, IO, List, Optional, Type
+from typing import IO, ClassVar, Dict, List, Optional, Type
 
 import numpy as np
 import sente
 
-from .board_utils import l1_distance, mirror_move
+from .board_utils import l1_distance, mirror_move, parse_array
 
 
 class AdversarialPolicy(ABC):
     """Abstract base class for adversarial policies."""
-
-    def query_gtp(self, stream: IO[bytes]):
-        """Query the GTP engine for information needed to make a move.
-        
-        For most policies this is a no-op that can be omitted, but the
-        OOD uses it to call `kata-raw-nn` to get the policy network output.
-        """
-        pass
 
     @abstractmethod
     def next_move(self) -> Optional[sente.Move]:
@@ -59,6 +51,21 @@ class BasicPolicy(AdversarialPolicy, ABC):
         raw = self.game.get_legal_moves()
         size = self.game.get_board().get_side()
         return [m for m in raw if m.get_x() < size and m.get_y() < size]
+
+    def legal_move_mask(self) -> np.ndarray:
+        """Return an array which is 0 for legal moves and inf for illegal moves.
+
+        Returns:
+            A NumPy array of shape (board_size, board_size) with 1s for legal
+            moves and 0s for illegal moves.
+        """
+        size = self.game.get_board().get_side()
+        mask = np.full((size, size), np.inf)
+        for move in self.legal_moves():
+            mask[move.get_x(), move.get_y()] = 0
+
+        # We have to transpose to make it match KataGo's representation
+        return mask.T
 
 
 class EdgePolicy(BasicPolicy):
@@ -171,6 +178,60 @@ class SpiralPolicy(EdgePolicy):
 
     name: ClassVar[str] = "spiral"
     randomized: bool = False
+
+
+@dataclass
+class MyopicWhiteBoxPolicy(BasicPolicy):
+    """Plays least likely moves from KataGo's policy net."""
+
+    name: ClassVar[str] = "myopic-whitebox"
+    gtp_stdin: IO[bytes]
+    gtp_stdout: IO[bytes]
+
+    def next_move(self) -> Optional[sente.Move]:
+        """Return the next move to play.
+
+        Returns:
+            The adversarial move to play. If None, we pass.
+        """
+        # It's important to select the right symmetry here; the one that
+        # matches Sente's representation is #4.
+        self.gtp_stdin.write(b"kata-raw-nn 0\n")
+        size = self.game.get_board().get_side()
+        policy_dist = parse_array(self.gtp_stdout, "policy", size)
+
+        flat_idx = np.nanargmin(policy_dist)
+        x, y = flat_idx % size, flat_idx // size
+        return sente.Move(x, y, self.color)
+
+
+@dataclass
+class NonmyopicWhiteBoxPolicy(BasicPolicy):
+    """Plays vertices that KataGo predicts the attacker will not own."""
+
+    name: ClassVar[str] = "nonmyopic-whitebox"
+    gtp_stdin: IO[bytes]
+    gtp_stdout: IO[bytes]
+
+    def next_move(self) -> Optional[sente.Move]:
+        """Return the next move to play.
+
+        Returns:
+            The adversarial move to play. If None, we pass.
+        """
+        self.gtp_stdin.write(b"kata-raw-nn 0\n")
+        size = self.game.get_board().get_side()
+        ownership_dist = parse_array(self.gtp_stdout, "whiteOwnership", size)
+        ownership_dist += self.legal_move_mask()
+
+        try:
+            flat_idx = np.nanargmin(ownership_dist)
+        except ValueError:
+            # No legal moves
+            return None
+        else:
+            x, y = flat_idx % size, flat_idx // size
+            return sente.Move(x, y, self.color)
 
 
 @dataclass

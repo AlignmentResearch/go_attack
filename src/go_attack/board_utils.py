@@ -1,4 +1,8 @@
 """Math functions for manipulating Go vertices."""
+import re
+from typing import IO
+
+import numpy as np
 import sente
 
 
@@ -54,3 +58,35 @@ def mirror_move(move: sente.Move, board_size: int = 19) -> sente.Move:
         mirror_y = last - opponent_y
 
     return sente.Move(mirror_x, mirror_y, stone)
+
+
+def parse_array(gtp_stream: IO[bytes], array_name: str, size: int) -> np.ndarray:
+    """Parse an array from a GTP stream.
+
+    Args:
+        gtp_stream: A GTP stream from KataGo, which is assumed to have just
+            received the command `kata-raw-nn`.
+        array_name: The header indicating the array to parse. Examples
+            include `policy` and `whiteOwnership`.
+        size: The size of the board.
+
+    Returns:
+        The array in NumPy format.
+    """
+    array = []
+    numeric_regex = re.compile(rf"((-?[0-9.]+|NAN)\s*){{{size}}}")
+    skip = True
+    while True:
+        msg = gtp_stream.readline().decode("ascii").strip()
+        # print(msg)
+        if msg == array_name:
+            skip = False
+        elif not skip:
+            hit = numeric_regex.fullmatch(msg)
+            if hit:
+                row = [float(x.strip()) for x in hit[0].split()]
+                array.append(row)
+            else:
+                break
+
+    return np.flip(array, axis=0)
