@@ -1,16 +1,18 @@
-"""
-By default, when to stop and resume katago training, it will create multiple
-tfevents files in a single folder. Tensorboard doesn't like this.
+"""Creates dummy folder symlinking to multiple training runs to appease TensorBoard.
+
+By default, when we stop and resume katago training, it will create multiple
+tfevents files in a single folder. TensorBoard doesn't like this.
 
 This script creates a dummy folder that contains subdirectories, each of which
 is symlinked to the actual tfevents. This let's us run Tensorboard more nicely.
 
 Example of running this script:
-python scripts/tensorboard_helper.py --base_dir selfplay-training/test0/
+    python scripts/tensorboard_helper.py --base_dir selfplay-training/test0/
 
 After running, you can launch tensorboard like this:
-tensorboard --logdir=selfplay-training/test0/tensorboard_logdir
+    tensorboard --logdir=selfplay-training/test0/tensorboard_logdir
 """
+
 import dataclasses
 import os
 import pathlib
@@ -20,10 +22,12 @@ from simple_parsing import ArgumentParser
 
 @dataclasses.dataclass
 class Config:
+    """Configs for argument parsing."""
     base_dir: str  # The directory where selfplay / victimplay training occurs.
 
 
 def main(cfg: Config):
+    """Main entrypoint: creates dummy folder with symlinks to tfevents files."""
     tensorboard_logdir = os.path.join(cfg.base_dir, "tensorboard_logdir")
     pathlib.Path(tensorboard_logdir).mkdir(exist_ok=True)
 
