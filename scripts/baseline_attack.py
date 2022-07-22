@@ -1,4 +1,13 @@
+import random
+import re
 from argparse import ArgumentParser
+from pathlib import Path
+from subprocess import PIPE, Popen
+from typing import Literal
+
+import sente
+from tqdm import tqdm
+
 from go_attack.adversarial_policy import (
     POLICIES,
     MyopicWhiteBoxPolicy,
@@ -6,13 +15,6 @@ from go_attack.adversarial_policy import (
     PassingWrapper,
 )
 from go_attack.utils import select_best_gpu
-from pathlib import Path
-from subprocess import PIPE, Popen
-from tqdm import tqdm
-from typing import Literal
-import random
-import re
-import sente
 
 
 def main():
