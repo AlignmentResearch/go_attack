@@ -13,10 +13,10 @@ executors:
   python:
     <<: *defaults
     docker:
-      - image: cimg/python:3.7.13
+      - image: cimg/python:3.8.13
     resource_class: large
     environment:
-      SRC_FILES: src/ tests/ notebooks/ setup.py
+      SRC_FILES: src/ scripts/baseline_attack.py tests/ notebooks/ setup.py
       NUM_CPUS: 4
 
 commands:
