@@ -23,6 +23,7 @@ from simple_parsing import ArgumentParser
 @dataclasses.dataclass
 class Config:
     """Configs for argument parsing."""
+
     base_dir: str  # The directory where selfplay / victimplay training occurs.
 
 
