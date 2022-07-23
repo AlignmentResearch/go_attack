@@ -37,8 +37,8 @@ def mirror_move(move: sente.Move, board_size: int = 19) -> sente.Move:
     last = board_size - 1
     opponent_x, opponent_y = move.get_x(), move.get_y()
 
-    black = move.get_stone() == sente.stone.BLACK
-    stone = sente.stone.WHITE if black else sente.stone.BLACK
+    move_is_black = move.get_stone() == sente.stone.BLACK
+    our_stone = sente.stone.WHITE if move_is_black else sente.stone.BLACK
 
     # The "move" is out of bounds, so we can't mirror it.
     # Sente appears to use OOB moves to indicate pass.

@@ -1,4 +1,4 @@
-"""The future home of various utility functions."""
+"""Miscellaneous utility functions."""
 
 
 def select_best_gpu(min_free_memory: float) -> int:

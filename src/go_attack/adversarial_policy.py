@@ -33,7 +33,7 @@ class BasicPolicy(AdversarialPolicy, ABC):
     game: sente.Game
     color: sente.stone
 
-    def __init_subclass__(cls):
+    def __init_subclass__(cls) -> None:
         """Register the subclass in the POLICIES dict.
 
         Returns:
@@ -42,7 +42,7 @@ class BasicPolicy(AdversarialPolicy, ABC):
         POLICIES[cls.name] = cls
         return super().__init_subclass__()
 
-    def legal_moves(self) -> List[sente.Move]:
+    def legal_moves(self) -> Sequence[sente.Move]:
         """Return the legal moves for the current player.
 
         Returns:
@@ -257,6 +257,7 @@ class PassingWrapper(AdversarialPolicy):
         if not past_moves or past_moves[-1] is not None:
             return self.inner.next_move()
 
+        # Opponent passed last turn.
         # If we're beyond `turns_before_pass`, just pass
         if len(past_moves) > self.turns_before_pass:
             return None
