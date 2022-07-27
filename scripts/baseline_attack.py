@@ -1,3 +1,5 @@
+"""Run a hardcoded adversarial attack against KataGo."""
+
 import random
 import re
 from argparse import ArgumentParser
@@ -16,17 +18,24 @@ from go_attack.go import Color, GoGame, Move
 from go_attack.utils import select_best_gpu
 
 
-def main():
+def main():  # noqa: D103
     parser = ArgumentParser(
-        description="Run a hardcoded adversarial attack against KataGo"
+        description="Run a hardcoded adversarial attack against KataGo",
     )
     parser.add_argument("--config", type=Path, default=None, help="Path to config file")
     parser.add_argument(
-        "--executable", type=Path, default=None, help="Path to KataGo executable"
+        "--executable",
+        type=Path,
+        default=None,
+        help="Path to KataGo executable",
     )
     parser.add_argument("--model", type=Path, default=None, help="model")
     parser.add_argument(
-        "-n", "--num-games", type=int, default=100, help="Number of games"
+        "-n",
+        "--num-games",
+        type=int,
+        default=100,
+        help="Number of games",
     )
     parser.add_argument(
         "--num-playouts",
@@ -35,7 +44,10 @@ def main():
         help="Maximum number of MCTS playouts KataGo is allowed to use",
     )
     parser.add_argument(
-        "--log-dir", type=Path, default=None, help="Where to save logged games"
+        "--log-dir",
+        type=Path,
+        default=None,
+        help="Where to save logged games",
     )
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     parser.add_argument("--size", type=int, default=19, help="Board size")
@@ -53,7 +65,10 @@ def main():
         help="Number of turns before accepting a pass from KataGo and ending the game",
     )
     parser.add_argument(
-        "-v", "--verbose", action="store_true", help="Output every move"
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="Output every move",
     )
     parser.add_argument(
         "--victim",
@@ -83,7 +98,9 @@ def main():
     if args.model is None:
         root = Path("go_attack") / "models"
         model_path = min(
-            root.glob("*.bin.gz"), key=lambda x: x.stat().st_size, default=None
+            root.glob("*.bin.gz"),
+            key=lambda x: x.stat().st_size,
+            default=None,
         )
         if model_path is None:
             raise FileNotFoundError("Could not find model; please set the --model flag")
@@ -126,10 +143,10 @@ def main():
     assert stderr is not None and stdin is not None and stdout is not None
 
     # Skip input until we see "GTP ready" message
-    print(f"\nWaiting for GTP ready message...")
+    print("\nWaiting for GTP ready message...")
     while msg := stderr.readline().decode("ascii").strip():
         if msg.startswith("GTP ready"):
-            print(f"Engine ready. Starting game.")
+            print("Engine ready. Starting game.")
             break
 
     attacker = "B" if args.victim == "W" else "W"
@@ -172,9 +189,9 @@ def main():
         victim_title = "Black" if args.victim == "B" else "White"
 
         if policy_cls in (MyopicWhiteBoxPolicy, NonmyopicWhiteBoxPolicy):
-            policy = policy_cls(game, victim.opponent(), stdin, stdout)
+            policy = policy_cls(game, victim.opponent(), stdin, stdout)  # type: ignore
         else:
-            policy = policy_cls(game, victim.opponent())
+            policy = policy_cls(game, victim.opponent())  # type: ignore
 
         policy = PassingWrapper(policy, args.turns_before_pass)
 
