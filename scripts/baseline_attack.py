@@ -3,9 +3,7 @@ import re
 from argparse import ArgumentParser
 from pathlib import Path
 from subprocess import PIPE, Popen
-from typing import Literal
 
-import sente
 from tqdm import tqdm
 
 from go_attack.adversarial_policy import (
@@ -14,6 +12,7 @@ from go_attack.adversarial_policy import (
     NonmyopicWhiteBoxPolicy,
     PassingWrapper,
 )
+from go_attack.go import Color, GoGame, Move
 from go_attack.utils import select_best_gpu
 
 
@@ -150,12 +149,7 @@ def main():
     def send_msg(msg):
         stdin.write(f"{msg}\n".encode("ascii"))
 
-    # Alphabet without I
-    import numpy as np
-
-    np.set_printoptions(linewidth=150)
-    letters = "ABCDEFGHJKLMNOPQRSTUVWXYZ"[: args.size]
-    send_msg(f"boardsize {args.size}\n")
+    send_msg(f"boardsize {args.size}")
     if args.log_dir:
         args.log_dir.mkdir(exist_ok=True)
         print(f"Logging SGF game files to '{str(args.log_dir)}'")
@@ -166,84 +160,47 @@ def main():
 
     random.seed(args.seed)
     policy_cls = POLICIES[args.strategy]
-    victim = letter_to_stone(args.victim)
+    victim = Color.from_str(args.victim)
     scores = []
 
     for i in game_iter:
         maybe_print(f"\n--- Game {i + 1} of {args.num_games} ---")
-        game = sente.Game(args.size)
+        game = GoGame(args.size)
 
         # Add comment to the SGF file
         strat_title = args.strategy.capitalize()
         victim_title = "Black" if args.victim == "B" else "White"
-        game.comment = f"{strat_title} attack; {victim_title} victim"
 
         if policy_cls in (MyopicWhiteBoxPolicy, NonmyopicWhiteBoxPolicy):
-            policy = policy_cls(game, opponent(victim), stdin, stdout)
+            policy = policy_cls(game, victim.opponent(), stdin, stdout)
         else:
-            policy = policy_cls(game, opponent(victim))
+            policy = policy_cls(game, victim.opponent())
 
         policy = PassingWrapper(policy, args.turns_before_pass)
 
         def take_turn():
             move = policy.next_move()
-            try:
-                game.play(move)
-            # Sometimes happens with ownership policy for some reason
-            except sente.exceptions.IllegalMoveException:
-                move = None
-                game.play(move)
+            game.play_move(move)
 
-            if move is None:
-                send_msg(f"play {attacker} pass\n")
-                maybe_print("Passing")
-            else:
-                vertex = (
-                    f"{letters[move.get_x()]}{move.get_y() + 1}" if move else "pass"
-                )
-                send_msg(f"play {attacker} {vertex}\n")
-                maybe_print(f"Playing move {vertex}")
+            vertex = str(move) if move else "pass"
+            send_msg(f"play {attacker} {vertex}")
+            maybe_print("Passing" if move is None else f"Playing {vertex}")
+
+        def print_kata_board():
+            send_msg("showboard")
+            for i in range(12):
+                msg = stdout.readline().decode("ascii").strip()
+                print(msg)
 
         # Play first iff we're black
         if attacker == "B":
             take_turn()
 
-        stdin.write(f"genmove {args.victim}\n".encode("ascii"))
         turn = 1
-        while True:
-            hit = get_msg(move_regex)
-            victim_move = hit.group(1)
-
-            if victim_move == "resign":
-                game.resign()
-
-            if game.is_over():
-                stdin.write("final_score\n".encode("ascii"))
-
-                hit = get_msg(score_regex)
-                score = float(hit.group(2))
-                player = "Black" if hit.group(1) == "B" else "White"
-
-                maybe_print(f"{player} won, up {score} points.")
-                maybe_print(game)
-                if hit.group(1) != args.victim:
-                    score = -score
-
-                scores.append(score)
-                stdin.write("clear_board\n".encode("ascii"))
-
-                # Save the game to disk if necessary
-                if args.log_dir:
-                    sente.sgf.dump(game, str(args.log_dir / f"game_{i}.sgf"))
-                break
-
-            if victim_move == "pass":
-                game.play(None)
-            else:
-                letter, num = victim_move[0], int(victim_move[1:])
-                victim = sente.stone.BLACK if attacker == "W" else sente.stone.WHITE
-                sente_move = sente.Move(letters.find(letter), num - 1, victim)
-                game.play(sente_move)
+        while not game.is_over():
+            send_msg(f"genmove {args.victim}")
+            victim_move = get_msg(move_regex).group(1)
+            game.play_move(Move.from_str(victim_move))
 
             maybe_print(f"\nTurn {turn}")
             maybe_print(f"KataGo played: {victim_move}")
@@ -251,17 +208,37 @@ def main():
             take_turn()
 
             turn += 1
-            stdin.write(f"genmove {args.victim}\n".encode("ascii"))
+
+        # Get KataGo's opinion on the score
+        send_msg("final_score")
+        hit = get_msg(score_regex)
+        kata_margin = float(hit.group(2))
+        player = "Black" if hit.group(1) == "B" else "White"
+
+        # What do we think about the score?
+        black_score, white_score = game.score()
+        our_margin = white_score - black_score
+        if abs(our_margin) != abs(kata_margin):
+            print(f"KataGo's margin {kata_margin} doesn't match ours {our_margin}!")
+
+            print(game)
+            print_kata_board()
+
+        maybe_print(f"{player} won, up {kata_margin} points.")
+        if hit.group(1) != args.victim:
+            kata_margin = -kata_margin
+
+        scores.append(kata_margin)
+        send_msg("clear_board")
+
+        # Save the game to disk if necessary
+        if args.log_dir:
+            sgf = game.to_sgf(f"{strat_title} attack; {victim_title} victim")
+
+            with open(args.log_dir / f"game_{i}.sgf", "w") as f:
+                f.write(sgf)
 
     print(f"\nAverage score: {sum(scores) / len(scores)}")
-
-
-def opponent(player: sente.stone) -> sente.stone:
-    return sente.stone.BLACK if player == sente.stone.WHITE else sente.stone.WHITE
-
-
-def letter_to_stone(letter: Literal["B", "W"]) -> sente.stone:
-    return sente.stone.BLACK if letter == "B" else sente.stone.WHITE
 
 
 if __name__ == "__main__":

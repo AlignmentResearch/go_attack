@@ -3,47 +3,39 @@ import re
 from typing import IO
 
 import numpy as np
-import sente
+
+from go_attack.go import Move
 
 
-def l1_distance(move1: sente.Move, move2: sente.Move) -> int:
-    """Compute the L1 distance between two Sente moves.
+def l1_distance(move1: Move, move2: Move) -> int:
+    """Compute the L1 distance between two Go moves.
 
     Args:
-        move1: A Sente move
-        move2: Another Sente move
+        move1: A move
+        move2: Another move
 
     Returns:
         The L1 distance between the two moves on the board.
     """
-    x1, y1 = move1.get_x(), move1.get_y()
-    x2, y2 = move2.get_x(), move2.get_y()
+    (x1, y1), (x2, y2) = move1, move2
     return abs(x1 - x2) + abs(y1 - y2)
 
 
-def mirror_move(move: sente.Move, board_size: int = 19) -> sente.Move:
+def mirror_move(move: Move, board_size: int = 19) -> Move:
     """Compute the 'Mirror Go' response to a move.
 
     We reflect the move about the y = x diagonal, unless the move is on the
     y = x diagonal, in which case we reflect about the y = -x diagonal.
 
     Args:
-        move: A Sente move
+        move: A Go move
         board_size: The size of the board (default 19)
 
     Returns:
         The Mirror Go move.
     """
     last = board_size - 1
-    opponent_x, opponent_y = move.get_x(), move.get_y()
-
-    move_is_black = move.get_stone() == sente.stone.BLACK
-    our_stone = sente.stone.WHITE if move_is_black else sente.stone.BLACK
-
-    # The "move" is out of bounds, so we can't mirror it.
-    # Sente appears to use OOB moves to indicate pass.
-    if opponent_x > last or opponent_y > last:
-        return sente.Move(opponent_x, opponent_y, stone)
+    opponent_x, opponent_y = move
 
     # Did they play on the y = x diagonal?
     # If so, mirror across the y = -x diagonal.
@@ -57,7 +49,7 @@ def mirror_move(move: sente.Move, board_size: int = 19) -> sente.Move:
         mirror_x = last - opponent_x
         mirror_y = last - opponent_y
 
-    return sente.Move(mirror_x, mirror_y, stone)
+    return Move(mirror_x, mirror_y)
 
 
 def parse_array(gtp_stream: IO[bytes], array_name: str, size: int) -> np.ndarray:
@@ -78,7 +70,6 @@ def parse_array(gtp_stream: IO[bytes], array_name: str, size: int) -> np.ndarray
     skip = True
     while True:
         msg = gtp_stream.readline().decode("ascii").strip()
-        # print(msg)
         if msg == array_name:
             skip = False
         elif not skip:
@@ -89,4 +80,4 @@ def parse_array(gtp_stream: IO[bytes], array_name: str, size: int) -> np.ndarray
             else:
                 break
 
-    return np.flip(array, axis=0)
+    return np.array(array)
