@@ -16,6 +16,7 @@ selfplay-test
 selfplay-training
 victimplay-training
 matches
+debug-output
 
 # Ignore certain scripts
 scripts/download.sh
