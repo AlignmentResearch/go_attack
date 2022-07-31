@@ -130,9 +130,9 @@ services:
       sh -c "
         cd /engines/KataGo-custom/python &&
         python curriculum.py \
-        --selfplay-dir=/outputs/selfplay \
-        --input-models-dir=/models \
-        --output-models-dir=/outputs/victims \
-        --config-json-file=/configs/curriculum.conf
+        -selfplay-dir=/outputs/selfplay \
+        -input-models-dir=/models \
+        -output-models-dir=/outputs/victims \
+        -config-json-file=/configs/curriculum.conf
       "
 
