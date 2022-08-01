@@ -14,7 +14,7 @@ from go_attack.adversarial_policy import (
     NonmyopicWhiteBoxPolicy,
     PassingWrapper,
 )
-from go_attack.go import Color, GoGame, Move
+from go_attack.go import Color, Game, Move
 from go_attack.utils import select_best_gpu
 
 
@@ -22,12 +22,32 @@ def main():  # noqa: D103
     parser = ArgumentParser(
         description="Run a hardcoded adversarial attack against KataGo",
     )
+    parser.add_argument(
+        "--analysis-log-dir",
+        type=Path,
+        default=None,
+        help="Where to log analysis from KataGo",
+    )
     parser.add_argument("--config", type=Path, default=None, help="Path to config file")
     parser.add_argument(
         "--executable",
         type=Path,
         default=None,
         help="Path to KataGo executable",
+    )
+    parser.add_argument(
+        "--passing-behavior",
+        choices=(
+            "standard",
+            "avoid-pass-alive-territory",
+            "last-resort",
+            "last-resort-oracle",
+            "only-when-ahead",
+            "only-when-behind",
+        ),
+        default="standard",
+        help="Behavior that KataGo uses when passing",
+        type=str,
     )
     parser.add_argument("--model", type=Path, default=None, help="model")
     parser.add_argument(
@@ -59,10 +79,10 @@ def main():  # noqa: D103
         help="Adversarial policy to use",
     )
     parser.add_argument(
-        "--turns-before-pass",
+        "--moves-before-pass",
         type=int,
         default=211,  # Avg. game length
-        help="Number of turns before accepting a pass from KataGo and ending the game",
+        help="Number of moves before accepting a pass from KataGo and ending the game",
     )
     parser.add_argument(
         "-v",
@@ -107,10 +127,13 @@ def main():  # noqa: D103
     else:
         model_path = args.model
 
-    print("Running random attack baseline\n")
+    print(f"Running {args.strategy} attack baseline\n")
     print(f"Using KataGo executable at '{str(katago_exe)}'")
     print(f"Using model at '{str(model_path)}'")
     print(f"Using config file at '{str(config_path)}'")
+
+    attacker_letter = "B" if args.victim == "W" else "W"
+    victim_name = "Black" if args.victim == "B" else "White"
 
     module_root = Path(__file__).parent.parent
     proc = Popen(
@@ -128,36 +151,39 @@ def main():  # noqa: D103
             "-model",
             str(model_path),
             "-override-config",
-            f"maxPlayouts={args.num_playouts}",
+            ",".join(
+                [
+                    f"passingBehavior={args.passing_behavior}",
+                    f"maxPlayouts={args.num_playouts}",
+                ]
+            ),
             "-config",
             str(config_path),
         ],
         bufsize=0,  # We need to disable buffering to get stdout line-by-line
         stdin=PIPE,
-        stderr=PIPE,
+        stderr=open("stderr3.txt", "w"),
         stdout=PIPE,
     )
-    stderr = proc.stderr
     stdin = proc.stdin
     stdout = proc.stdout
-    assert stderr is not None and stdin is not None and stdout is not None
+    assert stdin is not None and stdout is not None
 
-    # Skip input until we see "GTP ready" message
-    print("\nWaiting for GTP ready message...")
-    while msg := stderr.readline().decode("ascii").strip():
-        if msg.startswith("GTP ready"):
-            print("Engine ready. Starting game.")
-            break
-
-    attacker = "B" if args.victim == "W" else "W"
+    analysis_regex = re.compile(r"info.*")
+    analysis_move_regex = re.compile(r"play ([A-Z][0-9]{1,2}|pass)")
     move_regex = re.compile(r"= ([A-Z][0-9]{1,2}|pass)")
     score_regex = re.compile(r"= (B|W)\+([0-9]+\.?[0-9]*)")
 
     def get_msg(pattern):
         while True:
             msg = stdout.readline().decode("ascii").strip()
-            if hit := pattern.fullmatch(msg):
+            if msg == "? genmove returned null location or illegal move":
+                print("Internal KataGo error; board state:")
+                print_kata_board()
+            elif hit := pattern.fullmatch(msg):
                 return hit
+            else:
+                print(msg)
 
     def maybe_print(msg):
         if args.verbose:
@@ -182,43 +208,49 @@ def main():  # noqa: D103
 
     for i in game_iter:
         maybe_print(f"\n--- Game {i + 1} of {args.num_games} ---")
-        game = GoGame(args.size)
+        game = Game(args.size)
 
         # Add comment to the SGF file
         strat_title = args.strategy.capitalize()
-        victim_title = "Black" if args.victim == "B" else "White"
 
         if policy_cls in (MyopicWhiteBoxPolicy, NonmyopicWhiteBoxPolicy):
             policy = policy_cls(game, victim.opponent(), stdin, stdout)  # type: ignore
         else:
             policy = policy_cls(game, victim.opponent())  # type: ignore
 
-        policy = PassingWrapper(policy, args.turns_before_pass)
+        policy = PassingWrapper(policy, args.moves_before_pass)
 
         def take_turn():
             move = policy.next_move()
             game.play_move(move)
 
             vertex = str(move) if move else "pass"
-            send_msg(f"play {attacker} {vertex}")
+            send_msg(f"play {attacker_letter} {vertex}")
             maybe_print("Passing" if move is None else f"Playing {vertex}")
 
         def print_kata_board():
             send_msg("showboard")
-            for i in range(12):
+            for i in range(args.size + 3):
                 msg = stdout.readline().decode("ascii").strip()
                 print(msg)
 
         # Play first iff we're black
-        if attacker == "B":
+        if attacker_letter == "B":
             take_turn()
 
+        analyses = []  # Only used when --analysis-log-dir is set
         turn = 1
         while not game.is_over():
-            send_msg(f"genmove {args.victim}")
-            victim_move = get_msg(move_regex).group(1)
-            game.play_move(Move.from_str(victim_move))
+            # Ask for the analysis as well as the move
+            if args.analysis_log_dir:
+                send_msg(f"kata-genmove_analyze {args.victim}")
+                analyses.append(get_msg(analysis_regex).group(0))
+                victim_move = get_msg(analysis_move_regex).group(1)
+            else:
+                send_msg(f"genmove {args.victim}")
+                victim_move = get_msg(move_regex).group(1)
 
+            game.play_move(Move.from_str(victim_move))
             maybe_print(f"\nTurn {turn}")
             maybe_print(f"KataGo played: {victim_move}")
 
@@ -226,31 +258,39 @@ def main():  # noqa: D103
 
             turn += 1
 
+        # Save the analysis file if needed
+        if args.analysis_log_dir:
+            args.analysis_log_dir.mkdir(exist_ok=True)
+            with open(args.analysis_log_dir / f"game_{i}.txt", "w") as f:
+                f.write("\n\n".join(analyses))
+
         # Get KataGo's opinion on the score
         send_msg("final_score")
         hit = get_msg(score_regex)
         kata_margin = float(hit.group(2))
         player = "Black" if hit.group(1) == "B" else "White"
+        if hit.group(1) == "B":
+            kata_margin *= -1
+
+        if args.verbose:
+            print_kata_board()
 
         # What do we think about the score?
         black_score, white_score = game.score()
         our_margin = white_score - black_score
-        if abs(our_margin) != abs(kata_margin):
+        if our_margin != kata_margin:
             print(f"KataGo's margin {kata_margin} doesn't match ours {our_margin}!")
 
             print(game)
-            print_kata_board()
+            raise RuntimeError("KataGo's margin doesn't match ours!")
 
         maybe_print(f"{player} won, up {kata_margin} points.")
-        if hit.group(1) != args.victim:
-            kata_margin = -kata_margin
-
         scores.append(kata_margin)
         send_msg("clear_board")
 
         # Save the game to disk if necessary
         if args.log_dir:
-            sgf = game.to_sgf(f"{strat_title} attack; {victim_title} victim")
+            sgf = game.to_sgf(f"{strat_title} attack; {victim_name} victim")
 
             with open(args.log_dir / f"game_{i}.sgf", "w") as f:
                 f.write(sgf)

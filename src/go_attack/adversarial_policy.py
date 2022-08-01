@@ -7,7 +7,7 @@ from typing import IO, ClassVar, Dict, Optional, Type
 import numpy as np
 
 from .board_utils import l1_distance, mirror_move, parse_array
-from .go import Color, GoGame, Move
+from .go import Color, Game, Move
 
 
 class AdversarialPolicy(ABC):
@@ -30,7 +30,7 @@ class BasicPolicy(AdversarialPolicy, ABC):
     """Base class for adversarial policies that aren't wrappers."""
 
     name: ClassVar[str]
-    game: GoGame
+    game: Game
     color: Color
 
     def __init_subclass__(cls) -> None:
@@ -213,11 +213,11 @@ class PassingWrapper(AdversarialPolicy):
     """Wrapper that passes if doing so would lead to immediate victory.
 
     It will also pass if the opponent passed last turn, and we've played
-    more than `turns_before_pass` turns.
+    more than `moves_before_pass` turns.
     """
 
     inner: BasicPolicy
-    turns_before_pass: int = 211
+    moves_before_pass: int = 211
 
     def next_move(self) -> Optional[Move]:
         """Return the next move to play.
@@ -232,8 +232,8 @@ class PassingWrapper(AdversarialPolicy):
             return self.inner.next_move()
 
         # Opponent passed last turn.
-        # If we're beyond `turns_before_pass`, just pass
-        if len(past_moves) > self.turns_before_pass:
+        # If we're beyond `moves_before_pass`, just pass
+        if len(past_moves) > self.moves_before_pass:
             return None
 
         # Check if passing would lead to immediate victory

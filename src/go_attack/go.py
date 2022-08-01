@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Iterable, List, NamedTuple, Optional, Tuple
 
 import numpy as np
+import re
 from numpy.typing import NDArray
 from scipy.ndimage import distance_transform_cdt, label
 
@@ -68,7 +69,7 @@ class Move(NamedTuple):
 
 
 @dataclass(frozen=True)
-class GoGame:
+class Game:
     """Encapsulates the state of a Go game."""
 
     board_size: int
@@ -86,7 +87,7 @@ class GoGame:
         """Return a string representation of this game."""
         # Omit the board state history since it can get very large
         board = self.board_states[-1]
-        return f"GoGame(board_size={self.board_size}, komi={self.komi}, board={board})"
+        return f"Game(board_size={self.board_size}, komi={self.komi}, board={board})"
 
     def current_player(self) -> Color:
         """Return the color of the current player."""
@@ -271,6 +272,36 @@ class GoGame:
                 board[group_mask] = Color.EMPTY.value
 
         return board
+
+    @classmethod
+    def from_sgf(cls, sgf_string: str, check_legal: bool = True) -> "Game":
+        """Create a `Board` from an SGF string."""
+        sgf_string = sgf_string.strip()
+
+        if not sgf_string.startswith("(;FF[4]"):
+            raise ValueError("Only FF[4] SGFs are supported")
+
+        game = cls(19)
+        turn_regex = re.compile(r"(B|W)\[([a-z]{0,2})\]")
+
+        for i, hit in enumerate(turn_regex.finditer(sgf_string)):
+            expected_player = Color.BLACK if i % 2 == 0 else Color.WHITE
+            player = Color.from_str(hit.group(1))
+
+            if player != expected_player:
+                p1, p2 = str(expected_player), str(player)
+                raise ValueError(f"Expected {p1} to play on turn {i + 1}, got {p2}")
+            
+            vertex = hit.group(2)
+            if not vertex:
+                move = None
+            else:
+                x, y = ord(vertex[0]) - ord("a"), ord(vertex[1]) - ord("a")
+                move = Move(x, y)
+            
+            game.play_move(move, check_legal=check_legal)
+        
+        return game
 
     def to_sgf(self, comment: str = "") -> str:
         """Return an SGF string representing the game."""
