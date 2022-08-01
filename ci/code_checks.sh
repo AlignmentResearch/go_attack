@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # If you change these, also change .circleci/config.yml.
-SRC_FILES=(src/ tests/ notebooks/ setup.py)
+SRC_FILES=(scripts/ src/ tests/ notebooks/ setup.py)
 
 set -x  # echo commands
 set -e  # quit immediately on error

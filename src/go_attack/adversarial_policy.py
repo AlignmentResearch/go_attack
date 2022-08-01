@@ -176,7 +176,7 @@ class MyopicWhiteBoxPolicy(BasicPolicy):
             return None
         else:
             x, y = flat_idx % size, flat_idx // size
-            return Move(x, y)  # type: ignore
+            return Move(x, y)
 
 
 @dataclass

@@ -53,6 +53,7 @@ setup(
         "pynvml",
         "scipy",
         "seaborn",
+        "simple-parsing",
         "sgfmill",
         "tqdm",
     ],
@@ -64,7 +65,6 @@ setup(
             "gpustat",
             "ipywidgets",
             "jupyterlab",
-            "simple-parsing",
             # for convenience
             *TESTS_REQUIRE,
         ],
