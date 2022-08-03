@@ -1,4 +1,8 @@
 """Miscellaneous utility functions."""
+from pathlib import Path
+from typing import List
+import ast
+import re
 
 
 def select_best_gpu(min_free_memory: float) -> int:
@@ -69,3 +73,46 @@ def select_best_gpu(min_free_memory: float) -> int:
             print(f"Selected GPU {best_idx}.")
             nvmlShutdown()
             return best_idx
+
+
+def _standardize_config(path: Path) -> List[str]:
+    include_regex = re.compile(r"@include (.+\.cfg)")
+    lines = [line.strip() for line in path.open()]
+
+    for i, line in enumerate(lines):
+        # Remove comments
+        comment_idx = line.find("#")
+        if comment_idx != -1:
+            line = line[:comment_idx]
+
+        # Flatten the include directives
+        if match := include_regex.fullmatch(line):
+            lines[i : i + 1] = _standardize_config(path.parent / match[1])
+        else:
+            lines[i] = line.strip()
+
+    return [line for line in lines if line]
+
+
+def parse_config(path: Path) -> dict:
+    """Parse a KataGo config file into a dict."""
+    standardized = _standardize_config(path)
+
+    config = {}
+    for line in standardized:
+        key, value = line.split("=", maxsplit=1)
+        value = value.strip()
+
+        # Special case to handle boolean values
+        if value in ("true", "false"):
+            value = value.capitalize()
+
+        # Try to parse as bool, float, int, or tuple
+        try:
+            value = ast.literal_eval(value)
+        except (ValueError, SyntaxError):
+            pass  # Keep the string value
+
+        config[key.strip()] = value
+
+    return config

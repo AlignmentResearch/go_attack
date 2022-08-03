@@ -126,6 +126,7 @@ def main():  # noqa: D103
             raise FileNotFoundError("Could not find model; please set the --model flag")
     else:
         model_path = args.model
+        assert model_path.exists()
 
     print(f"Running {args.strategy} attack baseline\n")
     print(f"Using KataGo executable at '{str(katago_exe)}'")
@@ -169,21 +170,19 @@ def main():  # noqa: D103
     stdout = proc.stdout
     assert stdin is not None and stdout is not None
 
-    analysis_regex = re.compile(r"info.*")
+    analysis_regex = re.compile(r"info.*|play pass")
     analysis_move_regex = re.compile(r"play ([A-Z][0-9]{1,2}|pass)")
     move_regex = re.compile(r"= ([A-Z][0-9]{1,2}|pass)")
-    score_regex = re.compile(r"= (B|W)\+([0-9]+\.?[0-9]*)")
+    score_regex = re.compile(r"= (B|W)\+([0-9]+\.?[0-9]*)|= 0")
 
     def get_msg(pattern):
         while True:
             msg = stdout.readline().decode("ascii").strip()
-            if msg == "? genmove returned null location or illegal move":
+            if msg == "? genmove returned null locati on or illegal move":
                 print("Internal KataGo error; board state:")
                 print_kata_board()
             elif hit := pattern.fullmatch(msg):
                 return hit
-            else:
-                print(msg)
 
     def maybe_print(msg):
         if args.verbose:
@@ -244,8 +243,15 @@ def main():  # noqa: D103
             # Ask for the analysis as well as the move
             if args.analysis_log_dir:
                 send_msg(f"kata-genmove_analyze {args.victim}")
-                analyses.append(get_msg(analysis_regex).group(0))
-                victim_move = get_msg(analysis_move_regex).group(1)
+                analysis = get_msg(analysis_regex).group(0)
+
+                # Weird special case where the engine returns "play pass"
+                # and no actual analysis
+                if analysis == "play pass":
+                    victim_move = "pass"
+                else:
+                    analyses.append(analysis)
+                    victim_move = get_msg(analysis_move_regex).group(1)
             else:
                 send_msg(f"genmove {args.victim}")
                 victim_move = get_msg(move_regex).group(1)
@@ -267,10 +273,12 @@ def main():  # noqa: D103
         # Get KataGo's opinion on the score
         send_msg("final_score")
         hit = get_msg(score_regex)
-        kata_margin = float(hit.group(2))
-        player = "Black" if hit.group(1) == "B" else "White"
-        if hit.group(1) == "B":
-            kata_margin *= -1
+        if hit.group(0) == "= 0":  # Tie
+            kata_margin = 0.0
+        else:
+            kata_margin = float(hit.group(2))
+            if hit.group(1) == "B":
+                kata_margin *= -1
 
         if args.verbose:
             print_kata_board()
@@ -278,14 +286,20 @@ def main():  # noqa: D103
         # What do we think about the score?
         black_score, white_score = game.score()
         our_margin = white_score - black_score
-        if our_margin != kata_margin:
-            print(f"KataGo's margin {kata_margin} doesn't match ours {our_margin}!")
+        if our_margin > 0:
+            maybe_print(f"White won, up {our_margin} points.")
+        elif our_margin < 0:
+            maybe_print(f"Black won, up {our_margin} points.")
+        else:
+            maybe_print("Tie")
 
-            print(game)
-            raise RuntimeError("KataGo's margin doesn't match ours!")
+        # if our_margin != kata_margin:
+        #     print(f"KataGo's margin {kata_margin} doesn't match ours {our_margin}!")
+        #
+        #     print(game)
+        #     raise RuntimeError("KataGo's margin doesn't match ours!")
 
-        maybe_print(f"{player} won, up {kata_margin} points.")
-        scores.append(kata_margin)
+        scores.append(our_margin)
         send_msg("clear_board")
 
         # Save the game to disk if necessary

@@ -2,7 +2,8 @@
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Iterable, List, NamedTuple, Optional, Tuple
+from pathlib import Path
+from typing import Iterable, List, NamedTuple, Optional, Tuple, Union
 
 import numpy as np
 import re
@@ -76,6 +77,10 @@ class Game:
     board_states: List[NDArray[np.uint8]] = field(default_factory=list)
     moves: List[Optional[Move]] = field(default_factory=list)
     komi: float = 7.5
+
+    def __len__(self) -> int:
+        """Return the number of turns in this game."""
+        return len(self.moves)
 
     def __post_init__(self):
         """Initialize the history of board states."""
@@ -274,12 +279,12 @@ class Game:
         return board
 
     @classmethod
-    def from_sgf(cls, sgf_string: str, check_legal: bool = True) -> "Game":
+    def from_sgf(cls, sgf_string: Union[Path, str], check_legal: bool = True) -> "Game":
         """Create a `Board` from an SGF string."""
-        sgf_string = sgf_string.strip()
+        sgf_string = str(sgf_string).strip()
 
-        if not sgf_string.startswith("(;FF[4]"):
-            raise ValueError("Only FF[4] SGFs are supported")
+        # if not sgf_string.startswith("(;FF[4]"):
+        #     raise ValueError("Only FF[4] SGFs are supported")
 
         game = cls(19)
         turn_regex = re.compile(r"(B|W)\[([a-z]{0,2})\]")
@@ -291,16 +296,16 @@ class Game:
             if player != expected_player:
                 p1, p2 = str(expected_player), str(player)
                 raise ValueError(f"Expected {p1} to play on turn {i + 1}, got {p2}")
-            
+
             vertex = hit.group(2)
             if not vertex:
                 move = None
             else:
                 x, y = ord(vertex[0]) - ord("a"), ord(vertex[1]) - ord("a")
                 move = Move(x, y)
-            
+
             game.play_move(move, check_legal=check_legal)
-        
+
         return game
 
     def to_sgf(self, comment: str = "") -> str:
