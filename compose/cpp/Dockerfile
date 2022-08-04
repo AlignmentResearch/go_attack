@@ -99,6 +99,7 @@ RUN apt-get update -q \
   git \
   gpustat \
   htop \
+  python3 \
   python3-pip \
   rsync \
   sudo \
@@ -125,7 +126,6 @@ WORKDIR /
 FROM runtime-deps as prod
 
 # Install Python packages
-# FROM python:3.8-slim
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install \
   matplotlib \
