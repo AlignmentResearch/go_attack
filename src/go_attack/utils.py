@@ -27,11 +27,6 @@ def select_best_gpu(min_free_memory: float) -> int:
         nvmlInit,
         nvmlShutdown,
     )
-    from torch.cuda import device_count  # type: ignore
-
-    if device_count() <= 1:
-        return 0
-
     nvmlInit()
     num_gpus = nvmlDeviceGetCount()
     if num_gpus == 1:

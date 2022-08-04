@@ -112,11 +112,12 @@ def main():  # noqa: D103
     # Try to find the executable automatically
     katago_exe = args.executable
     if katago_exe is None:
-        katago_exe = Path("engines") / "KataGo-custom" / "cpp" / "katago"
+        katago_exe = Path("/engines") / "KataGo-custom" / "cpp" / "katago"
+        assert katago_exe.exists(), "Could not find KataGo executable"
 
     # Try to find the model automatically
     if args.model is None:
-        root = Path("go_attack") / "models"
+        root = Path("/go_attack") / "models"
         model_path = min(
             root.glob("*.bin.gz"),
             key=lambda x: x.stat().st_size,
@@ -126,7 +127,7 @@ def main():  # noqa: D103
             raise FileNotFoundError("Could not find model; please set the --model flag")
     else:
         model_path = args.model
-        assert model_path.exists()
+        assert model_path.exists(), "Could not find model"
 
     print(f"Running {args.strategy} attack baseline\n")
     print(f"Using KataGo executable at '{str(katago_exe)}'")
@@ -136,17 +137,8 @@ def main():  # noqa: D103
     attacker_letter = "B" if args.victim == "W" else "W"
     victim_name = "Black" if args.victim == "B" else "White"
 
-    module_root = Path(__file__).parent.parent
     proc = Popen(
         [
-            "docker",
-            "run",
-            "--gpus",
-            f"device={select_best_gpu(10)}",
-            "-v",
-            f"{module_root}:/go_attack",  # Mount the module root
-            "-i",
-            "humancompatibleai/goattack:cpp",
             str(katago_exe),
             "gtp",
             "-model",
@@ -162,6 +154,7 @@ def main():  # noqa: D103
             str(config_path),
         ],
         bufsize=0,  # We need to disable buffering to get stdout line-by-line
+        env={"CUDA_VISIBLE_DEVICES": str(select_best_gpu(10))},
         stdin=PIPE,
         stderr=open("stderr3.txt", "w"),
         stdout=PIPE,

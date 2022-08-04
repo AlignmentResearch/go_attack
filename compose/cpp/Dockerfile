@@ -16,9 +16,9 @@ RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/
 # Add focal-proposed for libc6 patch
 # See https://wiki.ubuntu.com/Testing/EnableProposed for details.
 RUN echo "deb http://archive.ubuntu.com/ubuntu focal-proposed main" >> /etc/apt/sources.list \
- && echo "Package: *"                                               >> /etc/apt/preferences \
- && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
- && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
+  && echo "Package: *"                                               >> /etc/apt/preferences \
+  && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
+  && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
 
 # Install apt packages
 RUN apt-get update -q \
@@ -85,9 +85,9 @@ RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/
 # Add focal-proposed for libc6 patch
 # See https://wiki.ubuntu.com/Testing/EnableProposed for details.
 RUN echo "deb http://archive.ubuntu.com/ubuntu focal-proposed main" >> /etc/apt/sources.list \
- && echo "Package: *"                                               >> /etc/apt/preferences \
- && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
- && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
+  && echo "Package: *"                                               >> /etc/apt/preferences \
+  && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
+  && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
 
 # Install useful apt packages
 RUN apt-get update -q \
@@ -99,6 +99,7 @@ RUN apt-get update -q \
   git \
   gpustat \
   htop \
+  python3-pip \
   rsync \
   sudo \
   tmux \
@@ -121,9 +122,22 @@ RUN apt-get update -q \
 # Reset working directory
 WORKDIR /
 
-FROM runtime-deps as debug
-COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
-
 FROM runtime-deps as prod
+
+# Install Python packages
+# FROM python:3.8-slim
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install \
+  matplotlib \
+  numpy \
+  pandas \
+  pynvml \
+  scipy \
+  seaborn \
+  setuptools \
+  sgfmill \
+  simple-parsing \
+  tqdm
+
 COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
 COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago

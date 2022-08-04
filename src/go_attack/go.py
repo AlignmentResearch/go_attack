@@ -7,7 +7,8 @@ from typing import Iterable, List, NamedTuple, Optional, Tuple, Union
 
 import numpy as np
 import re
-from numpy.typing import NDArray
+
+# from numpy.typing import NDArray
 from scipy.ndimage import distance_transform_cdt, label
 
 
@@ -74,7 +75,7 @@ class Game:
     """Encapsulates the state of a Go game."""
 
     board_size: int
-    board_states: List[NDArray[np.uint8]] = field(default_factory=list)
+    board_states: List[np.ndarray] = field(default_factory=list)
     moves: List[Optional[Move]] = field(default_factory=list)
     komi: float = 7.5
 
@@ -108,7 +109,7 @@ class Game:
         self.board_states.append(self.board_states[-1])
         self.moves.append(None)
 
-    def undo(self) -> NDArray[np.uint8]:
+    def undo(self) -> np.ndarray:
         """Undo the last turn, returning the undone board."""
         self.moves.pop()
         return self.board_states.pop()
@@ -128,13 +129,13 @@ class Game:
         """Return `True` iff there have been two consecutive passes."""
         return len(self.moves) >= 2 and self.moves[-2:] == [None, None]
 
-    def is_repetition(self, board: NDArray[np.uint8], *, turn_idx: int = -1) -> bool:
+    def is_repetition(self, board: np.ndarray, *, turn_idx: int = -1) -> bool:
         """Return `True` iff `board` repeats an earlier board state."""
         # Sort of silly thing we have to do because of Python slicing semantics
         history = self.board_states[:turn_idx] if turn_idx != -1 else self.board_states
         return any(np.all(board == earlier) for earlier in history)
 
-    def legal_move_mask(self, *, turn_idx: int = -1) -> NDArray[np.uint8]:
+    def legal_move_mask(self, *, turn_idx: int = -1) -> np.ndarray:
         """Return a mask of all legal moves for the current player."""
         board = np.zeros((self.board_size, self.board_size), dtype=np.uint8)
         for x, y in self.legal_moves(turn_idx=turn_idx):
@@ -175,7 +176,7 @@ class Game:
         else:
             self.move(move.x, move.y, check_legal=check_legal)
 
-    def virtual_move(self, x: int, y: int, *, turn_idx: int = -1) -> NDArray[np.uint8]:
+    def virtual_move(self, x: int, y: int, *, turn_idx: int = -1) -> np.ndarray:
         """Compute what the board would look like if this move were made.
 
         Args:
@@ -257,7 +258,7 @@ class Game:
             return None
 
     @staticmethod
-    def _clear_color(board: NDArray[np.uint8], color: Color):
+    def _clear_color(board: np.ndarray, color: Color):
         """Clear all stones of a given color."""
         # 4. Clearing a color is the process of emptying all points of that
         # color that don’t reach empty.
