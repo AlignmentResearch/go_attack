@@ -139,5 +139,13 @@ RUN python3 -m pip install \
   simple-parsing \
   tqdm
 
+RUN mkdir -p /go_attack/src
+COPY ./configs /go_attack/configs
+COPY ./scripts/ /go_attack/scripts
+COPY ./src/go_attack /go_attack/src/go_attack
+COPY ./setup.py /go_attack/setup.py
+COPY README.md /go_attack/README.md
+RUN pip install -e /go_attack
+
 COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
 COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
