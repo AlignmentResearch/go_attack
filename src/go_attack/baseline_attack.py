@@ -25,21 +25,23 @@ PASSING_BEHAVIOR = (
 
 
 def run_baseline_attack(
-    adversarial_policy: str,
-    passing_behavior: str,
-    config_path: Path,
-    executable_path: Path,
     model_path: Path,
+    adversarial_policy: str,
+    num_playouts: int,
+    passing_behavior: str,
+    gpu: Optional[int] = None,
     *,
     board_size: int = 19,
+    config_path: Path,
+    executable_path: Path,
     log_analysis: bool = False,
     log_dir: Optional[Path] = None,
     moves_before_pass: int = 211,
     num_games: int = 1,
-    num_playouts: int = 512,
+    progress_bar: bool = True,
     seed: int = 42,
-    victim: Literal["B", "W"] = "B",
     verbose: bool = False,
+    victim: Literal["B", "W"] = "B",
 ) -> List[Game]:
     if adversarial_policy not in POLICIES:
         raise ValueError(f"adversarial_policy must be one of {POLICIES}")
@@ -49,6 +51,8 @@ def run_baseline_attack(
         raise ValueError(f"config_path must exist: {config_path}")
     if not model_path.exists():
         raise ValueError(f"model_path must exist: {model_path}")
+    if gpu is None:
+        gpu = select_best_gpu(10)
 
     # Start up the KataGo executable.
     proc = Popen(
@@ -68,7 +72,7 @@ def run_baseline_attack(
             str(config_path),
         ],
         bufsize=0,  # We need to disable buffering to get stdout line-by-line
-        env={"CUDA_VISIBLE_DEVICES": str(select_best_gpu(10))},
+        env={"CUDA_VISIBLE_DEVICES": str(gpu)},
         stderr=DEVNULL,
         stdin=PIPE,
         stdout=PIPE,
@@ -100,11 +104,17 @@ def run_baseline_attack(
 
     send_msg(f"boardsize {board_size}")
     if log_dir:
-        log_dir.mkdir(exist_ok=True)
+        desc = f"model={model_path.stem}"
+        desc += f"_policy={adversarial_policy}"
+        desc += f"_playouts={num_playouts}"
+        desc += f"_pass={passing_behavior}"
+
+        log_dir = log_dir / desc
+        log_dir.mkdir(exist_ok=True, parents=True)
         print(f"Logging SGF game files to '{str(log_dir)}'")
 
     game_iter = range(num_games)
-    if not verbose:
+    if not verbose and progress_bar:
         game_iter = tqdm(game_iter, desc="Playing", unit="games")
 
     random.seed(seed)

@@ -1,10 +1,14 @@
 """Run a hardcoded adversarial attack against KataGo."""
 
 from argparse import ArgumentParser
+from functools import partial
+from itertools import product
+from multiprocessing import Pool
 from pathlib import Path
 
 from go_attack.adversarial_policy import POLICIES
 from go_attack.baseline_attack import run_baseline_attack
+from pynvml import nvmlInit, nvmlDeviceGetCount, nvmlShutdown
 
 
 def main():  # noqa: D103
@@ -28,11 +32,12 @@ def main():  # noqa: D103
             "only-when-ahead",
             "only-when-behind",
         ),
-        default="standard",
+        default=["standard"],
         help="Behavior that KataGo uses when passing",
+        nargs="+",
         type=str,
     )
-    parser.add_argument("--model", type=Path, default=None, help="model")
+    parser.add_argument("--models", type=Path, default=None, help="model", nargs="+")
     parser.add_argument(
         "-n",
         "--num-games",
@@ -43,8 +48,9 @@ def main():  # noqa: D103
     parser.add_argument(
         "--num-playouts",
         type=int,
-        default=512,
+        default=[512],
         help="Maximum number of MCTS playouts KataGo is allowed to use",
+        nargs="+",
     )
     parser.add_argument("--log-analysis", action="store_true", help="Log analysis")
     parser.add_argument(
@@ -59,9 +65,9 @@ def main():  # noqa: D103
         "--policy",
         type=str,
         choices=tuple(POLICIES),
-        default="edge",
-        help="Adversarial policy to use",
-        # nargs="+",
+        default=["edge"],
+        help="Adversarial policies to use",
+        nargs="+",
     )
     parser.add_argument(
         "--moves-before-pass",
@@ -101,42 +107,61 @@ def main():  # noqa: D103
         assert katago_exe.exists(), "Could not find KataGo executable"
 
     # Try to find the model automatically
-    if args.model is None:
+    if args.models is None:
         root = Path("/go_attack") / "models"
-        model_path = min(
-            root.glob("*.bin.gz"),
-            key=lambda x: x.stat().st_size,
-            default=None,
-        )
-        if model_path is None:
+        model_paths = [
+            min(
+                root.glob("*.bin.gz"),
+                key=lambda x: x.stat().st_size,
+                default=None,
+            )
+        ]
+        if model_paths[0] is None:
             raise FileNotFoundError("Could not find model; please set the --model flag")
     else:
-        model_path = args.model
-        assert model_path.exists(), "Could not find model"
+        model_paths = args.models
+        assert all(p.exists() for p in model_paths), "Could not find model"
 
     print(f"Running {args.policy} attack baseline\n")
     print(f"Using KataGo executable at '{str(katago_exe)}'")
-    print(f"Using model at '{str(model_path)}'")
+    print(f"Using models at '{list(map(str, model_paths))}'")  # type: ignore
     print(f"Using config file at '{str(config_path)}'")
 
-    games = run_baseline_attack(
-        args.policy,
-        args.passing_behavior,
-        config_path,
-        katago_exe,
-        model_path,
+    baseline_fn = partial(
+        run_baseline_attack,
         board_size=args.size,
+        config_path=config_path,
+        executable_path=katago_exe,
+        log_analysis=args.log_analysis,
         log_dir=args.log_dir,
+        moves_before_pass=args.moves_before_pass,
         num_games=args.num_games,
-        num_playouts=args.num_playouts,
         seed=args.seed,
-        victim=args.victim,
         verbose=args.verbose,
+        victim=args.victim,
+    )
+    configs = list(
+        product(model_paths, args.policy, args.num_playouts, args.passing_behavior)
     )
 
-    scores = [game.score() for game in games]
-    margins = [black - white for black, white in scores]
-    print(f"\nAverage win margin: {sum(margins) / len(margins)}")
+    if len(configs) > 1:
+        print(f"Running {len(configs)} configurations in parallel")
+
+        nvmlInit()
+        num_devices = min(len(configs), nvmlDeviceGetCount())
+        print(f"Using {num_devices} GPU devices")
+
+        with Pool(2 * num_devices) as p:
+            baseline_fn = partial(baseline_fn, progress_bar=False)
+            configs = [(*config, i % num_devices) for i, config in enumerate(configs)]
+            p.starmap(baseline_fn, configs)
+
+        nvmlShutdown()
+    else:
+        games = baseline_fn(*configs[0])
+        scores = [game.score() for game in games]
+        margins = [black - white for black, white in scores]
+        print(f"\nAverage win margin: {sum(margins) / len(margins)}")
 
 
 if __name__ == "__main__":
