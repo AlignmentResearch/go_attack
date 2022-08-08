@@ -1,3 +1,12 @@
+"""Functions for running baseline attacks against KataGo."""
+import random
+import re
+from pathlib import Path
+from subprocess import DEVNULL, PIPE, Popen
+from typing import List, Literal, Optional
+
+from tqdm import tqdm
+
 from go_attack.adversarial_policy import (
     POLICIES,
     MyopicWhiteBoxPolicy,
@@ -6,13 +15,6 @@ from go_attack.adversarial_policy import (
 )
 from go_attack.go import Color, Game, Move
 from go_attack.utils import select_best_gpu
-from pathlib import Path
-from subprocess import DEVNULL, PIPE, Popen
-from tqdm import tqdm
-from typing import List, Literal, Optional
-import random
-import re
-
 
 PASSING_BEHAVIOR = (
     "standard",
@@ -43,6 +45,7 @@ def run_baseline_attack(
     verbose: bool = False,
     victim: Literal["B", "W"] = "B",
 ) -> List[Game]:
+    """Run a baseline attack against KataGo."""
     if adversarial_policy not in POLICIES:
         raise ValueError(f"adversarial_policy must be one of {POLICIES}")
     if passing_behavior not in PASSING_BEHAVIOR:
@@ -66,7 +69,7 @@ def run_baseline_attack(
                 [
                     f"passingBehavior={passing_behavior}",
                     f"maxPlayouts={num_playouts}",
-                ]
+                ],
             ),
             "-config",
             str(config_path),
@@ -131,7 +134,12 @@ def run_baseline_attack(
         strat_title = adversarial_policy.capitalize()
 
         if policy_cls in (MyopicWhiteBoxPolicy, NonmyopicWhiteBoxPolicy):
-            policy = policy_cls(game, victim_color.opponent(), stdin, stdout)  # type: ignore
+            policy = policy_cls(
+                game,
+                victim_color.opponent(),
+                stdin,  # type: ignore
+                stdout,
+            )
         else:
             policy = policy_cls(game, victim_color.opponent())  # type: ignore
 

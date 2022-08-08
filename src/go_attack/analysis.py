@@ -1,7 +1,9 @@
+"""Utilities for loading and manipulating KataGo analyses."""
+import re
 from pathlib import Path
 from typing import Union
+
 import pandas as pd
-import re
 
 
 def load_analysis(path: Union[Path, str]) -> pd.DataFrame:
@@ -16,11 +18,11 @@ def load_analysis(path: Union[Path, str]) -> pd.DataFrame:
                     {k: maybe_to_float(v) for k, v in parser.findall(move)}
                     for move in line.split("info ")
                     if move
-                ]
+                ],
             ).assign(turn=i)
             for i, line in enumerate(open(path).readlines())
             if len(line) > 1  # Skip empty / newlines
-        ]
+        ],
     )
 
 

@@ -1,12 +1,12 @@
 """A basic implementation of Go with Tromp-Taylor rules."""
 
+import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Iterable, List, NamedTuple, Optional, Tuple, Union
 
 import numpy as np
-import re
 
 # from numpy.typing import NDArray
 from scipy.ndimage import distance_transform_cdt, label

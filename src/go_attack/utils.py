@@ -1,8 +1,8 @@
 """Miscellaneous utility functions."""
-from pathlib import Path
-from typing import List
 import ast
 import re
+from pathlib import Path
+from typing import List
 
 
 def select_best_gpu(min_free_memory: float) -> int:
@@ -27,6 +27,7 @@ def select_best_gpu(min_free_memory: float) -> int:
         nvmlInit,
         nvmlShutdown,
     )
+
     nvmlInit()
     num_gpus = nvmlDeviceGetCount()
     if num_gpus == 1:
@@ -82,7 +83,7 @@ def _standardize_config(path: Path) -> List[str]:
 
         # Flatten the include directives
         if match := include_regex.fullmatch(line):
-            lines[i : i + 1] = _standardize_config(path.parent / match[1])
+            lines[i : i + 1] = _standardize_config(path.parent / match[1])  # noqa: E203
         else:
             lines[i] = line.strip()
 
