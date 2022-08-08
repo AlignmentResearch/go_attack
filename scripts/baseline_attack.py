@@ -6,9 +6,10 @@ from itertools import product
 from multiprocessing import Pool
 from pathlib import Path
 
+from pynvml import nvmlDeviceGetCount, nvmlInit, nvmlShutdown
+
 from go_attack.adversarial_policy import POLICIES
 from go_attack.baseline_attack import run_baseline_attack
-from pynvml import nvmlInit, nvmlDeviceGetCount, nvmlShutdown
 
 
 def main():  # noqa: D103
@@ -114,7 +115,7 @@ def main():  # noqa: D103
                 root.glob("*.bin.gz"),
                 key=lambda x: x.stat().st_size,
                 default=None,
-            )
+            ),
         ]
         if model_paths[0] is None:
             raise FileNotFoundError("Could not find model; please set the --model flag")
@@ -141,7 +142,7 @@ def main():  # noqa: D103
         victim=args.victim,
     )
     configs = list(
-        product(model_paths, args.policy, args.num_playouts, args.passing_behavior)
+        product(model_paths, args.policy, args.num_playouts, args.passing_behavior),
     )
 
     if len(configs) > 1:
