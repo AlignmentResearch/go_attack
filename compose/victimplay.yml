@@ -60,7 +60,7 @@ services:
         ./selfplay/train.sh \
         /outputs/ \
         ${TRAININGNAME} \
-        b6c96 \
+        ${ADV_NET_SIZE} \
         ${BATCH_SIZE} \
         main \
         -lr-scale 1.0 \
