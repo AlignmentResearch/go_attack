@@ -40,7 +40,7 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["1", "2", "3", "4", "5", "6", "7"]
+              device_ids: ["2", "3", "4", "5", "6", "7"]
     cap_add:
       - SYS_PTRACE
     stop_grace_period: 120s
@@ -72,7 +72,7 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["0"]
+              device_ids: ["1"]
 
   shuffle-and-export:
     image: humancompatibleai/goattack:python
@@ -103,4 +103,4 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["0"]
+              device_ids: ["1"]
