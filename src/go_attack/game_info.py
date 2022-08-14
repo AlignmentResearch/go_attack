@@ -187,9 +187,13 @@ def extract_adversarial_game_info(
     adv_color = {"b": "w", "w": "b"}[victim_color]
     adv_raw_name = {"b": basic_info.b_name, "w": basic_info.w_name}[adv_color]
     adv_name = (
-        adv_raw_name.split("__victim")[0]
-        if adv_color == "b"
-        else adv_raw_name.split("victim__")[1]
+        (
+            adv_raw_name.split("__victim")[0]
+            if adv_color == "b"
+            else adv_raw_name.split("victim__")[1]
+        )
+        if "victim" in adv_raw_name
+        else adv_raw_name
     )
     adv_steps = (
         0 if adv_name == "random" else int(extract_re(adv_name, r"\-s([0-9]+)\-"))
