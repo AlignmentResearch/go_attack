@@ -1,6 +1,6 @@
 #!/bin/bash
 
-EXP_ROOT="/nas/ucb/tony/go-attack/training/emcts1-v4/cp127-avoid-pass-alive-vis32-warmstart"
+EXP_ROOT="/nas/ucb/tony/go-attack/training/mcts/cp127-vis600-warmstart"
 CKPT_DIR="/nas/ucb/tony/go-attack/checkpoints/katagotraining.org/b20c256x2-s5303129600-d1228401921"
 
 ######################### Copy files into train ##############################
