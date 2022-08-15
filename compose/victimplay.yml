@@ -19,7 +19,7 @@ services:
       target: prod
     volumes:
       - type: bind
-        source: ${HOST_OUTPUT_DIR}
+        source: ${HOST_OUTPUT_DIR}.sh 
         target: /outputs
       - type: bind
         source: ${HOST_MODEL_DIR}
