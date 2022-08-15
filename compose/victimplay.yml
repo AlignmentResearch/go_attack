@@ -25,10 +25,6 @@ services:
         source: ${HOST_MODEL_DIR}
         target: /models
         read_only: true
-      - type: bind
-        source: ${HOST_CONFIG_DIR}
-        target: /configs
-        read_only: true
     command: >
       sh -c "
         cd /engines/KataGo-custom &&
@@ -64,7 +60,7 @@ services:
         ./selfplay/train.sh \
         /outputs/ \
         ${TRAININGNAME} \
-        b6c96 \
+        ${ADV_NET_SIZE} \
         ${BATCH_SIZE} \
         main \
         -lr-scale 1.0 \
