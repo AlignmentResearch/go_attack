@@ -63,7 +63,7 @@ services:
         ${ADV_NET_SIZE} \
         ${BATCH_SIZE} \
         main \
-        -lr-scale 1.0 \
+        -lr-scale ${LR_SCALE} \
         -max-train-bucket-per-new-data ${MAX_TRAIN_RATIO}
       "
     deploy:
