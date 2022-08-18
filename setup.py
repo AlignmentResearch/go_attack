@@ -26,6 +26,7 @@ TESTS_REQUIRE = [
     "pytest-notebook",
     "pytest-xdist",
     "pytype",
+    "tbparse",
 ]
 
 
