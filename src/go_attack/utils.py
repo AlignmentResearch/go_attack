@@ -2,7 +2,7 @@
 import ast
 import re
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 
 def select_best_gpu(min_free_memory: float) -> int:
@@ -71,7 +71,7 @@ def select_best_gpu(min_free_memory: float) -> int:
             return best_idx
 
 
-def _standardize_config(path: Path) -> List[str]:
+def _standardize_config(path: Path, include_path: Optional[Path] = None) -> List[str]:
     include_regex = re.compile(r"@include (.+\.cfg)")
     lines = [line.strip() for line in path.open()]
 
@@ -83,16 +83,26 @@ def _standardize_config(path: Path) -> List[str]:
 
         # Flatten the include directives
         if match := include_regex.fullmatch(line):
-            lines[i : i + 1] = _standardize_config(path.parent / match[1])  # noqa: E203
+            lines[i : i + 1] = _standardize_config( # noqa: E203
+                (include_path or path.parent) / match[1], include_path
+            )
         else:
             lines[i] = line.strip()
 
     return [line for line in lines if line]
 
 
-def parse_config(path: Path) -> dict:
-    """Parse a KataGo config file into a dict."""
-    standardized = _standardize_config(path)
+def parse_config(path: Path, include_path: Optional[Path] = None) -> dict:
+    """Parse a KataGo config file into a dict.
+    
+    Args:
+        path: Path to the config file.
+        include_path: Path to use for resolving @include statements.
+    
+    Returns:
+        A dict representing the config file.
+    """
+    standardized = _standardize_config(path, include_path)
 
     config = {}
     for line in standardized:

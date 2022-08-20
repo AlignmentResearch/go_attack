@@ -19,22 +19,26 @@ services:
       target: prod
     volumes:
       - type: bind
-        source: ${HOST_OUTPUT_DIR}.sh 
-        target: /outputs
-      - type: bind
-        source: ${HOST_MODEL_DIR}
-        target: /models
+        source: ${HOST_ADVERSARIES_DIR}
+        target: /adversaries
         read_only: true
       - type: bind
         source: ${HOST_CONFIG_DIR}
         target: /configs
         read_only: true
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      - type: bind
+        source: ${HOST_VICTIMS_DIR}
+        target: /victims
+        read_only: true
     command: >
       sh -c "
         cd /engines/KataGo-custom &&
         ./cpp/katago victimplay \
-        -output-dir /outputs/selfplay \
-        -models-dir /outputs/models \
+        -output-dir /outputs \
+        -models-dir /adversaries \
         -nn-victim-file ${VICTIM_FILE} \
         -config ${VICTIMPLAY_CONFIG}
       "
