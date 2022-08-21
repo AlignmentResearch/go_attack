@@ -59,3 +59,6 @@ RUN git init . \
 
 # Reset working directory
 WORKDIR /
+
+# Copy over configs
+COPY ./configs /configs

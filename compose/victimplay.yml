@@ -21,17 +21,14 @@ services:
       - type: bind
         source: ${HOST_OUTPUT_DIR}
         target: /outputs
-      - type: bind
-        source: ${HOST_MODEL_DIR}
-        target: /models
-        read_only: true
     command: >
       sh -c "
+        sleep 30 &&
         cd /engines/KataGo-custom &&
         ./cpp/katago victimplay \
         -output-dir /outputs/selfplay \
         -models-dir /outputs/models \
-        -nn-victim-file ${VICTIM_FILE} \
+        -nn-victim-path /outputs/victims \
         -config ${VICTIMPLAY_CONFIG}
       "
     deploy:
@@ -43,7 +40,11 @@ services:
               device_ids: ["1", "2", "3", "4", "5", "6", "7"]
     cap_add:
       - SYS_PTRACE
-    stop_grace_period: 120s
+    stop_grace_period: 120s   # Nvidia driver bug fix
+    depends_on:
+      - curriculum
+    # We sleep 30 seconds above to wait for curriculum to start up and create
+    # the necessary folder with the victim models.
 
   train:
     image: humancompatibleai/goattack:python
@@ -104,3 +105,26 @@ services:
             - capabilities: ["gpu"]
               driver: nvidia
               device_ids: ["0"]
+
+  curriculum:
+    image: humancompatibleai/goattack:python
+    build:
+      context: ..
+      dockerfile: ./compose/python/Dockerfile
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      - type: bind
+        source: ${HOST_MODEL_DIR}
+        target: /models
+        read_only: true
+    command: >
+      sh -c "
+        cd /engines/KataGo-custom/python &&
+        python curriculum.py \
+        -selfplay-dir=/outputs/selfplay \
+        -input-models-dir=/models \
+        -output-models-dir=/outputs/victims \
+        -config-json-file=${CURRICULUM_CONFIG}
+      "
