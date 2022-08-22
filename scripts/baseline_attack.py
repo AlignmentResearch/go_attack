@@ -107,7 +107,7 @@ def main():  # noqa: D103
         katago_exe = Path("/engines") / "KataGo-custom" / "cpp" / "katago"
         assert katago_exe.exists(), "Could not find KataGo executable"
 
-    # Try to find the model automatically
+    # Try to find the model automaticallyd
     if args.models is None:
         root = Path("/go_attack") / "models"
         model_paths = [
@@ -118,7 +118,9 @@ def main():  # noqa: D103
             ),
         ]
         if model_paths[0] is None:
-            raise FileNotFoundError("Could not find model; please set the --model flag")
+            raise FileNotFoundError(
+                "Could not find model; please set the --models flag"
+            )
     else:
         model_paths = args.models
         assert all(p.exists() for p in model_paths), "Could not find model"

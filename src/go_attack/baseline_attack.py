@@ -137,11 +137,11 @@ def run_baseline_attack(
             policy = policy_cls(
                 game,
                 victim_color.opponent(),
-                stdin,  # type: ignore
+                stdin,  # pytype:disable=not-instantiable
                 stdout,
             )
         else:
-            policy = policy_cls(game, victim_color.opponent())  # type: ignore
+            policy = policy_cls(game, victim_color.opponent())
 
         policy = PassingWrapper(policy, moves_before_pass)
 

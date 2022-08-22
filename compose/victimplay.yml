@@ -34,7 +34,7 @@ services:
         cd /engines/KataGo-custom &&
         ./cpp/katago victimplay \
         -output-dir /outputs \
-        -models-dir /adversaries \
+        -models-dir /models \
         -nn-victim-file ${VICTIM_FILE} \
         -config ${VICTIMPLAY_CONFIG}
       "
