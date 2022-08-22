@@ -83,8 +83,9 @@ def _standardize_config(path: Path, include_path: Optional[Path] = None) -> List
 
         # Flatten the include directives
         if match := include_regex.fullmatch(line):
-            lines[i : i + 1] = _standardize_config( # noqa: E203
-                (include_path or path.parent) / match[1], include_path
+            lines[i : i + 1] = _standardize_config(  # noqa: E203
+                (include_path or path.parent) / match[1],
+                include_path,
             )
         else:
             lines[i] = line.strip()
@@ -94,11 +95,11 @@ def _standardize_config(path: Path, include_path: Optional[Path] = None) -> List
 
 def parse_config(path: Path, include_path: Optional[Path] = None) -> dict:
     """Parse a KataGo config file into a dict.
-    
+
     Args:
         path: Path to the config file.
         include_path: Path to use for resolving @include statements.
-    
+
     Returns:
         A dict representing the config file.
     """
