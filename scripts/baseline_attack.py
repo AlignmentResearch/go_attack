@@ -119,7 +119,7 @@ def main():  # noqa: D103
         ]
         if model_paths[0] is None:
             raise FileNotFoundError(
-                "Could not find model; please set the --models flag"
+                "Could not find model; please set the --models flag",
             )
     else:
         model_paths = args.models
