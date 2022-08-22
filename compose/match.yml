@@ -17,28 +17,35 @@ services:
     build:
       context: ..
       dockerfile: ./compose/cpp/Dockerfile
+      target: debug
     volumes:
+      - type: bind
+        source: ${HOST_ADVERSARIES_DIR}
+        target: /adversaries
+        read_only: true
+      - type: bind
+        source: ${HOST_CONFIG_DIR}
+        target: /configs
+        read_only: true
       - type: bind
         source: ${HOST_OUTPUT_DIR}
         target: /outputs
       - type: bind
-        source: ${HOST_MODEL_DIR}
-        target: /models
-      - type: bind
-        source: ${HOST_CONFIG_DIR}
-        target: /configs
+        source: ${HOST_VICTIMS_DIR}
+        target: /victims
+        read_only: true
     command: >
-      sh -c "
-        /engines/KataGo-custom/cpp/katago match \
-        -config ${MATCH_CONFIG} \
-        -log-file /outputs/match.log \
+        /engines/KataGo-custom/cpp/katago match
+        -config ${MATCH_CONFIG}
+        -log-file /outputs/match.log
         -sgf-output-dir /outputs/
-      "
+        -override-config maxVisits=${MAX_VISITS}
+        -override-config passingBehavior1=${PASSING_BEHAVIOR}
     deploy:
       resources:
         reservations:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["0"]
-    stop_grace_period: 60s
+              device_ids: ["0", "1", "2", "3", "4", "5", "6", "7"]
+    stop_grace_period: 120s

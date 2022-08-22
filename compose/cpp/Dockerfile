@@ -25,7 +25,6 @@ RUN apt-get update -q \
   && apt-get install -y \
   # Utilities
   curl \
-  gdb \
   git \
   sudo \
   tmux \
@@ -123,8 +122,6 @@ RUN apt-get update -q \
 # Reset working directory
 WORKDIR /
 
-FROM runtime-deps as prod
-
 # Install Python packages
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install \
@@ -141,11 +138,16 @@ RUN python3 -m pip install \
 
 RUN mkdir -p /go_attack/src
 COPY ./configs /go_attack/configs
+COPY ./kubernetes /go_attack/kubernetes
 COPY ./scripts/ /go_attack/scripts
 COPY ./src/go_attack /go_attack/src/go_attack
 COPY ./setup.py /go_attack/setup.py
 COPY README.md /go_attack/README.md
 RUN pip install -e /go_attack
 
+FROM runtime-deps as debug
+COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
+
+FROM runtime-deps as prod
 COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
 COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
