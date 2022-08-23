@@ -34,11 +34,7 @@ class BasicPolicy(AdversarialPolicy, ABC):
     color: Color
 
     def __init_subclass__(cls) -> None:
-        """Register the subclass in the POLICIES dict.
-
-        Returns:
-            None
-        """
+        """Register the subclass in the POLICIES dict."""
         POLICIES[cls.name] = cls
         return super().__init_subclass__()
 
