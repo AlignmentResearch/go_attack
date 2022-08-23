@@ -1,3 +1,3 @@
 #!/bin/sh
-cd /nbelrose/go_attack/engines/KataGo-custom/python
-./selfplay/train.sh    /outputs/    t0    b6c96    256    main    -lr-scale 1.0    -max-train-bucket-per-new-data 4
+cd /engines/KataGo-custom/python
+./selfplay/train.sh    /shared/victimplay/$1    t0    b6c96    256    main    -lr-scale 1.0    -max-train-bucket-per-new-data 4
