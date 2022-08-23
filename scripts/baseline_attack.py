@@ -136,7 +136,7 @@ def main():  # noqa: D103
         config_path=config_path,
         executable_path=katago_exe,
         log_analysis=args.log_analysis,
-        log_dir=args.log_dir,
+        log_root=args.log_dir,
         moves_before_pass=args.moves_before_pass,
         num_games=args.num_games,
         seed=args.seed,
