@@ -3,7 +3,7 @@ import random
 import re
 from pathlib import Path
 from subprocess import DEVNULL, PIPE, Popen
-from typing import IO, AnyStr, List, Literal, Optional, Tuple
+from typing import IO, AnyStr, List, Literal, Optional, Sequence, Tuple
 
 from tqdm import tqdm
 
@@ -25,6 +25,11 @@ PASSING_BEHAVIOR = (
     "only-when-ahead",
     "only-when-behind",
 )
+
+
+def send_msg(to_engine: IO[AnyStr], msg: str) -> None:
+    """Sends message `msg` to game engine `to_engine`."""
+    to_engine.write(f"{msg}\n".encode("ascii"))
 
 
 def start_engine(
@@ -83,6 +88,107 @@ def make_log_dir(
     return log_dir
 
 
+def rollout_policy(
+    game: Game,
+    policy: AdversarialPolicy,
+    victim_color: Color,
+    from_engine: IO[AnyStr],
+    to_engine: IO[AnyStr],
+    log_analysis: bool,
+    verbose: bool,
+) -> Tuple[Game, Sequence[str]]:
+    """Rollouts `policy` against engine with pipe `from_engine`."""
+
+    def maybe_print(msg):
+        if verbose:
+            print(msg)
+
+    def print_kata_board():
+        send_msg(to_engine, "showboard")
+        for _ in range(game.board_size + 3):
+            msg = from_engine.readline().decode("ascii").strip()
+            print(msg)
+
+    def get_msg(pattern):
+        while True:
+            msg = from_engine.readline().decode("ascii").strip()
+            if msg == "? genmove returned null locati on or illegal move":
+                print("Internal KataGo error; board state:")
+                print_kata_board()
+            elif hit := pattern.fullmatch(msg):
+                return hit
+
+    def take_turn():
+        move = policy.next_move()
+        game.play_move(move)
+
+        vertex = str(move) if move else "pass"
+        send_msg(to_engine, f"play {victim_color.opponent()} {vertex}")
+        maybe_print("Passing" if move is None else f"Playing {vertex}")
+
+    # Play first iff we're black
+    if victim_color.opponent() == Color.BLACK:
+        take_turn()
+
+    analyses = []  # Only used when --analysis-log-dir is set
+    turn = 1
+    while not game.is_over():
+        if log_analysis:
+            # Ask for the analysis as well as the move
+            send_msg(to_engine, f"kata-genmove_analyze {victim_color}")
+            analysis_regex = re.compile(r"info.*|play pass")
+            analysis = get_msg(analysis_regex).group(0)
+
+            # Weird special case where the engine returns "play pass"
+            # and no actual analysis
+            if analysis == "play pass":
+                victim_move = "pass"
+            else:
+                analyses.append(analysis)
+                analysis_move_regex = re.compile(r"play ([A-Z][0-9]{1,2}|pass)")
+                victim_move = get_msg(analysis_move_regex).group(1)
+        else:
+            send_msg(to_engine, f"genmove {victim_color}")
+            move_regex = re.compile(r"= ([A-Z][0-9]{1,2}|pass)")
+            victim_move = get_msg(move_regex).group(1)
+
+        game.play_move(Move.from_str(victim_move))
+        maybe_print(f"\nTurn {turn}")
+        maybe_print(f"KataGo played: {victim_move}")
+
+        take_turn()
+
+        turn += 1
+
+    # Get KataGo's opinion on the score
+    send_msg(to_engine, "final_score")
+    score_regex = re.compile(r"= (B|W)\+([0-9]+\.?[0-9]*)|= 0")
+    hit = get_msg(score_regex)
+    if hit.group(0) == "= 0":  # Tie
+        kata_margin = 0.0
+    else:
+        kata_margin = float(hit.group(2))
+        if hit.group(1) == "B":
+            kata_margin *= -1
+
+    if verbose:
+        print_kata_board()
+
+    # What do we think about the score?
+    black_score, white_score = game.score()
+    our_margin = white_score - black_score
+    if our_margin > 0:
+        maybe_print(f"White won, up {our_margin} points.")
+    elif our_margin < 0:
+        maybe_print(f"Black won, up {our_margin} points.")
+    else:
+        maybe_print("Tie")
+
+    send_msg(to_engine, "clear_board")
+
+    return game, analyses
+
+
 def run_baseline_attack(
     model_path: Path,
     adversarial_policy: str,
@@ -134,28 +240,6 @@ def run_baseline_attack(
             passing_behavior,
         )
 
-    def maybe_print(msg):
-        if verbose:
-            print(msg)
-
-    def send_msg(msg):
-        to_engine.write(f"{msg}\n".encode("ascii"))
-
-    def print_kata_board():
-        send_msg("showboard")
-        for _ in range(board_size + 3):
-            msg = from_engine.readline().decode("ascii").strip()
-            print(msg)
-
-    def get_msg(pattern):
-        while True:
-            msg = from_engine.readline().decode("ascii").strip()
-            if msg == "? genmove returned null locati on or illegal move":
-                print("Internal KataGo error; board state:")
-                print_kata_board()
-            elif hit := pattern.fullmatch(msg):
-                return hit
-
     def make_policy() -> AdversarialPolicy:
         if policy_cls in (MyopicWhiteBoxPolicy, NonmyopicWhiteBoxPolicy):
             policy = policy_cls(
@@ -171,67 +255,42 @@ def run_baseline_attack(
             )  # pytype: disable=not-instantiable
         return PassingWrapper(policy, moves_before_pass)
 
-    send_msg(f"boardsize {board_size}")
+    send_msg(to_engine, f"boardsize {board_size}")
 
     random.seed(seed)
-    games = []
     policy_cls = POLICIES[adversarial_policy]
     victim_color = Color.from_str(victim)
-    victim_name = "Black" if victim == "B" else "White"
-
-    analysis_regex = re.compile(r"info.*|play pass")
-    analysis_move_regex = re.compile(r"play ([A-Z][0-9]{1,2}|pass)")
-    move_regex = re.compile(r"= ([A-Z][0-9]{1,2}|pass)")
-    score_regex = re.compile(r"= (B|W)\+([0-9]+\.?[0-9]*)|= 0")
 
     game_iter = range(num_games)
     if not verbose and progress_bar:
         game_iter = tqdm(game_iter, desc="Playing", unit="games")
 
+    games = []
     for i in game_iter:
-        maybe_print(f"\n--- Game {i + 1} of {num_games} ---")
+        if verbose:
+            print(f"\n--- Game {i + 1} of {num_games} ---")
+
         game = Game(board_size)
-
         policy = make_policy()
+        game, analyses = rollout_policy(
+            game,
+            policy,
+            victim_color,
+            from_engine,
+            to_engine,
+            log_analysis,
+            verbose,
+        )
+        games.append(game)
 
-        def take_turn():
-            move = policy.next_move()
-            game.play_move(move)
+        # Save the game to disk if necessary
+        if log_dir:
+            strat_title = adversarial_policy.capitalize()
+            victim_name = "Black" if victim == "B" else "White"
+            sgf = game.to_sgf(f"{strat_title} attack; {victim_name} victim")
 
-            vertex = str(move) if move else "pass"
-            send_msg(f"play {victim_color.opponent()} {vertex}")
-            maybe_print("Passing" if move is None else f"Playing {vertex}")
-
-        # Play first iff we're black
-        if victim_color.opponent() == Color.BLACK:
-            take_turn()
-
-        analyses = []  # Only used when --analysis-log-dir is set
-        turn = 1
-        while not game.is_over():
-            # Ask for the analysis as well as the move
-            if log_analysis:
-                send_msg(f"kata-genmove_analyze {victim}")
-                analysis = get_msg(analysis_regex).group(0)
-
-                # Weird special case where the engine returns "play pass"
-                # and no actual analysis
-                if analysis == "play pass":
-                    victim_move = "pass"
-                else:
-                    analyses.append(analysis)
-                    victim_move = get_msg(analysis_move_regex).group(1)
-            else:
-                send_msg(f"genmove {victim}")
-                victim_move = get_msg(move_regex).group(1)
-
-            game.play_move(Move.from_str(victim_move))
-            maybe_print(f"\nTurn {turn}")
-            maybe_print(f"KataGo played: {victim_move}")
-
-            take_turn()
-
-            turn += 1
+            with open(log_dir / f"game_{i}.sgf", "w") as f:
+                f.write(sgf)
 
         # Save the analysis file if needed
         if log_analysis:
@@ -240,39 +299,5 @@ def run_baseline_attack(
             analysis_log_dir.mkdir(exist_ok=True, parents=True)
             with open(analysis_log_dir / f"game_{i}.txt", "w") as f:
                 f.write("\n\n".join(analyses))
-
-        # Get KataGo's opinion on the score
-        send_msg("final_score")
-        hit = get_msg(score_regex)
-        if hit.group(0) == "= 0":  # Tie
-            kata_margin = 0.0
-        else:
-            kata_margin = float(hit.group(2))
-            if hit.group(1) == "B":
-                kata_margin *= -1
-
-        if verbose:
-            print_kata_board()
-
-        # What do we think about the score?
-        black_score, white_score = game.score()
-        our_margin = white_score - black_score
-        if our_margin > 0:
-            maybe_print(f"White won, up {our_margin} points.")
-        elif our_margin < 0:
-            maybe_print(f"Black won, up {our_margin} points.")
-        else:
-            maybe_print("Tie")
-
-        games.append(game)
-        send_msg("clear_board")
-
-        # Save the game to disk if necessary
-        if log_dir:
-            strat_title = adversarial_policy.capitalize()
-            sgf = game.to_sgf(f"{strat_title} attack; {victim_name} victim")
-
-            with open(log_dir / f"game_{i}.sgf", "w") as f:
-                f.write(sgf)
 
     return games
