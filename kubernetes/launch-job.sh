@@ -19,4 +19,4 @@ ctl job run --container \
     "/shared/kubernetes/shuffle-and-export.sh $1" \
     --gpu 1 1 0 1 \
     --name go-training \
-    --replicas ${3:-7} 1 1 1
+    --replicas "${3:-7}" 1 1 1
