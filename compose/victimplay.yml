@@ -12,7 +12,7 @@ version: "3"
 
 services:
   victimplay:
-    image: humancompatibleai/goattack:cpp
+    image: humancompatibleai/goattack:2022-08-23-v7
     build:
       context: ..
       dockerfile: ./compose/cpp/Dockerfile
@@ -53,8 +53,45 @@ services:
       - SYS_PTRACE
     stop_grace_period: 120s   # Nvidia driver bug fix
 
+  evaluate:
+    image: humancompatibleai/goattack:2022-08-23-v7
+    build:
+      context: ..
+      dockerfile: ./compose/cpp/Dockerfile
+      target: prod
+    volumes:
+      - type: bind
+        source: ${HOST_ADVERSARIES_DIR}
+        target: /adversaries
+        read_only: true
+      - type: bind
+        source: ${HOST_CONFIG_DIR}
+        target: /configs
+        read_only: true
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      - type: bind
+        source: ${HOST_VICTIMS_DIR}
+        target: /victims
+        read_only: true
+    command: >
+      sh -c "
+        python3 /go_attack/kubernetes/evaluate_loop.py
+        ${RUN_NAME} ${VICTIM_FILE} \
+        -output-dir /outputs \
+        --config ${VICTIMPLAY_CONFIG}
+      "
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["0"]
+
   train:
-    image: humancompatibleai/goattack:python
+    image: humancompatibleai/goattack:2022-08-22-v2-python
     build:
       context: ..
       dockerfile: ./compose/python/Dockerfile
@@ -83,7 +120,7 @@ services:
               device_ids: ["0"]
 
   shuffle-and-export:
-    image: humancompatibleai/goattack:python
+    image: humancompatibleai/goattack:2022-08-22-v2-python
     build:
       context: ..
       dockerfile: ./compose/python/Dockerfile

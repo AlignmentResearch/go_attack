@@ -61,10 +61,13 @@ setup(
     extras_require={
         # recommended packages for development
         "dev": [
+            "black",
             "docker-compose",
             "gpustat",
+            "flake8",
             "ipywidgets",
             "jupyterlab",
+            "pre-commit",
             # for convenience
             *TESTS_REQUIRE,
         ],
