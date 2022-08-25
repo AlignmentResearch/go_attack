@@ -39,6 +39,7 @@ def start_engine(
     num_playouts: int,
     passing_behavior: str,
     gpu: int,
+    verbose: bool,
 ) -> Tuple[IO[bytes], IO[bytes]]:
     """Starts the KataGo engine, returning a tuple with the engines stdin and stdout."""
     args = [
@@ -51,6 +52,9 @@ def start_engine(
         "-config",
         str(config_path),
     ]
+    if verbose:
+        print(f"Starting engine with args: {args}")
+
     proc = Popen(
         args,
         bufsize=0,  # We need to disable buffering to get stdout line-by-line
@@ -217,6 +221,7 @@ def run_baseline_attack(
         num_playouts,
         passing_behavior,
         gpu,
+        verbose,
     )
 
     log_dir = None
