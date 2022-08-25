@@ -6,7 +6,7 @@
 #
 # KataGo has been tested on CUDA 11.1 with CUDNN 8.0.4
 # See https://github.com/lightvector/KataGo/blob/master/Compiling.md.
-FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04 AS build-deps
+FROM nvcr.io/nvidia/tensorrt:22.07-py3 AS build-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -59,23 +59,24 @@ RUN wget -qO- "https://cmake.org/files/v3.22/cmake-3.22.0-linux-x86_64.tar.gz" \
 FROM build-deps as build-raw
 COPY ./engines/KataGo-raw/cpp /engines/KataGo-raw/cpp
 WORKDIR /engines/KataGo-raw/cpp
-RUN cmake . -DUSE_BACKEND=CUDA -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1
+RUN cmake . -DUSE_BACKEND=TENSORRT -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1
 RUN make clean && make -j
 
 FROM build-deps as build-custom
 COPY ./engines/KataGo-custom/cpp /engines/KataGo-custom/cpp
 WORKDIR /engines/KataGo-custom/cpp
-RUN cmake . -DUSE_BACKEND=CUDA -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1
+RUN cmake . -DUSE_BACKEND=TENSORRT -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1
 RUN make clean && make -j
 
 FROM build-deps as build-custom-debug
 COPY ./engines/KataGo-custom/cpp /engines/KataGo-custom/cpp
 WORKDIR /engines/KataGo-custom/cpp
-RUN cmake . -DUSE_BACKEND=CUDA -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1 -DBUILD_DEBUG=1
+RUN cmake . -DUSE_BACKEND=TENSORRT -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1 -DBUILD_DEBUG=1
 RUN make clean && make -j
 
-# Actual production image, without development headers.
-FROM nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu20.04 AS runtime-deps
+# TODO(tomtseng) this is the same as build-deps, maybe I can skip a bunch of the
+# setup below due to it being the same?
+FROM nvcr.io/nvidia/tensorrt:22.07-py3 AS runtime-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
