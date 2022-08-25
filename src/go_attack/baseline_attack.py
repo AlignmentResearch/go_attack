@@ -3,7 +3,7 @@ import random
 import re
 from pathlib import Path
 from subprocess import PIPE, Popen
-from typing import IO, AnyStr, Literal, Optional, Sequence, Tuple
+from typing import IO, AnyStr, Literal, Optional, Sequence, Tuple, cast
 
 from tqdm import tqdm
 
@@ -130,7 +130,10 @@ def rollout_policy(
             # Ask for the analysis as well as the move
             send_msg(to_engine, f"kata-genmove_analyze {victim_color}")
             analysis_regex = re.compile(r"info.*|play pass")
-            analysis = get_msg(analysis_regex).group(0)
+
+            # For some reason pytype thinks this is `bytes` but it's definitely `str`;
+            # see https://docs.python.org/3/library/re.html?highlight=re#re.Match.group
+            analysis = cast(str, get_msg(analysis_regex).group(0))
 
             # Weird special case where the engine returns "play pass"
             # and no actual analysis
