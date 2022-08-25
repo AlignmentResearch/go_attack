@@ -45,7 +45,7 @@ class EdgePolicy(BasicPolicy):
     name: ClassVar[str] = "edge"
     randomized: bool = True
 
-    def __post_init__(self):
+    def __post_init__(self):  # noqa: D105
         if self.game.board_size % 2 == 0:
             raise ValueError("EdgePolicy only works on odd board sizes")
 

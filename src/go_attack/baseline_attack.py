@@ -196,11 +196,11 @@ def run_baseline_attack(
     """Run a baseline attack against KataGo."""
     if adversarial_policy not in POLICIES:
         raise ValueError(
-            f"Invalid policy '{adversarial_policy}', must be one of {POLICIES}"
+            f"Invalid policy '{adversarial_policy}', must be one of {POLICIES}",
         )
     if passing_behavior not in PASSING_BEHAVIOR:
         raise ValueError(
-            f"Invalid behavior '{passing_behavior}', must be one of {PASSING_BEHAVIOR}"
+            f"Invalid behavior '{passing_behavior}', must be one of {PASSING_BEHAVIOR}",
         )
     if not config_path.exists():
         raise ValueError(f"config_path must exist: {config_path}")
