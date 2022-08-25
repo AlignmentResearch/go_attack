@@ -108,7 +108,7 @@ def main():  # noqa: D103
         root = Path("/go_attack") / "models"
         model_paths = [
             min(
-                root.glob("*.bin.gz"),
+                root.glob("*.gz"),
                 key=lambda x: x.stat().st_size,
                 default=None,
             ),
