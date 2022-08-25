@@ -134,9 +134,7 @@ def comment_prop(
 
 def num_pass(col: str, sgf_game: sgf.Sgf_game) -> int:
     """Number of times `color` passes in `sgf_game`."""
-    return sum(
-        node.get_move == (col, None) for node in sgf_game.get_main_sequence()
-    )
+    return sum(node.get_move == (col, None) for node in sgf_game.get_main_sequence())
 
 
 def extract_re(subject: str, pattern: str) -> str:
@@ -159,8 +157,7 @@ def extract_basic_game_info(sgf_str: str, sgf_game: sgf.Sgf_game) -> GameInfo:
         gtype=comment_prop(sgf_game, "gtype"),
         start_turn_idx=int(comment_prop(sgf_game, "startTurnIdx")),
         init_turn_num=int(comment_prop(sgf_game, "initTurnNum")),
-        used_initial_position=comment_prop(sgf_game, "usedInitialPosition")
-        == "1",
+        used_initial_position=comment_prop(sgf_game, "usedInitialPosition") == "1",
         b_name=sgf_game.get_player_name("b"),
         w_name=sgf_game.get_player_name("w"),
         win_color=sgf_game.get_winner(),
@@ -186,7 +183,9 @@ def extract_adversarial_game_info(
     sgf_game: sgf.Sgf_game,
 ) -> AdversarialGameInfo:
     """Adds adversarial game info to `basic_info` from `sgf_game`."""
-    victim_color = "b" if "victim" in basic_info.b_name else "w"
+    victim_color = {basic_info.b_name: "b", basic_info.w_name: "w"}.get(
+        "victim", "b" if "victim" in basic_info.b_name else "w"
+    )
     victim_name = {"b": basic_info.b_name, "w": basic_info.w_name}[victim_color]
     adv_color = {"b": "w", "w": "b"}[victim_color]
     adv_raw_name = {"b": basic_info.b_name, "w": basic_info.w_name}[adv_color]
@@ -196,9 +195,7 @@ def extract_adversarial_game_info(
         else adv_raw_name.split("victim__")[-1]
     )
     adv_steps = (
-        0
-        if adv_name == "random"
-        else int(extract_re(adv_name, r"\-s([0-9]+)\-"))
+        0 if adv_name == "random" else int(extract_re(adv_name, r"\-s([0-9]+)\-"))
     )
 
     if basic_info.win_color is None:
