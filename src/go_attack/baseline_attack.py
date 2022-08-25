@@ -2,8 +2,8 @@
 import random
 import re
 from pathlib import Path
-from subprocess import DEVNULL, PIPE, Popen
-from typing import IO, AnyStr, List, Literal, Optional, Sequence, Tuple
+from subprocess import PIPE, Popen
+from typing import IO, AnyStr, Literal, Optional, Sequence, Tuple
 
 from tqdm import tqdm
 
@@ -39,34 +39,30 @@ def start_engine(
     num_playouts: int,
     passing_behavior: str,
     gpu: int,
-) -> Tuple[IO[AnyStr], IO[AnyStr]]:
+) -> Tuple[IO[bytes], IO[bytes]]:
     """Starts the KataGo engine, returning a tuple with the engines stdin and stdout."""
+    args = [
+        str(executable_path),
+        "gtp",
+        "-model",
+        str(model_path),
+        "-override-config",
+        f"passingBehavior={passing_behavior},maxPlayouts={num_playouts}",
+        "-config",
+        str(config_path),
+    ]
     proc = Popen(
-        [
-            str(executable_path),
-            "gtp",
-            "-model",
-            str(model_path),
-            "-override-config",
-            ",".join(
-                [
-                    f"passingBehavior={passing_behavior}",
-                    f"maxPlayouts={num_playouts}",
-                ],
-            ),
-            "-config",
-            str(config_path),
-        ],
+        args,
         bufsize=0,  # We need to disable buffering to get stdout line-by-line
         env={"CUDA_VISIBLE_DEVICES": str(gpu)},
-        stderr=DEVNULL,
+        stderr=open("/tmp/go-baseline-attack.stderr", "w"),
         stdin=PIPE,
         stdout=PIPE,
     )
-    stdin = proc.stdin
-    stdout = proc.stdout
-    assert stdin is not None and stdout is not None
-    return stdin, stdout
+    to_engine = proc.stdin
+    from_engine = proc.stdout
+    assert to_engine is not None and from_engine is not None
+    return to_engine, from_engine
 
 
 def make_log_dir(
@@ -109,13 +105,10 @@ def rollout_policy(
             msg = from_engine.readline().decode("ascii").strip()
             print(msg)
 
-    def get_msg(pattern):
+    def get_msg(pattern: re.Pattern) -> re.Match:
         while True:
             msg = from_engine.readline().decode("ascii").strip()
-            if msg == "? genmove returned null locati on or illegal move":
-                print("Internal KataGo error; board state:")
-                print_kata_board()
-            elif hit := pattern.fullmatch(msg):
+            if hit := pattern.fullmatch(msg):
                 return hit
 
     def take_turn():
@@ -160,21 +153,10 @@ def rollout_policy(
 
         turn += 1
 
-    # Get KataGo's opinion on the score
-    send_msg(to_engine, "final_score")
-    score_regex = re.compile(r"= (B|W)\+([0-9]+\.?[0-9]*)|= 0")
-    hit = get_msg(score_regex)
-    if hit.group(0) == "= 0":  # Tie
-        kata_margin = 0.0
-    else:
-        kata_margin = float(hit.group(2))
-        if hit.group(1) == "B":
-            kata_margin *= -1
-
     if verbose:
         print_kata_board()
 
-    # What do we think about the score?
+    # What is the final score?
     black_score, white_score = game.score()
     our_margin = white_score - black_score
     if our_margin > 0:
@@ -207,12 +189,16 @@ def run_baseline_attack(
     seed: int = 42,
     verbose: bool = False,
     victim: Literal["B", "W"] = "B",
-) -> List[Game]:
+) -> Sequence[Game]:
     """Run a baseline attack against KataGo."""
     if adversarial_policy not in POLICIES:
-        raise ValueError(f"adversarial_policy must be one of {POLICIES}")
+        raise ValueError(
+            f"Invalid policy '{adversarial_policy}', must be one of {POLICIES}"
+        )
     if passing_behavior not in PASSING_BEHAVIOR:
-        raise ValueError(f"passing_policy must be one of {PASSING_BEHAVIOR}")
+        raise ValueError(
+            f"Invalid behavior '{passing_behavior}', must be one of {PASSING_BEHAVIOR}"
+        )
     if not config_path.exists():
         raise ValueError(f"config_path must exist: {config_path}")
     if not model_path.exists():
@@ -299,5 +285,9 @@ def run_baseline_attack(
             analysis_log_dir.mkdir(exist_ok=True, parents=True)
             with open(analysis_log_dir / f"game_{i}.txt", "w") as f:
                 f.write("\n\n".join(analyses))
+
+    scores = [game.score() for game in games]
+    margins = [black - white for black, white in scores]
+    print(f"\nAverage win margin: {sum(margins) / len(margins)}")
 
     return games

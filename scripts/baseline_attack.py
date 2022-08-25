@@ -9,7 +9,7 @@ from pathlib import Path
 from pynvml import nvmlDeviceGetCount, nvmlInit, nvmlShutdown
 
 from go_attack.adversarial_policy import POLICIES
-from go_attack.baseline_attack import run_baseline_attack
+from go_attack.baseline_attack import PASSING_BEHAVIOR, run_baseline_attack
 
 
 def main():  # noqa: D103
@@ -25,14 +25,7 @@ def main():  # noqa: D103
     )
     parser.add_argument(
         "--passing-behavior",
-        choices=(
-            "standard",
-            "avoid-pass-alive-territory",
-            "last-resort",
-            "last-resort-oracle",
-            "only-when-ahead",
-            "only-when-behind",
-        ),
+        choices=PASSING_BEHAVIOR,
         default=["standard"],
         help="Behavior that KataGo uses when passing",
         nargs="+",
@@ -87,7 +80,7 @@ def main():  # noqa: D103
         type=str,
         choices=("B", "W"),
         default="B",
-        help="The player to attack (black or white)",
+        help="The color the victim plays as (black or white)",
     )
     args = parser.parse_args()
 
@@ -100,14 +93,17 @@ def main():  # noqa: D103
     config_path = args.config
     if config_path is None:
         config_path = Path("go_attack") / "configs" / "katago" / "baseline_attack.cfg"
+    if not config_path.exists():
+        raise FileNotFoundError("Could not find config file")
 
     # Try to find the executable automatically
     katago_exe = args.executable
     if katago_exe is None:
         katago_exe = Path("/engines") / "KataGo-custom" / "cpp" / "katago"
-        assert katago_exe.exists(), "Could not find KataGo executable"
+    if not katago_exe.exists():
+        raise FileNotFoundError("Could not find KataGo executable")
 
-    # Try to find the model automaticallyd
+    # Try to find the model automatically
     if args.models is None:
         root = Path("/go_attack") / "models"
         model_paths = [
@@ -123,7 +119,8 @@ def main():  # noqa: D103
             )
     else:
         model_paths = args.models
-        assert all(p.exists() for p in model_paths), "Could not find model"
+        if not all(p.exists() for p in model_paths):
+            raise FileNotFoundError("Could not find model")
 
     print(f"Running {args.policy} attack baseline\n")
     print(f"Using KataGo executable at '{str(katago_exe)}'")
@@ -161,10 +158,7 @@ def main():  # noqa: D103
 
         nvmlShutdown()
     else:
-        games = baseline_fn(*configs[0])
-        scores = [game.score() for game in games]
-        margins = [black - white for black, white in scores]
-        print(f"\nAverage win margin: {sum(margins) / len(margins)}")
+        baseline_fn(*configs[0])
 
 
 if __name__ == "__main__":

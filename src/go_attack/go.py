@@ -11,7 +11,7 @@ from scipy.ndimage import distance_transform_cdt, label
 
 
 class Color(Enum):
-    """The color of a stone."""
+    """The color of a stone or vertex."""
 
     EMPTY = 0
     BLACK = 1
@@ -29,7 +29,6 @@ class Color(Enum):
 
     def opponent(self):
         """Return the opponent of this color."""
-        assert self != Color.EMPTY
         if self == Color.EMPTY:
             raise ValueError("Cannot get opponent of empty color")
 
@@ -170,7 +169,7 @@ class Game:
     ) -> bool:
         """Return `True` iff `board` repeats an earlier board state."""
         # Sort of silly thing we have to do because of Python slicing semantics
-        history = self.board_states[:turn_idx] if turn_idx != -1 else self.board_states
+        history = self.board_states[:turn_idx]
         return any(np.all(board == earlier) for earlier in history)
 
     def legal_move_mask(self, *, turn_idx: Optional[int] = None) -> np.ndarray:
@@ -188,7 +187,7 @@ class Game:
                 if self.is_legal(Move(x, y), turn_idx=turn_idx):
                     yield Move(x, y)
 
-    def move(self, x: int, y: int, *, check_legal: bool = True):
+    def move(self, x: int, y: int, *, check_legal: bool = True) -> None:
         """Make a move at (`x`, `y`)."""
         next_board = self.virtual_move(x, y)
 
@@ -207,7 +206,7 @@ class Game:
         self.board_states.append(next_board)
         self.moves.append(Move(x, y))
 
-    def play_move(self, move: Optional[Move], *, check_legal: bool = True):
+    def play_move(self, move: Optional[Move], *, check_legal: bool = True) -> None:
         """Pass if `move is None`, otherwise play the specified `Move` object."""
         if move is None:
             self.skip_turn()
@@ -334,9 +333,12 @@ class Game:
         """Create a `Board` from an SGF string."""
         sgf_string = str(sgf_string).strip()
 
-        game = cls(19)  # TODO: Support other board sizes
-        turn_regex = re.compile(r"(B|W)\[([a-z]{0,2})\]")
+        # Try to detect the board size from the SGF string using the SZ[]
+        # property; if that fails, use the default board size of 19.
+        maybe_size = re.search(r"SZ\[([0-9]+)\]", sgf_string)
+        game = cls(int(maybe_size.group(1)) if maybe_size else 19)
 
+        turn_regex = re.compile(r"(B|W)\[([a-z]{0,2})\]")
         for i, hit in enumerate(turn_regex.finditer(sgf_string)):
             expected_player = Color.BLACK if i % 2 == 0 else Color.WHITE
             player = Color.from_str(hit.group(1))
