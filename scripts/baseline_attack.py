@@ -92,7 +92,7 @@ def main():  # noqa: D103
     # Try to find the config file automatically
     config_path = args.config
     if config_path is None:
-        config_path = Path("go_attack") / "configs" / "katago" / "baseline_attack.cfg"
+        config_path = Path("/go_attack") / "configs" / "katago" / "baseline_attack.cfg"
     if not config_path.exists():
         raise FileNotFoundError("Could not find config file")
 
