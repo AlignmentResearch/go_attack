@@ -74,8 +74,6 @@ WORKDIR /engines/KataGo-custom/cpp
 RUN cmake . -DUSE_BACKEND=TENSORRT -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1 -DBUILD_DEBUG=1
 RUN make clean && make -j
 
-# TODO(tomtseng) this is the same as build-deps, maybe I can skip a bunch of the
-# setup below due to it being the same?
 FROM nvcr.io/nvidia/tensorrt:22.07-py3 AS runtime-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
