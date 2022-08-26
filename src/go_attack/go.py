@@ -7,13 +7,11 @@ from pathlib import Path
 from typing import Iterable, List, NamedTuple, Optional, Tuple, Union
 
 import numpy as np
-
-# from numpy.typing import NDArray
 from scipy.ndimage import distance_transform_cdt, label
 
 
 class Color(Enum):
-    """The color of a stone."""
+    """The color of a stone or vertex."""
 
     EMPTY = 0
     BLACK = 1
@@ -31,27 +29,49 @@ class Color(Enum):
 
     def opponent(self):
         """Return the opponent of this color."""
-        assert self != Color.EMPTY
+        if self == Color.EMPTY:
+            raise ValueError("Cannot get opponent of empty color")
+
         return Color.BLACK if self == Color.WHITE else Color.WHITE
 
     def __str__(self) -> str:
         """Return a string representation of this color ('B' or 'W')."""
-        assert self != Color.EMPTY
+        if self == Color.EMPTY:
+            raise ValueError("The empty color has no string representation")
+
         return "B" if self == Color.BLACK else "W"
 
 
 class IllegalMoveError(Exception):
     """Raised when an illegal move is made."""
 
-    pass
-
 
 # Alphabet without I
 GO_LETTERS = "ABCDEFGHJKLMNOPQRSTUVWXYZ"
 
 
+def cartesian_to_numpy(x: int, y: int) -> Tuple[int, int]:
+    """Convert Cartesian coordinates to NumPy coordinates or vice versa.
+
+    Args:
+        x: The x-coordinate.
+        y: The y-coordinate.
+
+    Returns:
+        The coordinates in the opposite format.
+    """
+    # Transpose (x, y) <-> (row, col). We also need to flip the sign of the
+    # y coordinate since NumPy places the origin at the top-left. Using
+    # negative indices allows us to avoid asking the user for the board size.
+    return -1 - y, x
+
+
+# Involution
+numpy_to_cartesian = cartesian_to_numpy
+
+
 class Move(NamedTuple):
-    """A move on the Go board."""
+    """A move on the Go board, in zero-indexed Cartesian coordinates."""
 
     x: int
     y: int
@@ -72,7 +92,16 @@ class Move(NamedTuple):
 
 @dataclass(frozen=True)
 class Game:
-    """Encapsulates the state of a Go game."""
+    """Encapsulates the state of a Go game.
+
+    Since `Game` is a frozen dataclass you can't assign to its attributes,
+    but no exception will be raised if you try to mutate `board_states`
+    or `moves` in-place. Mutation may leave the board in an inconsistent
+    state, so this is not recommended.
+
+    Board states are represented as NumPy arrays so that, when you print
+    a board state, the pieces are arranged visually the way you expect.
+    """
 
     board_size: int
     board_states: List[np.ndarray] = field(default_factory=list)
@@ -95,14 +124,17 @@ class Game:
         board = self.board_states[-1]
         return f"Game(board_size={self.board_size}, komi={self.komi}, board={board})"
 
-    def current_player(self) -> Color:
+    def current_player(self, *, turn_idx: Optional[int] = None) -> Color:
         """Return the color of the current player."""
-        return Color.BLACK if len(self.moves) % 2 == 0 else Color.WHITE
+        return Color.BLACK if len(self.moves[:turn_idx]) % 2 == 0 else Color.WHITE
 
-    def get_color(self, x: int, y: int, *, turn_idx: int = -1) -> Color:
+    def get_color(self, x: int, y: int, *, turn_idx: Optional[int] = None) -> Color:
         """Return the color of the point at (x, y) in the given turn."""
-        board = self.board_states[turn_idx]
-        return Color(board[self.board_size - y - 1, x])
+        board = self.board_states[turn_idx if turn_idx is not None else -1]
+
+        # Transpose from (x, y) to (row, col) for NumPy, then flip the
+        # row coordinate s.t. the *bottom* row is row 0.
+        return Color(board[cartesian_to_numpy(x, y)])
 
     def skip_turn(self):
         """Skip the current turn (i.e. pass)."""
@@ -114,52 +146,57 @@ class Game:
         self.moves.pop()
         return self.board_states.pop()
 
-    def is_legal(self, move: Move, *, turn_idx: int = -1):
+    def is_legal(self, move: Move, *, turn_idx: Optional[int] = None):
         """Return `True` iff `move` is legal at `turn_idx`."""
-        # 7. A move consists of coloring an *empty* point one's own color...
+        # Rule 7. A move consists of coloring an *empty* point one's own color...
         if self.get_color(*move, turn_idx=turn_idx) != Color.EMPTY:
             return False
 
-        # 6. A turn is either a pass; or a move that *doesn't repeat* an
+        # Rule 6. A turn is either a pass; or a move that *doesn't repeat* an
         # earlier grid coloring.
-        next_board = self.virtual_move(*move)
+        next_board = self.virtual_move(*move, turn_idx=turn_idx)
         return not self.is_repetition(next_board)
 
     def is_over(self) -> bool:
         """Return `True` iff there have been two consecutive passes."""
         return len(self.moves) >= 2 and self.moves[-2:] == [None, None]
 
-    def is_repetition(self, board: np.ndarray, *, turn_idx: int = -1) -> bool:
+    def is_repetition(
+        self,
+        board: np.ndarray,
+        *,
+        turn_idx: Optional[int] = None,
+    ) -> bool:
         """Return `True` iff `board` repeats an earlier board state."""
         # Sort of silly thing we have to do because of Python slicing semantics
-        history = self.board_states[:turn_idx] if turn_idx != -1 else self.board_states
+        history = self.board_states[:turn_idx]
         return any(np.all(board == earlier) for earlier in history)
 
-    def legal_move_mask(self, *, turn_idx: int = -1) -> np.ndarray:
+    def legal_move_mask(self, *, turn_idx: Optional[int] = None) -> np.ndarray:
         """Return a mask of all legal moves for the current player."""
         board = np.zeros((self.board_size, self.board_size), dtype=np.uint8)
         for x, y in self.legal_moves(turn_idx=turn_idx):
-            board[self.board_size - y - 1, x] = 1
+            board[cartesian_to_numpy(x, y)] = 1
 
         return board
 
-    def legal_moves(self, *, turn_idx: int = -1) -> Iterable[Move]:
+    def legal_moves(self, *, turn_idx: Optional[int] = None) -> Iterable[Move]:
         """Return a generator over all legal moves for the current player."""
         for x in range(self.board_size):
             for y in range(self.board_size):
                 if self.is_legal(Move(x, y), turn_idx=turn_idx):
                     yield Move(x, y)
 
-    def move(self, x: int, y: int, *, check_legal: bool = True):
+    def move(self, x: int, y: int, *, check_legal: bool = True) -> None:
         """Make a move at (`x`, `y`)."""
         next_board = self.virtual_move(x, y)
 
         if check_legal:
-            # 7. A move consists of coloring an *empty* point one's own color...
+            # Rule 7. A move consists of coloring an *empty* point one's own color...
             if self.get_color(x, y) != Color.EMPTY:
                 raise IllegalMoveError("Cannot place stone on top of an existing stone")
 
-            # 6. A turn is either a pass; or a move that *doesn't repeat* an
+            # Rule 6. A turn is either a pass; or a move that *doesn't repeat* an
             # earlier grid coloring.
             if self.is_repetition(next_board):
                 raise IllegalMoveError(
@@ -169,14 +206,20 @@ class Game:
         self.board_states.append(next_board)
         self.moves.append(Move(x, y))
 
-    def play_move(self, move: Optional[Move], *, check_legal: bool = True):
-        """Play a `Move` object on the board. Pass `None` to pass."""
+    def play_move(self, move: Optional[Move], *, check_legal: bool = True) -> None:
+        """Pass if `move is None`, otherwise play the specified `Move` object."""
         if move is None:
             self.skip_turn()
         else:
             self.move(move.x, move.y, check_legal=check_legal)
 
-    def virtual_move(self, x: int, y: int, *, turn_idx: int = -1) -> np.ndarray:
+    def virtual_move(
+        self,
+        x: int,
+        y: int,
+        *,
+        turn_idx: Optional[int] = None,
+    ) -> np.ndarray:
         """Compute what the board would look like if this move were made.
 
         Args:
@@ -197,11 +240,11 @@ class Game:
         if not (y >= 0 and y < self.board_size):
             raise IllegalMoveError("Y coordinate out of bounds")
 
-        board = self.board_states[turn_idx].copy()
+        board = self.board_states[turn_idx if turn_idx is not None else -1].copy()
         color = self.current_player()
 
-        # 7. A move consists of coloring an empty point one's own color...
-        board[self.board_size - y - 1, x] = color.value
+        # Rule 7. A move consists of coloring an empty point one's own color...
+        board[cartesian_to_numpy(x, y)] = color.value
 
         # ...then clearing the opponent color,
         self._clear_color(board, color.opponent())
@@ -210,20 +253,25 @@ class Game:
         self._clear_color(board, color)
         return board
 
-    def score(self, turn_idx: int = -1) -> Tuple[int, int]:
+    def score(self, turn_idx: Optional[int] = None) -> Tuple[int, int]:
         """Return the current score of the game as a (black, white) tuple."""
-        board = self.board_states[turn_idx]
+        board = self.board_states[turn_idx if turn_idx is not None else -1]
+
+        # Distance of each point to the nearest black point.
         black_dists = distance_transform_cdt(
             board != Color.BLACK.value,
             metric="taxicab",
         )
+        # Distance of each point to the nearest white point.
         white_dists = distance_transform_cdt(
             board != Color.WHITE.value,
             metric="taxicab",
         )
+        # `territories` are labeled with integers from `1` to `num_trajectories`, with
+        # contiguous groups of empty cells with the same label
         territories, num_territories = label(board == Color.EMPTY.value)
 
-        # 9. A player’s score is the number of points of her color...
+        # Rule 9. A player’s score is the number of points of her color...
         black_score = np.sum(board == Color.BLACK.value)
         white_score = np.sum(board == Color.WHITE.value) + self.komi
 
@@ -260,11 +308,12 @@ class Game:
     @staticmethod
     def _clear_color(board: np.ndarray, color: Color):
         """Clear all stones of a given color."""
-        # 4. Clearing a color is the process of emptying all points of that
-        # color that don’t reach empty.
+        # Rule 4. Clearing a color is the process of emptying all points of
+        # that color that don’t reach empty.
+        # `dists` is the distance of each point to the nearest empty point.
         dists = distance_transform_cdt(
-            board,
-            metric="taxicab",  # Compute distances to empty
+            board != Color.EMPTY.value,
+            metric="taxicab",
         )
         groups, num_groups = label(board == color.value)  # Find groups
 
@@ -284,12 +333,12 @@ class Game:
         """Create a `Board` from an SGF string."""
         sgf_string = str(sgf_string).strip()
 
-        # if not sgf_string.startswith("(;FF[4]"):
-        #     raise ValueError("Only FF[4] SGFs are supported")
+        # Try to detect the board size from the SGF string using the SZ[]
+        # property; if that fails, use the default board size of 19.
+        maybe_size = re.search(r"SZ\[([0-9]+)\]", sgf_string)
+        game = cls(int(maybe_size.group(1)) if maybe_size else 19)
 
-        game = cls(19)
         turn_regex = re.compile(r"(B|W)\[([a-z]{0,2})\]")
-
         for i, hit in enumerate(turn_regex.finditer(sgf_string)):
             expected_player = Color.BLACK if i % 2 == 0 else Color.WHITE
             player = Color.from_str(hit.group(1))
@@ -316,7 +365,7 @@ class Game:
         if comment:
             header += f"C[{comment}]"
 
-        ascii_a = ord("a")  # 97
+        ascii_a = ord("a")
         sgf_moves = []
 
         for i, move in enumerate(self.moves):

@@ -34,11 +34,7 @@ class BasicPolicy(AdversarialPolicy, ABC):
     color: Color
 
     def __init_subclass__(cls) -> None:
-        """Register the subclass in the POLICIES dict.
-
-        Returns:
-            None
-        """
+        """Register the subclass in the POLICIES dict."""
         POLICIES[cls.name] = cls
         return super().__init_subclass__()
 
@@ -48,6 +44,10 @@ class EdgePolicy(BasicPolicy):
 
     name: ClassVar[str] = "edge"
     randomized: bool = True
+
+    def __post_init__(self):  # noqa: D105
+        if self.game.board_size % 2 == 0:
+            raise ValueError("EdgePolicy only works on odd board sizes")
 
     def next_move(self) -> Optional[Move]:
         """Return the next move to play.
@@ -89,7 +89,8 @@ class MirrorPolicy(BasicPolicy):
 
     If victim plays exactly on the y = x diagonal, then we mirror across the
     y = -x diagonal. If the mirror position is not legal, we play the closest
-    legal move in the L1 distance sense.
+    legal move in the L1 distance sense. If the opponent passed, we play
+    randomly.
     """
 
     name: ClassVar[str] = "mirror"
@@ -108,7 +109,7 @@ class MirrorPolicy(BasicPolicy):
         assert past_moves, "MirrorPolicy cannot play first move"
         assert self.game.current_player() == self.color
         opponent = past_moves[-1]
-        if opponent is None:
+        if opponent is None:  # opponent passed, play randomly
             return random.choice(legal_moves)
 
         # Return the closest legal move to the mirror position

@@ -16,9 +16,9 @@ RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/
 # Add focal-proposed for libc6 patch
 # See https://wiki.ubuntu.com/Testing/EnableProposed for details.
 RUN echo "deb http://archive.ubuntu.com/ubuntu focal-proposed main" >> /etc/apt/sources.list \
-  && echo "Package: *"                                               >> /etc/apt/preferences \
-  && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
-  && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
+ && echo "Package: *"                                               >> /etc/apt/preferences \
+ && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
+ && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
 
 # Install apt packages
 RUN apt-get update -q \
@@ -84,9 +84,9 @@ RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/
 # Add focal-proposed for libc6 patch
 # See https://wiki.ubuntu.com/Testing/EnableProposed for details.
 RUN echo "deb http://archive.ubuntu.com/ubuntu focal-proposed main" >> /etc/apt/sources.list \
-  && echo "Package: *"                                               >> /etc/apt/preferences \
-  && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
-  && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
+ && echo "Package: *"                                               >> /etc/apt/preferences \
+ && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
+ && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
 
 # Install useful apt packages
 RUN apt-get update -q \
@@ -132,6 +132,7 @@ COPY ./scripts/ /go_attack/scripts
 COPY ./src/go_attack /go_attack/src/go_attack
 COPY ./setup.py /go_attack/setup.py
 COPY README.md /go_attack/README.md
+# Silence annoying pip warning about running it as root inside the container
 RUN pip install -e /go_attack --root-user-action=ignore
 
 FROM runtime-deps as debug

@@ -2,7 +2,18 @@
 import ast
 import re
 from pathlib import Path
-from typing import List, Optional
+from time import sleep
+from typing import Any, List, Mapping, Optional
+
+from pynvml import (
+    nvmlDeviceGetCount,
+    nvmlDeviceGetHandleByIndex,
+    nvmlDeviceGetIndex,
+    nvmlDeviceGetMemoryInfo,
+    nvmlDeviceGetUtilizationRates,
+    nvmlInit,
+    nvmlShutdown,
+)
 
 
 def select_best_gpu(min_free_memory: float) -> int:
@@ -16,18 +27,6 @@ def select_best_gpu(min_free_memory: float) -> int:
         memory. Among the GPUs with sufficient free memory, the least-used one
         is selected.
     """
-    from time import sleep
-
-    from pynvml import (
-        nvmlDeviceGetCount,
-        nvmlDeviceGetHandleByIndex,
-        nvmlDeviceGetIndex,
-        nvmlDeviceGetMemoryInfo,
-        nvmlDeviceGetUtilizationRates,
-        nvmlInit,
-        nvmlShutdown,
-    )
-
     nvmlInit()
     num_gpus = nvmlDeviceGetCount()
     if num_gpus == 1:
@@ -36,13 +35,11 @@ def select_best_gpu(min_free_memory: float) -> int:
     handles = [nvmlDeviceGetHandleByIndex(i) for i in range(num_gpus)]
     polling_msg_shown = False
     while True:
-        candidates = list(
-            filter(
-                lambda handle: nvmlDeviceGetMemoryInfo(handle).free
-                >= min_free_memory * 1e9,
-                handles,
-            ),
-        )
+        candidates = [
+            handle
+            for handle in handles
+            if nvmlDeviceGetMemoryInfo(handle).free >= min_free_memory * 1e9
+        ]
         if not candidates:
             if not polling_msg_shown:
                 polling_msg_shown = True
@@ -93,7 +90,7 @@ def _standardize_config(path: Path, include_path: Optional[Path] = None) -> List
     return [line for line in lines if line]
 
 
-def parse_config(path: Path, include_path: Optional[Path] = None) -> dict:
+def parse_config(path: Path, include_path: Optional[Path] = None) -> Mapping[str, Any]:
     """Parse a KataGo config file into a dict.
 
     Args:
