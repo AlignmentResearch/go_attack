@@ -1,0 +1,30 @@
+[
+    {
+        "_comment": "cp127",
+        "name": "kata1-b20c256x2-s5303129600-d1228401921.bin.gz",
+        "win_rate": 0.5,
+        "score_diff": null,
+        "score_diff_wo_komi": null,
+        "policy_loss": null
+    },
+    {
+        "_comment": "cp200",
+        "name": "kata1-b40c256-s5867950848-d1413392747.bin.gz"
+    },
+    {
+        "_comment": "cp300",
+        "name": "kata1-b40c256-s7455877888-d1808582493.bin.gz"
+    },
+    {
+        "_comment": "cp400",
+        "name": "kata1-b40c256-s9738904320-d2372933741.bin.gz"
+    },
+    {
+        "_comment": "cp469",
+        "name": "kata1-b40c256-s11101799168-d2715431527.bin.gz"
+    },
+    {
+        "_comment": "cp505",
+        "name": "kata1-b40c256-s11840935168-d2898845681.bin.gz"
+    }
+]
