@@ -24,48 +24,63 @@ def main(args):
             print(f"Evaluating model '{model_id}'")
 
             os.system(
-                " ".join([
-                    args.executable,
-                    "-config",
-                    args.config,
-                    f"-log-file {log_dir / model_id}.log",
-                    f"-override-config nnModelFile0={args.victim}",
-                    f"-override-config nnModelFile1={model}",
-                    f"-override-config numGamesTotal={args.games_per_ckpt}",
-                    f"-sgf-output-dir {sgf_dir}",
-                ])
+                " ".join(
+                    [
+                        args.executable,
+                        "match",
+                        "-config",
+                        args.config,
+                        f"-log-file {log_dir / model_id}.log",
+                        f"-override-config nnModelFile0={args.victim}",
+                        f"-override-config nnModelFile1={model}",
+                        f"-override-config numGamesTotal={args.games_per_ckpt}",
+                        f"-sgf-output-dir {sgf_dir}",
+                    ]
+                )
             )
             prev_models.add(model)
 
         time.sleep(args.poll_interval)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("run_name", type=str)
     parser.add_argument("victim", type=Path, help="Path to victim model")
     parser.add_argument(
-        "--config", type=str, default="/go_attack/configs/match.cfg",
-        help="Path to config file"
+        "--config",
+        type=str,
+        default="/go_attack/configs/match-1gpu.cfg",
+        help="Path to config file",
     )
     parser.add_argument(
-        "--executable", type=str, default="/engines/KataGo-custom/cpp/katago",
-        help="Path to the KataGo executable inside the Docker container"
+        "--executable",
+        type=str,
+        default="/engines/KataGo-custom/cpp/katago",
+        help="Path to the KataGo executable inside the Docker container",
     )
     parser.add_argument(
-        "--games-per-ckpt", type=int, default=100,
-        help="Number of eval games to play for each checkpoint"
+        "--games-per-ckpt",
+        type=int,
+        default=100,
+        help="Number of eval games to play for each checkpoint",
     )
     parser.add_argument(
-        "--model-dir", type=Path, default="models",
-        help="Directory to look for checkpoints in."
+        "--model-dir",
+        type=Path,
+        default="models",
+        help="Directory to look for checkpoints in.",
     )
     parser.add_argument(
-        "--poll-interval", type=int, default=30,
-        help="How often to check for new models, in seconds."
+        "--poll-interval",
+        type=int,
+        default=30,
+        help="How often to check for new models, in seconds.",
     )
     parser.add_argument(
-        "--root-dir", type=Path, default="/shared/victimplay",
-        help="Parent directory for the run folder."
+        "--root-dir",
+        type=Path,
+        default="/shared/victimplay",
+        help="Parent directory for the run folder.",
     )
     main(parser.parse_args())

@@ -7,8 +7,8 @@ fi
 VICTIM=${2:-/shared/victims/kata1-b6c96-s41312768-d6061202.txt.gz}
 
 ctl job run --container \
-    humancompatibleai/goattack:2022-08-25-v2 \
-    humancompatibleai/goattack:2022-08-25-v2 \
+    humancompatibleai/goattack:2022-08-26-v3 \
+    humancompatibleai/goattack:2022-08-26-v3 \
     humancompatibleai/goattack:2022-08-26-python-v3 \
     humancompatibleai/goattack:2022-08-26-python-v3 \
     --volume_name go-attack \
