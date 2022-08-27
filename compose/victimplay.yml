@@ -29,6 +29,9 @@ services:
         source: ${HOST_CONFIG_DIR}
         target: /configs
         read_only: true
+      - type: bind
+        source: ~/trtcache
+        target: /root/.katago/trtcache
     command: >
       sh -c "
         cd /engines/KataGo-custom &&
