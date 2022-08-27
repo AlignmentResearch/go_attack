@@ -13,7 +13,7 @@ executors:
   python:
     <<: *defaults
     docker:
-      - image: cimg/python:3.7.13
+      - image: cimg/python:3.8.13
     resource_class: large
     environment:
       SRC_FILES: scripts/ src/ tests/ notebooks/ setup.py
