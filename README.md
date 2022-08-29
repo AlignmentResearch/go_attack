@@ -63,3 +63,13 @@ parameters of the run (
         - `cd /go_attack/configs/katago && wget -i model_list.txt -P /go_attack/models`
     - Test if the installation is successful
         - `cd /engines/KataGo-custom/cpp/ && CUDA_VISIBLE_DEVICES=2 ./katago benchmark -model /go_attack/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /go_attack/configs/katago/gtp_custom.cfg`
+
+# Baseline attacks
+In addition to the learned attacks, we also implement 5 baseline, hardcoded attacks:
+- Edge attack, which plays random vertices in the outermost available ring of the board
+- Random attack, which simply plays random legal moves
+- Pass attack, which always passes at every turn
+- Spiral attack, which deterministically plays the "largest" legal move in lexicographical order in polar coordinates (going counterclockwise starting from the outermost ring)
+- [Mirror Go](https://en.wikipedia.org/wiki/Mirror_Go), which plays the opponent's last move reflected about the y = x diagonal, or the y = -x diagonal if they play on y = x. If the mirrored vertex is taken, then the policy plays the "closest" legal vertex by L1 distance.
+
+You can test these attacks by running `baseline_attacks.py` with the appropriate `--strategy` flag (`edge`, `random`, `pass`, `spiral`, or `mirror`). Run `python scripts/baseline_attacks.py --help` for more information about all the available flags.
