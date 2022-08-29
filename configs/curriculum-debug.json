@@ -3,7 +3,7 @@
         "_comment": "cp63. Low win rate (1%) lets us move on quickly for debugging.",
         "name": "kata1-b6c96-s175395328-d26788732.txt.gz",
         "max_visits_victim": 1,
-        "win_rate": 0.01,
+        "win_rate": -0.01,
         "score_diff": null,
         "score_wo_komi_diff": null,
         "policy_loss": null
@@ -12,7 +12,7 @@
         "_comment": "keep cp63, but increase visit count to 16",
         "name": "kata1-b6c96-s175395328-d26788732.txt.gz",
         "max_visits_victim": 16,
-        "win_rate": 0.01
+        "win_rate": 0.00
     },
     {
         "_comment": "switch to cp127 and back to visit count 1",
