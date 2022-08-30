@@ -32,7 +32,7 @@ services:
         ./cpp/katago victimplay \
         -output-dir /outputs/selfplay \
         -models-dir /outputs/models \
-        -nn-victim-path /victims/${VICTIM_FILE} \
+        -nn-victim-path /outputs/victims \
         -config ${VICTIMPLAY_CONFIG}
       "
     deploy:

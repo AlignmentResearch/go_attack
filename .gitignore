@@ -6,17 +6,17 @@
 # Ignore folders containing logs and data
 analysis_logs
 analysis_tmp
-games*
 core
-models
+debug-output
+games*
 gtp_logs
-sgf4test
 selfplay-exps
 selfplay-test
 selfplay-training
-victimplay-training
+sgf4test
 training
-debug-output
+victim-models
+victimplay-training
 
 # Ignore certain scripts
 scripts/download.sh
