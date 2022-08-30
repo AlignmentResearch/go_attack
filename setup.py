@@ -65,6 +65,7 @@ setup(
             "gpustat",
             "ipywidgets",
             "jupyterlab",
+            "pre-commit",
             # for convenience
             *TESTS_REQUIRE,
         ],

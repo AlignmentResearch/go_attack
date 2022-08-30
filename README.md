@@ -13,7 +13,10 @@ KataGo-custom has the following significant branches:
 
 # Development / testing
 
-You can run `pip install -e .` inside the project root directory to install all necessary dependencies.
+You can run `pip install -e .[dev]` inside the project root directory to install all necessary dependencies.
+
+To run a pre-commit script before each commit, run `pre-commit install` (`pre-commit` should already have been installed in the previous step).
+You may also want to run `pre-commit install` from `engines/KataGo-custom` to install that repository's respective commit hook.
 
 ## Individual containers
 
@@ -25,6 +28,7 @@ More specifically:
 The Dockerfiles contain instructions for how to build them individually. This is useful if you want to test just one of the docker containers.
 
 ## Docker compose
+
 Within the `compose` directory of this repo are a few docker-compose `.yml` files
 that automate the process of spinning up the various components of training.
 
@@ -37,6 +41,7 @@ parameters of the run (
 ).
 
 # Helpful notebooks
+
 - [notebooks/sgf-explorer.ipynb](notebooks/sgf-explorer.ipynb) loads self/victim-play games into a pandas dataframe and lets you do some data analysis. One thing I use this file for is to pick out specific games I then load into a visualizer.
 
 # Prerequisite & Dependencies
@@ -60,11 +65,12 @@ parameters of the run (
         - `git checkout tags/v1.5.1`
         - `./ubuntu_setup.sh`
     - Download model weights
-        - `cd /go_attack/configs/katago && wget -i model_list.txt -P /go_attack/models`
+        - `cd /go_attack/configs/katago && wget -i model_list.txt -P /go_attack/victim-models`
     - Test if the installation is successful
         - `cd /engines/KataGo-custom/cpp/ && CUDA_VISIBLE_DEVICES=2 ./katago benchmark -model /go_attack/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /go_attack/configs/katago/gtp_custom.cfg`
 
 # Baseline attacks
+
 In addition to the learned attacks, we also implement 5 baseline, hardcoded attacks:
 - Edge attack, which plays random vertices in the outermost available ring of the board
 - Random attack, which simply plays random legal moves
