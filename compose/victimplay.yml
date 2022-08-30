@@ -32,11 +32,7 @@ services:
     command: >
       sh -c "
         cd /engines/KataGo-custom &&
-        ./cpp/katago victimplay \
-        -output-dir /outputs/selfplay \
-        -models-dir /outputs/models \
-        -nn-victim-file ${VICTIM_FILE} \
-        -config ${VICTIMPLAY_CONFIG}
+        ./cpp/katago victimplay -output-dir /outputs/selfplay -models-dir /outputs/models -nn-victim-file ${VICTIM_FILE} -config ${VICTIMPLAY_CONFIG}
       "
     deploy:
       resources:
@@ -61,14 +57,7 @@ services:
     command: >
       sh -c "
         cd /engines/KataGo-custom/python &&
-        ./selfplay/train.sh \
-        /outputs/ \
-        ${TRAININGNAME} \
-        b6c96 \
-        ${BATCH_SIZE} \
-        main \
-        -lr-scale 1.0 \
-        -max-train-bucket-per-new-data ${MAX_TRAIN_RATIO}
+        ./selfplay/train.sh /outputs/ ${TRAININGNAME} b6c96 ${BATCH_SIZE} main -lr-scale 1.0 -max-train-bucket-per-new-data ${MAX_TRAIN_RATIO}
       "
     deploy:
       resources:
@@ -90,14 +79,7 @@ services:
     command: >
       sh -c "
         cd /engines/KataGo-custom/python &&
-        ./selfplay/shuffle_and_export_loop.sh \
-        $NAMEOFRUN \
-        /outputs/ \
-        ${SCRATCH_DIRECTORY} \
-        ${NUM_THREADS} \
-        ${BATCH_SIZE} \
-        ${USE_GATING} \
-        -min-rows 25000 &&
+        ./selfplay/shuffle_and_export_loop.sh $NAMEOFRUN /outputs/ ${SCRATCH_DIRECTORY} ${NUM_THREADS} ${BATCH_SIZE} ${USE_GATING} -min-rows 25000 &&
         sleep infinity
       "
     # shuffle_and_export_loop.sh disowns subprocesses and exits, which is why we
