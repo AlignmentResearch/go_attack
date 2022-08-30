@@ -11,6 +11,35 @@
 version: "3"
 
 services:
+  curriculum:
+    image: humancompatibleai/goattack:python
+    build:
+      context: ..
+      dockerfile: ./compose/python/Dockerfile
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      - type: bind
+        source: ${HOST_VICTIMS_DIR}
+        target: /victims
+        read_only: true
+      - type: bind
+        source: ${HOST_CONFIG_DIR}
+        target: /configs
+        read_only: true
+    command: >
+      sh -c "
+        mkdir -p /outputs/victims &&
+        cd /engines/KataGo-custom/python &&
+        python curriculum.py \
+        -selfplay-dir=/outputs/selfplay \
+        -input-models-dir=/victims \
+        -output-models-dir=/outputs/victims \
+        -config-json-file=${VICTIMPLAY_CURRICULUM_CONFIG} \
+        ${VICTIMPLAY_CURRICULUM_EXTRA}
+      "
+
   victimplay:
     image: humancompatibleai/goattack:cpp
     build:
@@ -27,7 +56,6 @@ services:
         read_only: true
     command: >
       sh -c "
-        mkdir -p /outputs/victims &&
         cd /engines/KataGo-custom &&
         ./cpp/katago victimplay \
         -output-dir /outputs/selfplay \
@@ -106,31 +134,3 @@ services:
             - capabilities: ["gpu"]
               driver: nvidia
               device_ids: ["0"]
-
-  curriculum:
-    image: humancompatibleai/goattack:python
-    build:
-      context: ..
-      dockerfile: ./compose/python/Dockerfile
-    volumes:
-      - type: bind
-        source: ${HOST_OUTPUT_DIR}
-        target: /outputs
-      - type: bind
-        source: ${HOST_VICTIMS_DIR}
-        target: /victims
-        read_only: true
-      - type: bind
-        source: ${HOST_CONFIG_DIR}
-        target: /configs
-        read_only: true
-    command: >
-      sh -c "
-        cd /engines/KataGo-custom/python &&
-        python curriculum.py \
-        -selfplay-dir=/outputs/selfplay \
-        -input-models-dir=/victims \
-        -output-models-dir=/outputs/victims \
-        -config-json-file=${VICTIMPLAY_CURRICULUM_CONFIG} \
-        ${VICTIMPLAY_CURRICULUM_EXTRA}
-      "
