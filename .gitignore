@@ -26,6 +26,7 @@ scripts/upload_to.sh
 __pycache__
 */.ipynb_checkpoints
 venv
+build
 *.egg-info
 
 # For C++
