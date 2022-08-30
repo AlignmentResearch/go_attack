@@ -5,5 +5,6 @@ sudo usermod -aG docker $USER
 sudo service docker start
 ssh-keygen -t ed25519 -C "tom.hm.tseng@gmail.com"
 cat /home/t/.ssh/id_ed25519.pub
+sudo apt update
 sudo apt install python3-pip
 pip3 install gpustat
