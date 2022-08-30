@@ -67,7 +67,7 @@ parameters of the run (
     - Download model weights
         - `cd /go_attack/configs/katago && wget -i model_list.txt -P /go_attack/victim-models`
     - Test if the installation is successful
-        - `cd /engines/KataGo-custom/cpp/ && CUDA_VISIBLE_DEVICES=2 ./katago benchmark -model /go_attack/models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /go_attack/configs/katago/gtp_custom.cfg`
+        - `cd /engines/KataGo-custom/cpp/ && CUDA_VISIBLE_DEVICES=2 ./katago benchmark -model /go_attack/victim-models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /go_attack/configs/katago/gtp_custom.cfg`
 
 # Baseline attacks
 
