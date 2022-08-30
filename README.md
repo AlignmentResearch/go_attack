@@ -16,6 +16,7 @@ KataGo-custom has the following significant branches:
 You can run `pip install -e .[dev]` inside the project root directory to install all necessary dependencies.
 
 To run a pre-commit script before each commit, run `pre-commit install` (`pre-commit` should already have been installed in the previous step).
+You may also want to run `pre-commit install` from `engines/KataGo-custom` to install that repository's respective commit hook.
 
 ## Individual containers
 
