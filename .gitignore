@@ -15,7 +15,7 @@ selfplay-exps
 selfplay-test
 selfplay-training
 victimplay-training
-matches
+training
 debug-output
 
 # Ignore certain scripts
@@ -26,6 +26,7 @@ scripts/upload_to.sh
 __pycache__
 */.ipynb_checkpoints
 venv
+build
 *.egg-info
 
 # For C++

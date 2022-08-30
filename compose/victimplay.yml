@@ -22,9 +22,8 @@ services:
         source: ${HOST_OUTPUT_DIR}
         target: /outputs
       - type: bind
-        source: ${HOST_MODEL_DIR}
-        target: /models
-        read_only: true
+        source: ${HOST_VICTIMS_DIR}
+        target: /victims
       - type: bind
         source: ${HOST_CONFIG_DIR}
         target: /configs
@@ -35,7 +34,7 @@ services:
         ./cpp/katago victimplay \
         -output-dir /outputs/selfplay \
         -models-dir /outputs/models \
-        -nn-victim-file ${VICTIM_FILE} \
+        -nn-victim-path /victims/${VICTIM_FILE} \
         -config ${VICTIMPLAY_CONFIG}
       "
     deploy:

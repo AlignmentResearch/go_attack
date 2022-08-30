@@ -23,10 +23,6 @@ services:
         source: ${HOST_OUTPUT_DIR}
         target: /outputs
       - type: bind
-        source: ${HOST_MODEL_DIR}
-        target: /models
-        read_only: true
-      - type: bind
         source: ${HOST_CONFIG_DIR}
         target: /configs
         read_only: true
@@ -35,12 +31,12 @@ services:
         target: /garoot
         read_only: true
     command: >
-      sh -c "
-        /engines/KataGo-custom/cpp/katago match \
-        -config ${MATCH_CONFIG} \
-        -log-file /outputs/match.log \
+        /engines/KataGo-custom/cpp/katago match
+        -config ${MATCH_CONFIG}
+        -log-file /outputs/match.log
         -sgf-output-dir /outputs/
-      "
+        -override-config maxVisits=${MAX_VISITS}
+        -override-config passingBehavior1=${PASSING_BEHAVIOR}
     deploy:
       resources:
         reservations:
