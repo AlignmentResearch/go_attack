@@ -20,9 +20,8 @@ services:
       target: debug
     volumes:
       - type: bind
-        source: ${HOST_ADVERSARIES_DIR}
-        target: /adversaries
-        read_only: true
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
       - type: bind
         source: ${HOST_CONFIG_DIR}
         target: /configs

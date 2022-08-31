@@ -11,6 +11,7 @@ pandas
 
 # Needed for testing
 codespell
+darglint
 pytype
 black
 flake8

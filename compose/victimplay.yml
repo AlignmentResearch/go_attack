@@ -11,21 +11,12 @@
 version: "3"
 
 services:
-  victimplay:
-    image: humancompatibleai/goattack:2022-08-23-v7
+  curriculum:
+    image: humancompatibleai/goattack:python
     build:
       context: ..
-      dockerfile: ./compose/cpp/Dockerfile
-      target: prod
+      dockerfile: ./compose/python/Dockerfile
     volumes:
-      - type: bind
-        source: ${HOST_ADVERSARIES_DIR}
-        target: /adversaries
-        read_only: true
-      - type: bind
-        source: ${HOST_CONFIG_DIR}
-        target: /configs
-        read_only: true
       - type: bind
         source: ${HOST_OUTPUT_DIR}
         target: /outputs
@@ -33,13 +24,43 @@ services:
         source: ${HOST_VICTIMS_DIR}
         target: /victims
         read_only: true
+      - type: bind
+        source: ${HOST_CONFIG_DIR}
+        target: /configs
+        read_only: true
     command: >
       sh -c "
+        cd /engines/KataGo-custom/python &&
+        python curriculum.py \
+        -selfplay-dir=/outputs/selfplay \
+        -input-models-dir=/victims \
+        -output-models-dir=/outputs/victims \
+        -config-json-file=${VICTIMPLAY_CURRICULUM_CONFIG} \
+        ${VICTIMPLAY_CURRICULUM_EXTRA}
+      "
+
+  victimplay:
+    image: humancompatibleai/goattack:cpp
+    build:
+      context: ..
+      dockerfile: ./compose/python/Dockerfile
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      - type: bind
+        source: ${HOST_CONFIG_DIR}
+        target: /configs
+        read_only: true
+    command: >
+      sh -c "
+        sleep 5 &&
+        mkdir -p /outputs/victims &&
         cd /engines/KataGo-custom &&
         ./cpp/katago victimplay \
         -output-dir /outputs/victimplay \
         -models-dir /outputs/models \
-        -nn-victim-file ${VICTIM_FILE} \
+        -nn-victim-path /outputs/victims \
         -config ${VICTIMPLAY_CONFIG}
       "
     deploy:
@@ -51,44 +72,7 @@ services:
               device_ids: ["1", "2", "3", "4", "5", "6", "7"]
     cap_add:
       - SYS_PTRACE
-    stop_grace_period: 120s   # Nvidia driver bug fix
-
-  evaluate:
-    image: humancompatibleai/goattack:2022-08-23-v7
-    build:
-      context: ..
-      dockerfile: ./compose/cpp/Dockerfile
-      target: prod
-    volumes:
-      - type: bind
-        source: ${HOST_ADVERSARIES_DIR}
-        target: /adversaries
-        read_only: true
-      - type: bind
-        source: ${HOST_CONFIG_DIR}
-        target: /configs
-        read_only: true
-      - type: bind
-        source: ${HOST_OUTPUT_DIR}
-        target: /outputs
-      - type: bind
-        source: ${HOST_VICTIMS_DIR}
-        target: /victims
-        read_only: true
-    command: >
-      sh -c "
-        python3 /go_attack/kubernetes/evaluate_loop.py
-        ${RUN_NAME} ${VICTIM_FILE} \
-        -output-dir /outputs \
-        --config ${VICTIMPLAY_CONFIG}
-      "
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: ["gpu"]
-              driver: nvidia
-              device_ids: ["0"]
+    stop_grace_period: 120s   # Nvidia driver bug workaround
 
   train:
     image: humancompatibleai/goattack:2022-08-22-v2-python
@@ -137,7 +121,8 @@ services:
         ${SCRATCH_DIRECTORY} \
         ${NUM_THREADS} \
         ${BATCH_SIZE} \
-        ${USE_GATING} &&
+        ${USE_GATING} \
+        ${SHUFFLE_EXTRA} &&
         sleep infinity
       "
     # shuffle_and_export_loop.sh disowns subprocesses and exits, which is why we
