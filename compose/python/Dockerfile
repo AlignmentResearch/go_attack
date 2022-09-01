@@ -30,6 +30,9 @@ RUN apt-get update -q \
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV --system-site-packages
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+# NVidia Dockerfile sets BASH_ENV to source bashrc always which causes some
+# KataGo scripts to complain about unset PS1 -- unset this in the entrypoint.
+RUN echo "unset BASH_ENV" > /opt/nvidia/entrypoint.d/01-unset_bash_env.sh
 
 FROM build-deps as python-deps
 # Install python requirements within virtualenv
