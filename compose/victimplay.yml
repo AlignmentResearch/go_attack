@@ -38,6 +38,11 @@ services:
         -config-json-file=${VICTIMPLAY_CURRICULUM_CONFIG} \
         ${VICTIMPLAY_CURRICULUM_EXTRA}
       "
+  evaluate:
+    image: humancompatibleai/goattack:python
+    build:
+      context: ..
+      dockerfile: ./compose/python/Dockerfile
 
   victimplay:
     image: humancompatibleai/goattack:cpp
