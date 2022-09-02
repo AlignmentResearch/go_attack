@@ -39,10 +39,15 @@ services:
         ${VICTIMPLAY_CURRICULUM_EXTRA}
       "
   evaluate:
-    image: humancompatibleai/goattack:python
+    image: humancompatibleai/goattack:cpp
     build:
       context: ..
       dockerfile: ./compose/python/Dockerfile
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+    command: /engines/KataGo-custom/cpp/evaluate_loop.sh /outputs
 
   victimplay:
     image: humancompatibleai/goattack:cpp
