@@ -1,6 +1,7 @@
 """Module to extract game information from SGF files."""
 
 import dataclasses
+import enum
 import os
 import pathlib
 import re
@@ -8,6 +9,19 @@ from typing import Any, Mapping, Optional, Sequence
 
 import tqdm.auto as tqdm
 from sgfmill import sgf
+
+
+@enum.unique
+class Color(enum.Enum):
+    """Color of Go stones (black or white)."""
+
+    BLACK = "B"
+    WHITE = "W"
+
+    @staticmethod
+    def from_string(color: str) -> "Color":
+        color = color.upper()
+        return Color(color)
 
 
 def find_sgf_files(root: pathlib.Path) -> Sequence[pathlib.Path]:
@@ -41,6 +55,9 @@ class GameInfo:
 
     b_name: str
     w_name: str
+
+    b_visits: Optional[int]
+    w_visits: Optional[int]
 
     win_color: Optional[str]
 
@@ -99,9 +116,11 @@ class AdversarialGameInfo(GameInfo):
 
     victim_color: str
     victim_name: str
+    victim_visits: Optional[int]
 
     adv_color: str
     adv_name: str
+    adv_visits: Optional[int]
     adv_steps: int
     adv_win: bool
     adv_minus_victim_score: float  # With komi
@@ -137,6 +156,14 @@ def num_pass(col: str, sgf_game: sgf.Sgf_game) -> int:
     return sum(node.get_move == (col, None) for node in sgf_game.get_main_sequence())
 
 
+def get_max_visits(game: sgf.Sgf_game, color: Color) -> Optional[int]:
+    """Get max visits for player `color` in `game`."""
+    prop = color.value + "R"  # BR or WR: black/white rank
+    if not game.root.has_property(prop):
+        return None
+    return int(game.root.get(prop).lstrip("v"))
+
+
 def extract_re(subject: str, pattern: str) -> str:
     """Extract first group matching `pattern` from `subject`."""
     match = re.search(pattern, subject)
@@ -160,6 +187,8 @@ def extract_basic_game_info(sgf_str: str, sgf_game: sgf.Sgf_game) -> GameInfo:
         used_initial_position=comment_prop(sgf_game, "usedInitialPosition") == "1",
         b_name=sgf_game.get_player_name("b"),
         w_name=sgf_game.get_player_name("w"),
+        b_visits=get_max_visits(sgf_game, Color.BLACK),
+        w_visits=get_max_visits(sgf_game, Color.WHITE),
         win_color=sgf_game.get_winner(),
         komi=sgf_game.get_komi(),
         handicap=int(sgf_game.root.get("HA")),
@@ -207,14 +236,19 @@ def extract_adversarial_game_info(
             basic_info.lose_color: -win_score,
         }[adv_color]
 
+    adv_visits = {"b": basic_info.b_visits, "w": basic_info.w_visits}[adv_color]
+    victim_visits = {"b": basic_info.b_visits, "w": basic_info.w_visits}[victim_color]
+
     # num_passes = {"b": basic_info.num_b_pass, "w": basic_info.num_w_pass}
 
     return AdversarialGameInfo(
         **dataclasses.asdict(basic_info),
         victim_color=victim_color,
         victim_name=victim_name,
+        victim_visits=victim_visits,
         adv_color=adv_color,
         adv_name=adv_name,
+        adv_visits=adv_visits,
         adv_steps=adv_steps,
         adv_win=adv_color == basic_info.win_color,
         adv_minus_victim_score=adv_minus_victim_score,
