@@ -134,6 +134,9 @@ COPY README.md /go_attack/README.md
 # Silence annoying pip warning about running it as root inside the container
 RUN pip install -e /go_attack --root-user-action=ignore
 
+COPY /engines/KataGo-custom/cpp/evaluate_loop.sh /engines/KataGo-custom/cpp/evaluate_loop.sh
+RUN chmod +x /engines/KataGo-custom/cpp/evaluate_loop.sh
+
 FROM runtime-deps as debug
 COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
 
