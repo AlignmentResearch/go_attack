@@ -1,8 +1,8 @@
 # Builds an image that can run ELF OpenGo. A CUDA-compatible GPU is needed for
 # ELF, so use the `--gpus` flags when running this image with `docker run`.
 #
-# Run `./gtp-defaults.sh` to play against ELF OpenGo via GTP inside the Docker
-# container.
+# Run `./gtp-defaults.sh` inside the Docker container to play against ELF OpenGo
+# via GTP.
 
 # ELF's README suggests using CUDA 10.0 and cuDNN 7. A6000 GPUs need CUDA
 # 11, however, and CUDA 11 requires cuDNN 8.
