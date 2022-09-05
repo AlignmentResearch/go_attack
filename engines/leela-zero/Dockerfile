@@ -3,7 +3,7 @@
 # run`.
 #
 # Run `./leelaz --gtp` inside the Docker container to play against
-# container.
+# Leela Zero via GTP.
 
 FROM nvidia/opencl:devel-ubuntu18.04 AS build-deps
 
