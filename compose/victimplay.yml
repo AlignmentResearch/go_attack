@@ -42,7 +42,7 @@ services:
     image: humancompatibleai/goattack:cpp
     build:
       context: ..
-      dockerfile: ./compose/python/Dockerfile
+      dockerfile: ./compose/cpp/Dockerfile
     volumes:
       - type: bind
         source: ${HOST_OUTPUT_DIR}
