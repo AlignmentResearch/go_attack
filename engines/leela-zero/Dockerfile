@@ -2,7 +2,7 @@
 # for Leela Zero, so use the `--gpus` flag when running this image with `docker
 # run`.
 #
-# Run `./leelaz --gtp` to play against Leela Zero via GTP inside the Docker
+# Run `./leelaz --gtp` inside the Docker container to play against
 # container.
 
 FROM nvidia/opencl:devel-ubuntu18.04 AS build-deps
