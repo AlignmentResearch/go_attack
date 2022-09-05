@@ -2,10 +2,10 @@
 # for Leela Zero, so use the `--gpus` flag when running this image with `docker
 # run`.
 #
-# Command to play against Leela Zero via GTP:
-#     ./leelaz --gtp
+# Run `./leelaz --gtp` to play against Leela Zero via GTP inside the Docker
+# container.
 
-FROM ubuntu:bionic AS build-deps
+FROM nvidia/opencl:devel-ubuntu18.04 AS build-deps
 
 RUN apt-get update --quiet \
  && apt-get install --assume-yes \
@@ -15,10 +15,9 @@ RUN apt-get update --quiet \
   libboost-dev \
   libboost-filesystem-dev \
   libboost-program-options-dev \
-  ocl-icd-libopencl1 \
-  ocl-icd-opencl-dev \
-  opencl-headers \
-  zlib1g-dev
+  zlib1g-dev \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 RUN git clone --depth=1 --branch=v0.17 --recurse-submodules \
   --shallow-submodules https://github.com/leela-zero/leela-zero
@@ -33,7 +32,9 @@ RUN apt-get update --quiet \
  && apt-get install --assume-yes \
   libboost-filesystem-dev \
   libboost-program-options-dev \
-  wget
+  wget \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # Download weights to the Leela Zero's default directory for weights. A
 # collection of weights is available at https://zero.sjeng.org/

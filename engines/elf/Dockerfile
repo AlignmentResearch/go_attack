@@ -1,13 +1,8 @@
 # Builds an image that can run ELF OpenGo. A CUDA-compatible GPU is needed for
 # ELF, so use the `--gpus` flags when running this image with `docker run`.
 #
-# Command to play against ELF OpenGo engine via GTP:
-#     source /ELF/scripts/devmode_set_pythonpath.sh \
-#     && ./gtp.sh /pretrained-model.bin --verbose --gpu 0 --num_block 20 --dim 256 \
-#     --mcts_puct 1.50 --batchsize 16 --mcts_rollout_per_batch 16 --mcts_threads 2 \
-#     --mcts_rollout_per_thread 8192 --resign_thres 0.05 --mcts_virtual_loss 1
-# The parameter values in the command above are the suggested values from the
-# ELF README.
+# Run `./gtp-defaults.sh` to play against ELF OpenGo via GTP inside the Docker
+# container.
 
 # ELF's README suggests using CUDA 10.0 and cuDNN 7. A6000 GPUs need CUDA
 # 11, however, and CUDA 11 requires cuDNN 8.
@@ -21,7 +16,9 @@ RUN apt-get update --quiet \
   git \
   libboost-all-dev \
   libzmq3-dev \
-  wget
+  wget \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 RUN wget --output-document=install-conda.sh \
   https://repo.anaconda.com/miniconda/Miniconda3-py37_4.12.0-Linux-x86_64.sh
@@ -46,11 +43,18 @@ ENV PATH=/conda/bin:${PATH}
 
 RUN apt-get update --quiet \
   && apt-get install --assume-yes \
-  wget
+  wget \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # pretrained-go-19x19-v0 is likely the "prototype model" from the paper that won
 # against professional players, whereas this v2 model is likely the final model
 # from the paper.
 RUN wget --output-document=pretrained-model.bin \
   https://github.com/pytorch/ELF/releases/download/pretrained-go-19x19-v2/pretrained-go-19x19-v2.bin
+
 WORKDIR /ELF/scripts/elfgames/go/
+COPY entrypoint.sh /
+COPY gtp-defaults.sh .
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]
