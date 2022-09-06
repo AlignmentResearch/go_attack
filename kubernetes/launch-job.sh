@@ -4,22 +4,20 @@ if [ $# -lt 1 ]; then
     exit 2
 fi
 
-VICTIM=${2:-/shared/victims/kata1-b6c96-s41312768-d6061202.txt.gz}
-
 # shellcheck disable=SC2215
 ctl job run --container \
-    humancompatibleai/goattack:2022-08-26-v3 \
-    humancompatibleai/goattack:2022-08-26-v3 \
-    humancompatibleai/goattack:2022-08-26-python-v3 \
-    humancompatibleai/goattack:2022-08-26-python-v3 \
-    humancompatibleai/goattack:2022-08-26-python-v3 \
+    humancompatibleai/goattack:2022-09-02-v2 \
+    humancompatibleai/goattack:2022-09-02-v2 \
+    humancompatibleai/goattack:2022-09-02-v2-python \
+    humancompatibleai/goattack:2022-09-02-v2-python \
+    humancompatibleai/goattack:2022-09-02-v2-python \
     --volume_name go-attack \
     --volume_mount shared \
-    --command "/shared/kubernetes/victimplay.sh $1 $VICTIM" \
-    "python3 /shared/kubernetes/evaluate_loop.py $1 $VICTIM" \
+    --command "/shared/kubernetes/victimplay.sh $1" \
+    "/engines/KataGo-custom/cpp/evaluate_loop.sh /shared/victimplay/$1" \
     "/shared/kubernetes/train.sh $1" \
     "/shared/kubernetes/shuffle-and-export.sh $1" \
     "/shared/kubernetes/curriculum.sh $1" \
     --gpu 1 1 1 0 0 \
     --name go-training \
-    --replicas "${3:-7}" 1 1 1 1
+    --replicas "${2:-7}" 1 1 1 1
