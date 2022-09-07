@@ -20,10 +20,6 @@ services:
         source: ${HOST_OUTPUT_DIR}
         target: /outputs
       - type: bind
-        source: ${HOST_MODEL_DIR}
-        target: /models
-        read_only: true
-      - type: bind
         source: ${HOST_CONFIG_DIR}
         target: /configs
         read_only: true

@@ -25,7 +25,6 @@ RUN apt-get update -q \
   && apt-get install -y \
   # Utilities
   curl \
-  gdb \
   git \
   sudo \
   tmux \
@@ -98,6 +97,8 @@ RUN apt-get update -q \
   git \
   gpustat \
   htop \
+  python3 \
+  python3-pip \
   rsync \
   sudo \
   tmux \
@@ -119,6 +120,21 @@ RUN apt-get update -q \
 
 # Reset working directory
 WORKDIR /
+
+# Install Python packages
+RUN python3 -m pip install --upgrade pip
+
+RUN mkdir -p /go_attack/src
+COPY ./configs /go_attack/configs
+COPY ./scripts/ /go_attack/scripts
+COPY ./src/go_attack /go_attack/src/go_attack
+COPY ./setup.py /go_attack/setup.py
+COPY README.md /go_attack/README.md
+# Silence annoying pip warning about running it as root inside the container
+RUN pip install -e /go_attack --root-user-action=ignore
+
+COPY /engines/KataGo-custom/cpp/evaluate_loop.sh /engines/KataGo-custom/cpp/evaluate_loop.sh
+RUN chmod +x /engines/KataGo-custom/cpp/evaluate_loop.sh
 
 FROM runtime-deps as debug
 COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago

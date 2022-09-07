@@ -16,6 +16,8 @@ gtp_logs
 match_logs
 match_sgfs
 selfplay-training
+training
+victim-models
 victimplay-training
 
 # Ignore certain scripts
