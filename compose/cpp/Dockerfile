@@ -126,7 +126,6 @@ WORKDIR /
 RUN python3 -m pip install --upgrade pip
 
 RUN mkdir -p /go_attack/src
-COPY ./configs /go_attack/configs
 COPY ./scripts/ /go_attack/scripts
 COPY ./src/go_attack /go_attack/src/go_attack
 COPY ./setup.py /go_attack/setup.py
@@ -139,7 +138,9 @@ RUN chmod +x /engines/KataGo-custom/cpp/evaluate_loop.sh
 
 FROM runtime-deps as debug
 COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
+COPY ./configs /go_attack/configs
 
 FROM runtime-deps as prod
 COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
 COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
+COPY ./configs /go_attack/configs

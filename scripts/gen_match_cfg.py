@@ -14,10 +14,8 @@ class Bot:
 
 
 MODELS_WITH_RANKS = [
-    ("kata1-b40c256-s11101799168-d2715431527.bin.gz", "S"),  # 13466.2 ± 18.5
-    ("kata1-b20c256x2-s1224669184-d317666228.txt.gz", "A"),  # 12483.2 ± 22.1
-    ("kata1-b15c192-s172540416-d88080224.txt.gz", "B"),  # 11492.4 ± 21.6
-    ("kata1-b10c128-s61853696-d32291607.txt.gz", "C"),  # 10455.3 ± 22.1
+    ("kata1-b40c256-s11840935168-d2898845681.bin.gz", "-cp505"),
+    ("kata1-b20c256x2-s5303129600-d1228401921.bin.gz", "-cp127"),
 ]
 
 N_GPUS = 8
@@ -30,7 +28,7 @@ def main():
 
     # Generate bot parameters
     for nn_file, rank in MODELS_WITH_RANKS:
-        for vpow in range(8):
+        for vpow in range(10):
             bots.append(
                 Bot(
                     nickname=f"bot{rank}-v{2**vpow}",
