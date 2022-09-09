@@ -11,7 +11,7 @@
 version: "3"
 
 services:
-  victimplay:
+  victimplay-1: &victimplay
     image: humancompatibleai/goattack:cpp
     build:
       context: ..
@@ -40,10 +40,69 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["1", "2", "3", "4", "5", "6", "7"]
+              device_ids: ["1"]
     cap_add:
       - SYS_PTRACE
-    stop_grace_period: 120s
+
+  victimplay-2:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["2"]
+
+  victimplay-3:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["3"]
+
+  victimplay-4:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["4"]
+
+  victimplay-5:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["5"]
+
+  victimplay-6:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["6"]
+
+  victimplay-7:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["7"]
 
   train:
     image: humancompatibleai/goattack:python
