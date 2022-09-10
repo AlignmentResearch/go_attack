@@ -12,7 +12,7 @@
 version: "3"
 
 services:
-  match-1: &match
+  match-0: &match
     image: humancompatibleai/goattack:cpp
     build:
       context: ..
@@ -35,13 +35,29 @@ services:
         target: /sgfs
       - &vol_logs
         type: bind
-        source: ${HOST_OUTPUT_DIR}/1
+        source: ${HOST_OUTPUT_DIR}/0
         target: /logs
     command: >
         /engines/KataGo-custom/cpp/katago match
         -config ${MATCH_CONFIG}
         -log-file /logs/match.log
         -sgf-output-dir /sgfs/
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["0"]
+
+  match-1:
+    <<: *match
+    volumes:
+      - *vol_garoot
+      - *vol_models
+      - *vol_sgfs
+      - <<: *vol_logs
+        source: ${HOST_OUTPUT_DIR}/1
     deploy:
       resources:
         reservations:
