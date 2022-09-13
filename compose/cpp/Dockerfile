@@ -98,6 +98,7 @@ RUN apt-get update -q \
   git \
   gpustat \
   htop \
+  netcat \
   python3 \
   python3-pip \
   rsync \
@@ -143,3 +144,4 @@ COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo
 FROM runtime-deps as prod
 COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
 COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
+COPY ./compose/transfer/connect-to-victim.sh /engines

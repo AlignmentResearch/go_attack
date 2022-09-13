@@ -32,6 +32,7 @@ RUN apt-get update --quiet \
  && apt-get install --assume-yes \
   libboost-filesystem-dev \
   libboost-program-options-dev \
+  socat \
   wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*

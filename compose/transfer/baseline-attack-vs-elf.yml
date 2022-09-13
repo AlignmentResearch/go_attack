@@ -1,0 +1,41 @@
+# Launches a baseline attack on ELF OpenGo.
+version: "3"
+
+services:
+  # The victim container exposes ELF on port 80.
+  victim:
+    image: humancompatibleai/goattack:elf
+    build:
+      context: ../../engines/elf
+    command: [
+      "socat", "TCP4-LISTEN:80,reuseaddr,fork", "EXEC:'./gtp-defaults.sh'"
+    ]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              # TODO(tomtseng) GPU allocation should be updated?
+              device_ids: ["0"]
+  baseline_attack:
+    image: humancompatibleai/goattack:cpp
+    build:
+      context: ../..
+      dockerfile: ../compose/cpp/Dockerfile
+      target: prod
+    # TODO(tomtseng) command params need to be updated
+    command: [
+      "python3", "-u", "/go_attack/scripts/baseline_attack.py",
+      "--config", "/go_attack/configs/katago/baseline_attack.cfg",
+      "--executable", "/engines/connect-to-victim.sh", "--models", "/dev/null",
+      "--num-games", "2", "--num-playouts", "1", "--verbose"
+    ]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["0"]
+    stop_grace_period: 120s   # Nvidia driver bug workaround

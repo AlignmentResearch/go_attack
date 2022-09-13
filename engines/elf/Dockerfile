@@ -43,6 +43,7 @@ ENV PATH=/conda/bin:${PATH}
 
 RUN apt-get update --quiet \
   && apt-get install --assume-yes \
+  socat \
   wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
