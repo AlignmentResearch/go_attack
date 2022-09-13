@@ -2,12 +2,12 @@
 version: "3"
 
 services:
-  # The victim container exposes ELF on port 80.
   victim:
     image: humancompatibleai/goattack:elf
     build:
       context: ../../engines/elf
     command: [
+      # Exposes ELF on port 80.
       "socat", "TCP4-LISTEN:80,reuseaddr,fork", "EXEC:'./gtp-defaults.sh'"
     ]
     deploy:
@@ -24,6 +24,8 @@ services:
       context: ../..
       dockerfile: ../compose/cpp/Dockerfile
       target: prod
+    depends_on:
+      - victim
     # TODO(tomtseng) command params need to be updated
     command: [
       "python3", "-u", "/go_attack/scripts/baseline_attack.py",
