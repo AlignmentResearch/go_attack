@@ -16,7 +16,6 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              # TODO(tomtseng) GPU allocation should be updated?
               device_ids: ["0"]
   baseline_attack:
     image: humancompatibleai/goattack:cpp
@@ -26,12 +25,11 @@ services:
       target: prod
     depends_on:
       - victim
-    # TODO(tomtseng) command params need to be updated
     command: [
       "python3", "-u", "/go_attack/scripts/baseline_attack.py",
       "--config", "/go_attack/configs/katago/baseline_attack.cfg",
-      "--executable", "/engines/connect-to-victim.sh", "--no-suicide", "--models", "/dev/null",
-      "--num-games", "2", "--num-playouts", "1", "--verbose"
+      "--executable", "/engines/connect-to-victim.sh", "--no-suicide",
+      "--models", "/dev/null", "--num-games", "2", "--verbose"
     ]
     deploy:
       resources:
