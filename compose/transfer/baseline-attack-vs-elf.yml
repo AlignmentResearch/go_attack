@@ -30,7 +30,7 @@ services:
     command: [
       "python3", "-u", "/go_attack/scripts/baseline_attack.py",
       "--config", "/go_attack/configs/katago/baseline_attack.cfg",
-      "--executable", "/engines/connect-to-victim.sh", "--models", "/dev/null",
+      "--executable", "/engines/connect-to-victim.sh", "--no-suicide", "--models", "/dev/null",
       "--num-games", "2", "--num-playouts", "1", "--verbose"
     ]
     deploy:
@@ -40,4 +40,3 @@ services:
             - capabilities: ["gpu"]
               driver: nvidia
               device_ids: ["0"]
-    stop_grace_period: 120s   # Nvidia driver bug workaround
