@@ -185,6 +185,7 @@ def run_baseline_attack(
     passing_behavior: str,
     gpu: Optional[int] = None,
     *,
+    allow_suicide: bool = True,
     board_size: int = 19,
     config_path: Path,
     executable_path: Path,
@@ -237,15 +238,17 @@ def run_baseline_attack(
     def make_policy() -> AdversarialPolicy:
         if policy_cls in (MyopicWhiteBoxPolicy, NonmyopicWhiteBoxPolicy):
             policy = policy_cls(
-                game,
-                victim_color.opponent(),
-                to_engine,
-                from_engine,
+                game=game,
+                color=victim_color.opponent(),
+                allow_suicide=allow_suicide,
+                gtp_stdin=to_engine,
+                gtp_stdout=from_engine,
             )  # pytype: disable=not-instantiable,wrong-arg-count
         else:
             policy = policy_cls(
-                game,
-                victim_color.opponent(),
+                game=game,
+                color=victim_color.opponent(),
+                allow_suicide=allow_suicide,
             )  # pytype: disable=not-instantiable
         return PassingWrapper(policy, moves_before_pass)
 

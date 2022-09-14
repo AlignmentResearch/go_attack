@@ -172,7 +172,20 @@ class Game:
         history = self.board_states[:turn_idx]
         return any(np.all(board == earlier) for earlier in history)
 
-    def legal_move_mask(self, *, turn_idx: Optional[int] = None) -> np.ndarray:
+    def is_suicide(self, move: Move, *, turn_idx: Optional[int] = None) -> bool:
+        """Return `True` iff `move` is a suicide move."""
+        next_board = self.virtual_move(*move, turn_idx=turn_idx)
+        return (
+            next_board[cartesian_to_numpy(move.x, move.y)]
+            != self.current_player(turn_idx=turn_idx).value
+        )
+
+    def legal_move_mask(
+        self,
+        *,
+        turn_idx: Optional[int] = None,
+        allow_suicide: bool = True,
+    ) -> np.ndarray:
         """Return a mask of all legal moves for the current player."""
         board = np.zeros((self.board_size, self.board_size), dtype=np.uint8)
         for x, y in self.legal_moves(turn_idx=turn_idx):
@@ -180,11 +193,19 @@ class Game:
 
         return board
 
-    def legal_moves(self, *, turn_idx: Optional[int] = None) -> Iterable[Move]:
+    def legal_moves(
+        self,
+        *,
+        turn_idx: Optional[int] = None,
+        allow_suicide: bool = True,
+    ) -> Iterable[Move]:
         """Return a generator over all legal moves for the current player."""
         for x in range(self.board_size):
             for y in range(self.board_size):
-                if self.is_legal(Move(x, y), turn_idx=turn_idx):
+                move = Move(x, y)
+                if self.is_legal(move, turn_idx=turn_idx) and (
+                    allow_suicide or not self.is_suicide(move, turn_idx=turn_idx)
+                ):
                     yield Move(x, y)
 
     def move(self, x: int, y: int, *, check_legal: bool = True) -> None:
@@ -241,7 +262,7 @@ class Game:
             raise IllegalMoveError("Y coordinate out of bounds")
 
         board = self.board_states[turn_idx if turn_idx is not None else -1].copy()
-        color = self.current_player()
+        color = self.current_player(turn_idx=turn_idx)
 
         # Rule 7. A move consists of coloring an empty point one's own color...
         board[cartesian_to_numpy(x, y)] = color.value

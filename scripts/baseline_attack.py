@@ -24,6 +24,11 @@ def main():  # noqa: D103
         help="Path to KataGo executable",
     )
     parser.add_argument(
+        "--no-suicide",
+        action="store_true",
+        help="Don't allow the adversary to take suicide moves",
+    )
+    parser.add_argument(
         "--passing-behavior",
         choices=PASSING_BEHAVIOR,
         default=["standard"],
@@ -129,6 +134,7 @@ def main():  # noqa: D103
 
     baseline_fn = partial(
         run_baseline_attack,
+        allow_suicide=not args.no_suicide,
         board_size=args.size,
         config_path=config_path,
         executable_path=katago_exe,
