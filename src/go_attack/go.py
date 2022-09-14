@@ -151,7 +151,6 @@ class Game:
 
     def is_suicide(self, move: Move, *, turn_idx: Optional[int] = None) -> bool:
         """Return `True` iff `move` is a suicide move."""
-        print("is_suicide")
         next_board = self.virtual_move(*move, turn_idx=turn_idx)
         return (
             next_board[cartesian_to_numpy(move.x, move.y)]
