@@ -151,6 +151,7 @@ class Game:
 
     def is_suicide(self, move: Move, *, turn_idx: Optional[int] = None) -> bool:
         """Return `True` iff `move` is a suicide move."""
+        print("is_suicide")
         next_board = self.virtual_move(*move, turn_idx=turn_idx)
         return (
             next_board[cartesian_to_numpy(move.x, move.y)]
@@ -169,7 +170,7 @@ class Game:
         if self.is_repetition(next_board):
             return False
 
-        if not self.allow_suicide and is_suicide(move, turn_idx=turn_idx):
+        if not self.allow_suicide and self.is_suicide(move, turn_idx=turn_idx):
             return False
 
         return True
@@ -220,7 +221,7 @@ class Game:
                     "Superko violation: Cannot repeat an earlier board state",
                 )
 
-            if not self.allow_suicide and is_suicide(move=Move(x, y)):
+            if not self.allow_suicide and self.is_suicide(move=Move(x, y)):
                 return False
 
         self.board_states.append(next_board)
