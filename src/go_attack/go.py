@@ -222,7 +222,7 @@ class Game:
                 )
 
             if not self.allow_suicide and self.is_suicide(move=Move(x, y)):
-                return False
+                raise IllegalMoveError("Cannot make a suicide move")
 
         self.board_states.append(next_board)
         self.moves.append(Move(x, y))
