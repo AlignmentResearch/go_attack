@@ -107,6 +107,9 @@ class Game:
     board_states: List[np.ndarray] = field(default_factory=list)
     moves: List[Optional[Move]] = field(default_factory=list)
     komi: float = 7.5
+    # Tromp-Taylor rules allow suicide, but we may want to disallow suicide to
+    # play against engines like ELF OpenGo that also disallow suicide.
+    allow_suicide: bool = True
 
     def __len__(self) -> int:
         """Return the number of turns in this game."""
@@ -146,6 +149,14 @@ class Game:
         self.moves.pop()
         return self.board_states.pop()
 
+    def is_suicide(self, move: Move, *, turn_idx: Optional[int] = None) -> bool:
+        """Return `True` iff `move` is a suicide move."""
+        next_board = self.virtual_move(*move, turn_idx=turn_idx)
+        return (
+            next_board[cartesian_to_numpy(move.x, move.y)]
+            != self.current_player(turn_idx=turn_idx).value
+        )
+
     def is_legal(self, move: Move, *, turn_idx: Optional[int] = None):
         """Return `True` iff `move` is legal at `turn_idx`."""
         # Rule 7. A move consists of coloring an *empty* point one's own color...
@@ -155,7 +166,13 @@ class Game:
         # Rule 6. A turn is either a pass; or a move that *doesn't repeat* an
         # earlier grid coloring.
         next_board = self.virtual_move(*move, turn_idx=turn_idx)
-        return not self.is_repetition(next_board)
+        if self.is_repetition(next_board):
+            return False
+
+        if not self.allow_suicide and is_suicide(move, turn_idx=turn_idx):
+            return False
+
+        return True
 
     def is_over(self) -> bool:
         """Return `True` iff there have been two consecutive passes."""
@@ -172,20 +189,7 @@ class Game:
         history = self.board_states[:turn_idx]
         return any(np.all(board == earlier) for earlier in history)
 
-    def is_suicide(self, move: Move, *, turn_idx: Optional[int] = None) -> bool:
-        """Return `True` iff `move` is a suicide move."""
-        next_board = self.virtual_move(*move, turn_idx=turn_idx)
-        return (
-            next_board[cartesian_to_numpy(move.x, move.y)]
-            != self.current_player(turn_idx=turn_idx).value
-        )
-
-    def legal_move_mask(
-        self,
-        *,
-        turn_idx: Optional[int] = None,
-        allow_suicide: bool = True,
-    ) -> np.ndarray:
+    def legal_move_mask(self, *, turn_idx: Optional[int] = None) -> np.ndarray:
         """Return a mask of all legal moves for the current player."""
         board = np.zeros((self.board_size, self.board_size), dtype=np.uint8)
         for x, y in self.legal_moves(turn_idx=turn_idx):
@@ -193,19 +197,11 @@ class Game:
 
         return board
 
-    def legal_moves(
-        self,
-        *,
-        turn_idx: Optional[int] = None,
-        allow_suicide: bool = True,
-    ) -> Iterable[Move]:
+    def legal_moves(self, *, turn_idx: Optional[int] = None) -> Iterable[Move]:
         """Return a generator over all legal moves for the current player."""
         for x in range(self.board_size):
             for y in range(self.board_size):
-                move = Move(x, y)
-                if self.is_legal(move, turn_idx=turn_idx) and (
-                    allow_suicide or not self.is_suicide(move, turn_idx=turn_idx)
-                ):
+                if self.is_legal(Move(x, y), turn_idx=turn_idx):
                     yield Move(x, y)
 
     def move(self, x: int, y: int, *, check_legal: bool = True) -> None:
@@ -223,6 +219,9 @@ class Game:
                 raise IllegalMoveError(
                     "Superko violation: Cannot repeat an earlier board state",
                 )
+
+            if not self.allow_suicide and is_suicide(move=Move(x, y)):
+                return False
 
         self.board_states.append(next_board)
         self.moves.append(Move(x, y))

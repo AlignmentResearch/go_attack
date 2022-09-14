@@ -238,17 +238,15 @@ def run_baseline_attack(
     def make_policy() -> AdversarialPolicy:
         if policy_cls in (MyopicWhiteBoxPolicy, NonmyopicWhiteBoxPolicy):
             policy = policy_cls(
-                game=game,
-                color=victim_color.opponent(),
-                allow_suicide=allow_suicide,
-                gtp_stdin=to_engine,
-                gtp_stdout=from_engine,
+                game,
+                victim_color.opponent(),
+                to_engine,
+                from_engine,
             )  # pytype: disable=not-instantiable,wrong-arg-count
         else:
             policy = policy_cls(
-                game=game,
-                color=victim_color.opponent(),
-                allow_suicide=allow_suicide,
+                game,
+                victim_color.opponent(),
             )  # pytype: disable=not-instantiable
         return PassingWrapper(policy, moves_before_pass)
 
@@ -267,7 +265,7 @@ def run_baseline_attack(
         if verbose:
             print(f"\n--- Game {i + 1} of {num_games} ---")
 
-        game = Game(board_size)
+        game = Game(board_size=board_size, allow_suicide=allow_suicide)
         policy = make_policy()
         game, analyses = rollout_policy(
             game,

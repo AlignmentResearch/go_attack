@@ -32,7 +32,6 @@ class BasicPolicy(AdversarialPolicy, ABC):
     name: ClassVar[str]
     game: Game
     color: Color
-    allow_suicide: bool
 
     def __init_subclass__(cls) -> None:
         """Register the subclass in the POLICIES dict."""
@@ -56,7 +55,7 @@ class EdgePolicy(BasicPolicy):
         Returns:
             The adversarial move to play. If None, we pass.
         """
-        legal_moves = list(self.game.legal_moves(allow_suicide=self.allow_suicide))
+        legal_moves = list(self.game.legal_moves())
         size = self.game.board_size
 
         if not legal_moves:
@@ -102,7 +101,7 @@ class MirrorPolicy(BasicPolicy):
         Returns:
             The adversarial move to play. If None, we pass.
         """
-        legal_moves = list(self.game.legal_moves(allow_suicide=self.allow_suicide))
+        legal_moves = list(self.game.legal_moves())
         if not legal_moves:
             return None
 
@@ -143,7 +142,7 @@ class RandomPolicy(BasicPolicy):
         Returns:
             The adversarial move to play. If None, we pass.
         """
-        legal_moves = list(self.game.legal_moves(allow_suicide=self.allow_suicide))
+        legal_moves = list(self.game.legal_moves())
         return random.choice(legal_moves) if legal_moves else None
 
 
@@ -198,9 +197,7 @@ class NonmyopicWhiteBoxPolicy(BasicPolicy):
         self.gtp_stdin.write(b"kata-raw-nn 0\n")
         size = self.game.board_size
         ownership_dist = parse_array(self.gtp_stdout, "whiteOwnership", size)
-        ownership_dist += (
-            1 - self.game.legal_move_mask(allow_suicide=self.allow_suicide).T
-        ) * np.inf
+        ownership_dist += (1 - self.game.legal_move_mask().T) * np.inf
 
         try:
             flat_idx = np.nanargmin(ownership_dist)
