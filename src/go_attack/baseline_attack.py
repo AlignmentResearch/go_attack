@@ -149,7 +149,7 @@ def rollout_policy(
                 victim_move = get_msg(analysis_move_regex).group(1)
         else:
             send_msg(to_engine, f"genmove {victim_color}")
-            move_regex = re.compile(r"= ([A-Z][0-9]{1,2}|pass)")
+            move_regex = re.compile(r"= ([A-Z][0-9]{1,2}|pass)", re.IGNORECASE)
             victim_move = get_msg(move_regex).group(1)
 
         game.play_move(Move.from_str(victim_move))

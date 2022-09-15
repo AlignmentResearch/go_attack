@@ -79,7 +79,7 @@ class Move(NamedTuple):
     @classmethod
     def from_str(cls, s: str) -> Optional["Move"]:
         """Parse a move from a string like 'A5' or 'B7' or 'pass'."""
-        if s == "pass":
+        if s.lower() == "pass":
             return None
         else:
             letter, num = s[0], int(s[1:])
