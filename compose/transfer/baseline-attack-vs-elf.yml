@@ -1,4 +1,8 @@
 # Launches a baseline attack on ELF OpenGo.
+#
+# Command:
+#   docker-compose -f compose/transfer/baseline-attack-vs-elf.yml \
+#   --project-name baseline-vs-elf up
 version: "3"
 
 services:
@@ -8,7 +12,7 @@ services:
       context: ../../engines/elf
     command: [
       # Exposes ELF on port 80.
-      "socat", "TCP4-LISTEN:80,reuseaddr,fork", "EXEC:'./gtp-defaults.sh'"
+      "socat", "TCP4-LISTEN:80,reuseaddr", "EXEC:'./gtp-defaults.sh'"
     ]
     deploy:
       resources:

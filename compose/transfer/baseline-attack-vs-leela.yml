@@ -1,4 +1,10 @@
 # Launches a baseline attack on Leela Zero
+#
+# Command:
+#   docker-compose -f compose/transfer/baseline-attack-vs-leela.yml \
+#   --project-name baseline-vs-leela up
+name: "baseline-attack-vs-elf"
+
 version: "3"
 
 services:
@@ -17,7 +23,7 @@ services:
     command: [
       # Exposes Leela on port 80.
       # TODO(tomtseng) rm these params
-      "socat", "TCP4-LISTEN:80,reuseaddr,fork",
+      "socat", "TCP4-LISTEN:80,reuseaddr",
       "EXEC:'./leelaz --gtp --timemanage fast --noponder --visits 1 --playouts 1'"
     ]
     deploy:
