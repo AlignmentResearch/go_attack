@@ -20,10 +20,8 @@ services:
         target: /root/.local/share/leela-zero/leelaz_opencl_tuning
     command: [
       # Exposes Leela on port 80.
-      # TODO(tomtseng) moving visits/playouts to an env file would be nice
       # TODO where to save logs? how does victimplay do it?
-      "socat", "TCP4-LISTEN:80,reuseaddr",
-      "EXEC:'./leelaz --gtp --quiet --timemanage fast --noponder --visits 1 --playouts 1'"
+      "socat", "TCP4-LISTEN:80,reuseaddr", "EXEC:'./run-gtp.sh --verbose'"
     ]
     deploy:
       resources:
@@ -46,8 +44,7 @@ services:
         target: /go_attack
     # TODO(tomtseng) move num-games into an env. update file header comment
     # after to include env file
-    # TODO(tomtseng) Ideally the env file should have a verbose toggle that can
-    # toggle verboseness on both baseline_attack and the victim
+    #   ooh, can I set a default env file? https://docs.docker.com/compose/environment-variables/#the-env_file-configuration-option
     # TODO where to save logs? how does victimplay do it?
     command: [
       "python3", "-u", "/go_attack/scripts/baseline_attack.py",

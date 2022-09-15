@@ -1,5 +1,5 @@
 #!/bin/bash
-# Runs ELF OpenGO in GTP mode with reasonable default parameters.
+# Runs ELF OpenGo in GTP mode with reasonable default parameters.
 
 function usage() {
   echo "Usage: $0 [-d] [-v]"
@@ -29,7 +29,6 @@ FLAGS="\
   --resign_thres 0 \
   --mcts_virtual_loss 1 \
 "
-
 if [[ -n "${FAST}" ]]; then
   FLAGS+="\
     --batchsize 1 \
@@ -45,7 +44,6 @@ else
     --mcts_rollout_per_thread 8192 \
   "
 fi
-
 if [[ -n "${VERBOSE}" ]]; then
   FLAGS+="--verbose"
 else

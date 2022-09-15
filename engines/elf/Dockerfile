@@ -1,15 +1,8 @@
 # Builds an image that can run ELF OpenGo. A CUDA-compatible GPU is needed for
 # ELF, so use the `--gpus` flags when running this image with `docker run`.
 #
-# Run `./gtp-defaults.sh` inside the Docker container to play against ELF OpenGo
+# Run `./run-gtp.sh` inside the Docker container to play against ELF OpenGo
 # via GTP.
-#
-#  To make ELF run faster but worse (for debugging purposes), reduce the
-#  following parameters in `gtp-defaults.sh`:
-#    * `--batchsize`
-#    * `--mcts_rollout_per_batch`
-#    * `--mcts_threads`
-#    * `--mcts_rollout_per_thread`
 
 # ELF's README suggests using CUDA 10.0 and cuDNN 7. A6000 GPUs need CUDA
 # 11, however, and CUDA 11 requires cuDNN 8.
@@ -63,6 +56,6 @@ RUN wget --output-document=pretrained-model.bin \
 
 WORKDIR /ELF/scripts/elfgames/go/
 COPY entrypoint.sh /
-COPY gtp-defaults.sh .
+COPY run-gtp.sh .
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
