@@ -4,6 +4,9 @@
 #
 # Run `./leelaz --gtp` inside the Docker container to play against
 # Leela Zero via GTP.
+#
+# To make Leela run faster but worse (for debugging purposes), instead run
+# `./leelaz --gtp --timemanage fast --noponder --visits 1 --playouts 1`.
 
 FROM nvidia/opencl:devel-ubuntu18.04 AS build-deps
 

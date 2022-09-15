@@ -3,6 +3,13 @@
 #
 # Run `./gtp-defaults.sh` inside the Docker container to play against ELF OpenGo
 # via GTP.
+#
+#  To make ELF run faster but worse (for debugging purposes), reduce the
+#  following parameters in `gtp-defaults.sh`:
+#    * `--batchsize`
+#    * `--mcts_rollout_per_batch`
+#    * `--mcts_threads`
+#    * `--mcts_rollout_per_thread`
 
 # ELF's README suggests using CUDA 10.0 and cuDNN 7. A6000 GPUs need CUDA
 # 11, however, and CUDA 11 requires cuDNN 8.
