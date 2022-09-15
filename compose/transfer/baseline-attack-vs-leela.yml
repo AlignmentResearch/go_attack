@@ -1,0 +1,46 @@
+# Launches a baseline attack on Leela Zero
+version: "3"
+
+services:
+  victim:
+    image: humancompatibleai/goattack:leela
+    build:
+      context: ../../engines/leela
+    volumes:
+      - type: bind
+        source: ../../engines/leela/leelaz_opencl_tuning
+        target: /root/.local/share/leela-zero/leelaz_opencl_tuning
+    command: [
+      # Exposes Leela on port 80.
+      # TODO(tomtseng) rm these params
+      "socat", "TCP4-LISTEN:80,reuseaddr,fork",
+      "EXEC:'./leelaz --gtp --timemanage fast --noponder --visits 1 --playouts 1'"
+    ]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["0"]
+  baseline_attack:
+    image: humancompatibleai/goattack:cpp
+    build:
+      context: ../..
+      dockerfile: ../compose/cpp/Dockerfile
+      target: prod
+    depends_on:
+      - victim
+    command: [
+      "python3", "-u", "/go_attack/scripts/baseline_attack.py",
+      "--config", "/go_attack/configs/katago/baseline_attack.cfg",
+      "--executable", "/engines/connect-to-victim.sh",
+      "--models", "/dev/null", "--num-games", "2", "--verbose"
+    ]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["0"]
