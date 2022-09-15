@@ -106,7 +106,8 @@ def rollout_policy(
 ) -> Tuple[Game, Sequence[str]]:
     """Rollouts `policy` against engine with pipe `from_engine`."""
 
-    # Regex that matches the "=" printed after a successful command.
+    # Regex that matches the "=" printed after a successful command that has no
+    # output.
     SUCCESS_REGEX = re.compile(r"^=")
 
     def maybe_print(msg):
@@ -118,15 +119,23 @@ def rollout_policy(
 
     def print_engine_board():
         send_msg(to_engine, "showboard")
-        if engine_type == "katago":
-            for i in range(game.board_size + 3):
-                msg = readline()
-                print(msg)
-        else:
+        # The different engines have different showboard formats.
+        if engine_type == "elf":
             while True:
                 msg = readline()
                 if SUCCESS_REGEX.fullmatch(msg):
                     break
+                print(msg)
+        elif engine_type == "leela":
+            FINISH_SHOWBOARD_REGEX = re.compile(r"^White time:")
+            while True:
+                msg = readline()
+                print(msg)
+                if FINISH_SHOWBOARD_REGEX.match(msg):
+                    break
+        else:
+            for i in range(game.board_size + 3):
+                msg = readline()
                 print(msg)
 
     def get_msg(pattern: re.Pattern) -> re.Match:
