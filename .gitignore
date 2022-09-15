@@ -91,6 +91,8 @@ engines/KataGo*/GPATH
 engines/KataGo*/GRTAGS
 engines/KataGo*/GTAGS
 
+engines/leela/leelaz_opencl_tuning
+
 # Ignore stuff in GoGUI
 controllers/gogui-1.5.1/build
 controllers/gogui-1.5.1/lib

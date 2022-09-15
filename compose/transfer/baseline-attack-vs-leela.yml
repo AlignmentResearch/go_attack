@@ -7,6 +7,10 @@ services:
     build:
       context: ../../engines/leela
     volumes:
+        # Leela takes a minute to do OpenCL tuning on its first run and caches
+        # the result. Mounting a host file to the cache at
+        # `/root/.local/share/leela-zero/leelaz_opencl_tuning` on the container
+        # saves the cache across different launches of the container.
       - type: bind
         source: ../../engines/leela/leelaz_opencl_tuning
         target: /root/.local/share/leela-zero/leelaz_opencl_tuning

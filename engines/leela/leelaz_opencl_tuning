@@ -1,4 +1,0 @@
-// Leela takes a minute to do OpenCL tuning on its first run and caches the
-// result. Mount this file to the cache at
-// `/root/.local/share/leela-zero/leelaz_opencl_tuning` on Leela's container to
-// save the cache across different launches of the container.
