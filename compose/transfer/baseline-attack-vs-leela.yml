@@ -3,8 +3,6 @@
 # Command:
 #   docker-compose -f compose/transfer/baseline-attack-vs-leela.yml \
 #   --project-name baseline-vs-leela up
-name: "baseline-attack-vs-elf"
-
 version: "3"
 
 services:
