@@ -1,11 +1,11 @@
 # Launches a baseline attack on Leela Zero
 #
 # Command:
-#   docker-compose -f compose/transfer/baseline-attack-vs-leela.yml \
-#   --project-name baseline-vs-leela up
+#   docker-compose -f compose/transfer/baseline-attack-vs-leela.yml --project-name baseline-vs-leela up
 version: "3"
 
 services:
+  # This service may throw a benign EOFError at the end of the job.
   victim:
     image: humancompatibleai/goattack:leela
     build:
@@ -20,9 +20,9 @@ services:
         target: /root/.local/share/leela-zero/leelaz_opencl_tuning
     command: [
       # Exposes Leela on port 80.
-      # TODO(tomtseng) rm these params
+      # TODO(tomtseng) moving visits/playouts to an env file would be nice
       "socat", "TCP4-LISTEN:80,reuseaddr",
-      "EXEC:'./leelaz --gtp --timemanage fast --noponder --visits 1 --playouts 1'"
+      "EXEC:'./leelaz --gtp --quiet --timemanage fast --noponder --visits 1 --playouts 1'"
     ]
     deploy:
       resources:
@@ -39,11 +39,17 @@ services:
       target: prod
     depends_on:
       - victim
+    volumes:
+      - type: bind
+        source: ../..
+        target: /go_attack
+    # TODO(tomtseng) move num-games into an env. update file header comment
+    # after to include env file
     command: [
       "python3", "-u", "/go_attack/scripts/baseline_attack.py",
       "--config", "/go_attack/configs/katago/baseline_attack.cfg",
-      "--executable", "/engines/connect-to-victim.sh",
-      "--models", "/dev/null", "--num-games", "2", "--verbose"
+      "--executable", "/engines/connect-to-victim.sh", "--engine", "leela",
+      "--models", "/dev/null", "--num-games", "2", "--verbose",
     ]
     deploy:
       resources:

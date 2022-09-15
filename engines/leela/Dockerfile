@@ -22,8 +22,9 @@ RUN apt-get update --quiet \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth=1 --branch=v0.17 --recurse-submodules \
-  --shallow-submodules https://github.com/leela-zero/leela-zero
+# TODO transfer this repo to CHAI and change this URL
+RUN git clone --depth=1 --branch=v0.0.0 --recurse-submodules \
+  --shallow-submodules https://github.com/tomtseng/leela-zero
 WORKDIR leela-zero/build
 RUN cmake .. && cmake --build . -- -j16
 

@@ -9,7 +9,11 @@ from pathlib import Path
 from pynvml import nvmlDeviceGetCount, nvmlInit, nvmlShutdown
 
 from go_attack.adversarial_policy import POLICIES
-from go_attack.baseline_attack import PASSING_BEHAVIOR, run_baseline_attack
+from go_attack.baseline_attack import (
+    ENGINE_TYPES,
+    PASSING_BEHAVIOR,
+    run_baseline_attack,
+)
 
 
 def main():  # noqa: D103
@@ -22,6 +26,12 @@ def main():  # noqa: D103
         type=Path,
         default=None,
         help="Path to KataGo executable",
+    )
+    parser.add_argument(
+        "--engine",
+        choices=ENGINE_TYPES,
+        default="katago",
+        help="The type of engine that the victim is running on",
     )
     # Because ELF OpenGo disallows suicide moves and we want to launch
     # consistent attacks across all engines, we default to disallowing suicide
@@ -140,6 +150,7 @@ def main():  # noqa: D103
         allow_suicide=args.allow_suicide,
         board_size=args.size,
         config_path=config_path,
+        engine_type=args.engine,
         executable_path=katago_exe,
         log_analysis=args.log_analysis,
         log_root=args.log_dir,

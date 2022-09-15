@@ -17,6 +17,12 @@ from go_attack.adversarial_policy import (
 from go_attack.go import Color, Game, Move
 from go_attack.utils import select_best_gpu
 
+ENGINE_TYPES = (
+    "katago",
+    "elf",
+    "leela",
+)
+
 PASSING_BEHAVIOR = (
     "standard",
     "avoid-pass-alive-territory",
@@ -92,6 +98,7 @@ def rollout_policy(
     game: Game,
     policy: AdversarialPolicy,
     victim_color: Color,
+    engine_type: str,
     from_engine: IO[AnyStr],
     to_engine: IO[AnyStr],
     log_analysis: bool,
@@ -103,11 +110,21 @@ def rollout_policy(
         if verbose:
             print(msg)
 
-    def print_kata_board():
+    def print_engine_board():
+        # The different engines have different `showboard` formats, so we need
+        # to read different numbers of lines.
+        EXTRA_LINES_BY_ENGINE = {
+            "katago": 3,
+            "elf": 4,
+            "leela": 8,
+        }
+        num_extra_lines = EXTRA_LINES_BY_ENGINE[engine_type]
+
         send_msg(to_engine, "showboard")
-        for _ in range(game.board_size + 3):
+        for i in range(game.board_size + num_extra_lines):
             msg = from_engine.readline().decode("ascii").strip()
             print(msg)
+        print("Done printing board")
 
     def get_msg(pattern: re.Pattern) -> re.Match:
         while True:
@@ -122,6 +139,9 @@ def rollout_policy(
         vertex = str(move) if move else "pass"
         send_msg(to_engine, f"play {victim_color.opponent()} {vertex}")
         maybe_print("Passing" if move is None else f"Playing {vertex}")
+
+        success_regex = re.compile(r"=")
+        get_msg(success_regex)
 
     # Play first iff we're black
     if victim_color.opponent() == Color.BLACK:
@@ -154,14 +174,19 @@ def rollout_policy(
 
         game.play_move(Move.from_str(victim_move))
         maybe_print(f"\nTurn {turn}")
-        maybe_print(f"KataGo played: {victim_move}")
+        maybe_print(f"{engine_type} played: {victim_move}")
+
+        if game.is_over():
+            break
 
         take_turn()
 
         turn += 1
 
-    if verbose:
-        print_kata_board()
+    # ELF clears the board when the game is over, so printing the board doesn't
+    # show anything interesting.
+    if verbose and engine_type != "elf":
+        print_engine_board()
 
     # What is the final score?
     black_score, white_score = game.score()
@@ -188,6 +213,7 @@ def run_baseline_attack(
     allow_suicide: bool = False,
     board_size: int = 19,
     config_path: Path,
+    engine_type: str,
     executable_path: Path,
     log_analysis: bool = False,
     log_root: Optional[Path] = None,
@@ -271,6 +297,7 @@ def run_baseline_attack(
             game,
             policy,
             victim_color,
+            engine_type,
             from_engine,
             to_engine,
             log_analysis,
