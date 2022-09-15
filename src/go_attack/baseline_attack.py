@@ -106,29 +106,32 @@ def rollout_policy(
 ) -> Tuple[Game, Sequence[str]]:
     """Rollouts `policy` against engine with pipe `from_engine`."""
 
+    # Regex that matches the "=" printed after a successful command.
+    SUCCESS_REGEX = re.compile(r"^=")
+
     def maybe_print(msg):
         if verbose:
             print(msg)
 
-    def print_engine_board():
-        # The different engines have different `showboard` formats, so we need
-        # to read different numbers of lines.
-        EXTRA_LINES_BY_ENGINE = {
-            "katago": 3,
-            "elf": 4,
-            "leela": 8,
-        }
-        num_extra_lines = EXTRA_LINES_BY_ENGINE[engine_type]
+    def readline():
+        return from_engine.readline().decode("ascii").strip()
 
+    def print_engine_board():
         send_msg(to_engine, "showboard")
-        for i in range(game.board_size + num_extra_lines):
-            msg = from_engine.readline().decode("ascii").strip()
-            print(msg)
-        print("Done printing board")
+        if engine_type == "katago":
+            for i in range(game.board_size + 3):
+                msg = readline()
+                print(msg)
+        else:
+            while True:
+                msg = readline()
+                if SUCCESS_REGEX.fullmatch(msg):
+                    break
+                print(msg)
 
     def get_msg(pattern: re.Pattern) -> re.Match:
         while True:
-            msg = from_engine.readline().decode("ascii").strip()
+            msg = readline()
             if hit := pattern.fullmatch(msg):
                 return hit
 
@@ -140,8 +143,7 @@ def rollout_policy(
         send_msg(to_engine, f"play {victim_color.opponent()} {vertex}")
         maybe_print("Passing" if move is None else f"Playing {vertex}")
 
-        success_regex = re.compile(r"=")
-        get_msg(success_regex)
+        get_msg(SUCCESS_REGEX)
 
     # Play first iff we're black
     if victim_color.opponent() == Color.BLACK:
