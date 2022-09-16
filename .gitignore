@@ -15,6 +15,7 @@ selfplay-test
 selfplay-training
 sgf4test
 training
+transfer-logs
 victim-models
 victimplay-training
 

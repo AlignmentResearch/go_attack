@@ -1,19 +1,24 @@
 # Launches a baseline attack on ELF OpenGo.
 #
-# Command:
-#   docker-compose -f compose/transfer/baseline-attack-vs-elf.yml --project-name baseline-vs-elf up
+# Launch command:
+#   ./compose/transfer/launch.sh baseline-attack-vs-elf up
 version: "3"
 
 services:
+  # This service may throw a benign EOFError at the end of the job.
   victim:
     image: humancompatibleai/goattack:elf
     build:
-      context: ../../engines/elf
-    # TODO where to save logs? how does victimplay do it?
-    command: [
-      # Exposes ELF on port 80.
-      "socat", "TCP4-LISTEN:80,reuseaddr", "EXEC:'./run-gtp.sh --verbose'"
-    ]
+      context: ${HOST_REPO_ROOT}/engines/elf
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+    command: >
+      sh -c "
+        socat TCP4-LISTEN:80,reuseaddr EXEC:'./run-gtp.sh --verbose' \
+        2>&1 | tee --append /outputs/victim.log
+      "
     deploy:
       resources:
         reservations:
@@ -24,24 +29,31 @@ services:
   baseline_attack:
     image: humancompatibleai/goattack:cpp
     build:
-      context: ../..
-      dockerfile: ../compose/cpp/Dockerfile
+      context: ${HOST_REPO_ROOT}
+      dockerfile: ${HOST_REPO_ROOT}/compose/cpp/Dockerfile
       target: prod
     depends_on:
       - victim
     volumes:
       - type: bind
-        source: ../..
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      - type: bind
+        source: ${HOST_REPO_ROOT}
         target: /go_attack
-    # TODO(tomtseng) move num-games into an env. update file header comment
-    # after to include env file
-    # TODO where to save logs? how does victimplay do it?
-    command: [
-      "python3", "-u", "/go_attack/scripts/baseline_attack.py",
-      "--config", "/go_attack/configs/katago/baseline_attack.cfg",
-      "--executable", "/engines/connect-to-victim.sh", "--engine", "elf",
-      "--no-suicide", "--models", "/dev/null", "--num-games", "2", "--verbose",
-    ]
+    command:
+      sh -c "
+        python3 -u /go_attack/scripts/baseline_attack.py
+        --config /go_attack/configs/katago/baseline_attack.cfg
+        --engine elf
+        --executable /engines/connect-to-victim.sh
+        --log-dir /outputs/sgfs
+        --models /dev/null
+        --no-suicide
+        --num-games ${NUM_GAMES}
+        --verbose
+        2>&1 | tee --append /outputs/attack.log
+      "
     deploy:
       resources:
         reservations:

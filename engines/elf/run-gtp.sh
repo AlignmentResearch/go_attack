@@ -1,8 +1,10 @@
 #!/bin/bash
-# Runs ELF OpenGo in GTP mode with reasonable default parameters.
 
 function usage() {
   echo "Usage: $0 [-d] [-v]"
+  echo
+  echo "Runs ELF OpenGo in GTP mode with reasonable default parameters."
+  echo
   echo "  -d, --debug    Run faster but worse for debugging purposes"
   echo "  -v, --verbose  Print verbose output"
 }
@@ -10,7 +12,7 @@ function usage() {
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while [[ "$#" -gt 0 ]]; do
   case $1 in
-    -d|--d) FAST=1 ;;
+    -d|--debug) FAST=1 ;;
     -h|--help) usage; exit 0 ;;
     -v|--verbose) VERBOSE=1 ;;
     *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
