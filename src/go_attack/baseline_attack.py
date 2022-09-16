@@ -185,7 +185,7 @@ def run_baseline_attack(
     passing_behavior: str,
     gpu: Optional[int] = None,
     *,
-    allow_suicide: bool = True,
+    allow_suicide: bool = False,
     board_size: int = 19,
     config_path: Path,
     executable_path: Path,
