@@ -49,7 +49,6 @@ services:
         --executable /engines/connect-to-victim.sh
         --log-dir /outputs/sgfs
         --models /dev/null
-        --no-suicide
         --num-games ${NUM_GAMES}
         --verbose
         2>&1 | tee --append /outputs/attack.log
