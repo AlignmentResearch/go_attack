@@ -3,7 +3,7 @@
 function usage() {
   echo "Usage: $0 [-d] [-v]"
   echo
-  echo "Runs Leela Zero in GTP mode."
+  echo "Runs Leela Zero in GTP mode with reasonable default parameters."
   echo
   echo "  -d, --debug    Run faster but worse for debugging purposes"
   echo "  -v, --verbose  Print verbose output"
