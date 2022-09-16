@@ -194,8 +194,8 @@ def rollout_policy(
 
         turn += 1
 
-    # ELF clears the board when the game is over, so printing the board doesn't
-    # show anything interesting.
+    # ELF automatically resets the game when the game is over, so printing the
+    # board for ELF would just give a blank new board.
     if verbose and engine_type != "elf":
         print_engine_board()
 
