@@ -1,13 +1,16 @@
 """Unit tests for the `go` module."""
 
-from typing import List
+from typing import Sequence
 
 import numpy as np
 
 from go_attack.go import Game, Move
 
 
-def create_game(board_size: int, board_states: List[List[List[int]]]) -> Game:
+def create_game(
+    board_size: int,
+    board_states: Sequence[Sequence[Sequence[int]]],
+) -> Game:
     """Test helper that creates a `Game` with the specified `board_states`."""
     game = Game(board_size=board_size)
     game.board_states.clear()

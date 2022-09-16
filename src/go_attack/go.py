@@ -149,13 +149,17 @@ class Game:
         self.moves.pop()
         return self.board_states.pop()
 
-    def is_suicide(self, move: Move, *, turn_idx: Optional[int] = None) -> bool:
+    def is_suicide(
+        self,
+        move: Move,
+        *,
+        turn_idx: Optional[int] = None,
+        next_board: Optional[np.ndarray] = None,
+    ) -> bool:
         """Return `True` iff `move` is a suicide move."""
-        next_board = self.virtual_move(*move, turn_idx=turn_idx)
-        return (
-            next_board[cartesian_to_numpy(move.x, move.y)]
-            != self.current_player(turn_idx=turn_idx).value
-        )
+        if next_board is None:
+            next_board = self.virtual_move(*move, turn_idx=turn_idx)
+        return next_board[cartesian_to_numpy(move.x, move.y)] == Color.EMPTY
 
     def is_legal(self, move: Move, *, turn_idx: Optional[int] = None):
         """Return `True` iff `move` is legal at `turn_idx`."""
@@ -169,7 +173,11 @@ class Game:
         if self.is_repetition(next_board):
             return False
 
-        if not self.allow_suicide and self.is_suicide(move, turn_idx=turn_idx):
+        if not self.allow_suicide and self.is_suicide(
+            move,
+            turn_idx=turn_idx,
+            next_board=next_board,
+        ):
             return False
 
         return True
@@ -381,7 +389,10 @@ class Game:
     def to_sgf(self, comment: str = "") -> str:
         """Return an SGF string representing the game."""
         # We say we're using "New Zealand" rules in the SGF
-        header = f"(;FF[4]SZ[{self.board_size}]RU[NZ]"
+        header = (
+            f"(;FF[4]SZ[{self.board_size}]RU[NZ]KM[{self.komi}]"
+            "C[sui{int(self.allow_suicide)}]"
+        )
         if comment:
             header += f"C[{comment}]"
 
