@@ -159,7 +159,7 @@ class Game:
         """Return `True` iff `move` is a suicide move."""
         if next_board is None:
             next_board = self.virtual_move(*move, turn_idx=turn_idx)
-        return next_board[cartesian_to_numpy(move.x, move.y)] == Color.EMPTY
+        return next_board[cartesian_to_numpy(move.x, move.y)] == Color.EMPTY.value
 
     def is_legal(self, move: Move, *, turn_idx: Optional[int] = None):
         """Return `True` iff `move` is legal at `turn_idx`."""
