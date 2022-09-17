@@ -54,7 +54,6 @@ setup(
         "scipy",
         "seaborn",
         "simple-parsing",
-        "sgfmill",
         "tqdm",
     ],
     tests_require=TESTS_REQUIRE,
