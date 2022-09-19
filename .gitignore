@@ -16,6 +16,7 @@ selfplay-training
 sgf4test
 training
 victim-models
+victim-weights
 victimplay-training
 
 # Ignore certain scripts

@@ -75,11 +75,7 @@ services:
         sleep 5 &&
         mkdir -p /outputs/victims &&
         cd /engines/KataGo-custom &&
-        ./cpp/katago victimplay \
-        -output-dir /outputs/selfplay \
-        -models-dir /outputs/models \
-        -nn-victim-path /outputs/victims \
-        -config ${VICTIMPLAY_CONFIG}
+        ${VICTIMPLAY_CMD}
       "
     deploy:
       resources:
