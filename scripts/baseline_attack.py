@@ -23,6 +23,14 @@ def main():  # noqa: D103
         default=None,
         help="Path to KataGo executable",
     )
+    # Because ELF OpenGo disallows suicide moves and we want to launch
+    # consistent attacks across all engines, we default to disallowing suicide
+    # moves.
+    parser.add_argument(
+        "--allow-suicide",
+        action="store_true",
+        help="Allow the adversary to make suicide moves",
+    )
     parser.add_argument(
         "--passing-behavior",
         choices=PASSING_BEHAVIOR,
@@ -129,6 +137,7 @@ def main():  # noqa: D103
 
     baseline_fn = partial(
         run_baseline_attack,
+        allow_suicide=args.allow_suicide,
         board_size=args.size,
         config_path=config_path,
         executable_path=katago_exe,

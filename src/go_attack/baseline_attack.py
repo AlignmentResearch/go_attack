@@ -185,6 +185,7 @@ def run_baseline_attack(
     passing_behavior: str,
     gpu: Optional[int] = None,
     *,
+    allow_suicide: bool = False,
     board_size: int = 19,
     config_path: Path,
     executable_path: Path,
@@ -264,7 +265,7 @@ def run_baseline_attack(
         if verbose:
             print(f"\n--- Game {i + 1} of {num_games} ---")
 
-        game = Game(board_size)
+        game = Game(board_size=board_size, allow_suicide=allow_suicide)
         policy = make_policy()
         game, analyses = rollout_policy(
             game,
