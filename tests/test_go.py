@@ -1,8 +1,9 @@
 """Unit tests for the `go` module."""
 
-from typing import Sequence
+from typing import Dict, Sequence
 
 import numpy as np
+import pytest
 
 from go_attack.go import Game, Move
 
@@ -19,6 +20,30 @@ def create_game(
     # length of `game.moves` work.
     game.moves.extend(Move(x=0, y=0) for _ in board_states[:-1])
     return game
+
+
+@pytest.mark.parametrize(
+    "game_kwargs",
+    [
+        {
+            "board_size": 19,
+            "komi": 0.0,
+            "allow_suicide": True,
+        },
+        {
+            "board_size": 5,
+            "komi": -50.0,
+            "allow_suicide": False,
+        },
+    ],
+)
+def test_sgf_convert_arguments(game_kwargs: Dict):
+    """Checks `Game` SGF conversion parses `Game()` arguments correctly."""
+    game = Game(**game_kwargs)
+    parsed_game = Game.from_sgf(game.to_sgf())
+    assert parsed_game.board_size == game.board_size
+    assert parsed_game.komi == game.komi
+    assert parsed_game.allow_suicide == game.allow_suicide
 
 
 def test_is_suicide():

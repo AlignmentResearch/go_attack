@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Iterable, List, NamedTuple, Optional, Tuple, Union
+from typing import ClassVar, Iterable, List, NamedTuple, Optional, Tuple, Union
 
 import numpy as np
 from scipy.ndimage import distance_transform_cdt, label
@@ -103,13 +103,16 @@ class Game:
     a board state, the pieces are arranged visually the way you expect.
     """
 
+    DEFAULT_KOMI: ClassVar[float] = 7.5
+    DEFAULT_ALLOW_SUICIDE: ClassVar[bool] = True
+
     board_size: int
     board_states: List[np.ndarray] = field(default_factory=list)
     moves: List[Optional[Move]] = field(default_factory=list)
-    komi: float = 7.5
+    komi: float = DEFAULT_KOMI
     # Tromp-Taylor rules allow suicide, but we may want to disallow suicide to
     # play against engines like ELF OpenGo that also disallow suicide.
-    allow_suicide: bool = True
+    allow_suicide: bool = DEFAULT_ALLOW_SUICIDE
 
     def __len__(self) -> int:
         """Return the number of turns in this game."""
@@ -361,10 +364,19 @@ class Game:
         """Create a `Board` from an SGF string."""
         sgf_string = str(sgf_string).strip()
 
-        # Try to detect the board size from the SGF string using the SZ[]
-        # property; if that fails, use the default board size of 19.
+        # Try to detect board size from SZ[] property, komi from the KM[]
+        # property, and whether suicide moves are allowed from the C[] property.
         maybe_size = re.search(r"SZ\[([0-9]+)\]", sgf_string)
-        game = cls(int(maybe_size.group(1)) if maybe_size else 19)
+        board_size = int(maybe_size.group(1)) if maybe_size else 19
+        maybe_komi = re.search(r"KM\[(-?\d+\.?\d*)\]", sgf_string)
+        komi = float(maybe_komi.group(1)) if maybe_komi else cls.DEFAULT_KOMI
+        maybe_allow_suicide = re.search(r"C\[sui([0-1])", sgf_string)
+        allow_suicide = (
+            maybe_allow_suicide.group(1) == "1"
+            if maybe_allow_suicide
+            else cls.DEFAULT_ALLOW_SUICIDE
+        )
+        game = cls(board_size=board_size, komi=komi, allow_suicide=allow_suicide)
 
         turn_regex = re.compile(r"(B|W)\[([a-z]{0,2})\]")
         for i, hit in enumerate(turn_regex.finditer(sgf_string)):
@@ -388,13 +400,11 @@ class Game:
 
     def to_sgf(self, comment: str = "") -> str:
         """Return an SGF string representing the game."""
-        # We say we're using "New Zealand" rules in the SGF
-        header = (
-            f"(;FF[4]SZ[{self.board_size}]RU[NZ]KM[{self.komi}]"
-            "C[sui{int(self.allow_suicide)}]"
+        sgf_comment = (
+            f"C[sui{int(self.allow_suicide)}" + (f";{comment}" if comment else "") + "]"
         )
-        if comment:
-            header += f"C[{comment}]"
+        # We say we're using "New Zealand" rules in the SGF
+        header = f"(;FF[4]SZ[{self.board_size}]RU[NZ]KM[{self.komi}]{sgf_comment}"
 
         ascii_a = ord("a")
         sgf_moves = []
