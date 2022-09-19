@@ -109,6 +109,7 @@ def rollout_policy(
     # Regex that matches the "=" printed after a successful command that has no
     # output.
     SUCCESS_REGEX = re.compile(r"^=")
+    LEELA_SHOWBOARD_END_REGEX = re.compile(r"^White time:")
 
     def maybe_print(msg):
         if verbose:
@@ -127,11 +128,10 @@ def rollout_policy(
                     break
                 print(msg)
         elif engine_type == "leela":
-            FINISH_SHOWBOARD_REGEX = re.compile(r"^White time:")
             while True:
                 msg = readline()
                 print(msg)
-                if FINISH_SHOWBOARD_REGEX.match(msg):
+                if LEELA_SHOWBOARD_END_REGEX.match(msg):
                     break
         else:
             for i in range(game.board_size + 3):
