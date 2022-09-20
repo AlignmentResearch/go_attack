@@ -11,9 +11,11 @@ def main():
 
     available_tags = [
         # It's unclear why, but the Docker SDK gives a *list* of tags for each image.
-        # We filter out any anomalous images with more than one tag, or which have no
-        # tag ("dangling" images). Also, the "tag" string actually includes the repo
-        # name as well (e.g. "humancompatibleai/goattack:c27e251"). These are all
+        # We filter out any images with no tag ("dangling" images). Apparently, when
+        # we explicitly call Image.tag() below, this causes the image to have *two*
+        # duplicate tags up here. This duplicate tag doesn't seem to show up in
+        # `docker images`. Also, the "tag" string actually includes the repo name
+        # as well (e.g. "humancompatibleai/goattack:c27e251"). These are all
         # from the same repo, so we just look at the tag proper (e.g. "c27e251").
         image.tags[0].split(":")[1]
         for image in images
