@@ -1,4 +1,5 @@
 """Functions for running baseline attacks against KataGo."""
+import itertools
 import random
 import re
 from pathlib import Path
@@ -40,35 +41,72 @@ def send_msg(to_engine: IO[AnyStr], msg: str) -> None:
 
 def start_engine(
     executable_path: Path,
-    config_path: Path,
-    model_path: Path,
-    num_playouts: int,
-    passing_behavior: str,
-    gpu: int,
-    verbose: bool,
+    engine_type: str,
+    config_path: Optional[Path] = None,
+    model_path: Optional[Path] = None,
+    num_playouts: Optional[int] = None,
+    passing_behavior: Optional[str] = None,
+    gpu: Optional[int] = None,
+    verbose: bool = False,
 ) -> Tuple[IO[bytes], IO[bytes]]:
-    """Starts the KataGo engine, returning a tuple with the engines stdin and stdout."""
-    args = [
-        str(executable_path),
-        "gtp",
-        "-model",
-        str(model_path),
-        "-override-config",
-        f"passingBehavior={passing_behavior},maxPlayouts={num_playouts}",
-        "-config",
-        str(config_path),
-    ]
-    if verbose:
-        print(f"Starting engine with args: {args}")
+    """Starts the engine, returning a tuple with the engines stdin and stdout."""
+    katago_specific_args = {
+        "config_path": config_path,
+        "model_path": model_path,
+        "num_playouts": num_playouts,
+        "passing_behavior": passing_behavior,
+    }
+    if engine_type == "katago":
+        for arg_name, arg_value in katago_specific_args.items():
+            if arg_value is None:
+                raise ValueError(f"{arg_name} must not be None")
+        if passing_behavior not in PASSING_BEHAVIOR:
+            raise ValueError(
+                f"Invalid behavior '{passing_behavior}', must be one of {PASSING_BEHAVIOR}",
+            )
+        if config_path and not config_path.exists():
+            raise ValueError(f"config_path must exist: {config_path}")
+        if model_path and not model_path.exists():
+            raise ValueError(f"model_path must exist: {model_path}")
+        if gpu is None:
+            gpu = select_best_gpu(10)
 
-    proc = Popen(
-        args,
-        bufsize=0,  # We need to disable buffering to get stdout line-by-line
-        env={"CUDA_VISIBLE_DEVICES": str(gpu)},
-        stderr=open("/tmp/go-baseline-attack.stderr", "w"),
-        stdin=PIPE,
-        stdout=PIPE,
-    )
+        args = [
+            str(executable_path),
+            "gtp",
+            "-model",
+            str(model_path),
+            "-override-config",
+            f"passingBehavior={passing_behavior},maxPlayouts={num_playouts}",
+            "-config",
+            str(config_path),
+        ]
+        if verbose:
+            print(f"Starting engine with args: {args}")
+
+        proc = Popen(
+            args,
+            bufsize=0,  # We need to disable buffering to get stdout line-by-line
+            env={"CUDA_VISIBLE_DEVICES": str(gpu)},
+            stderr=open("/tmp/go-baseline-attack.stderr", "w"),
+            stdin=PIPE,
+            stdout=PIPE,
+        )
+    else:
+        for arg_name, arg_value in katago_specific_args.items():
+            if arg_value is not None:
+                print(f"Warning: Ignoring argument f{arg_name}=f{arg_value}")
+
+        args = [str(executable_path)]
+        if verbose:
+            print(f"Starting engine with args: {args}")
+        proc = Popen(
+            args,
+            bufsize=0,  # We need to disable buffering to get stdout line-by-line
+            stderr=open("/tmp/go-baseline-attack.stderr", "w"),
+            stdin=PIPE,
+            stdout=PIPE,
+        )
     to_engine = proc.stdin
     from_engine = proc.stdout
     assert to_engine is not None and from_engine is not None
@@ -77,16 +115,21 @@ def start_engine(
 
 def make_log_dir(
     log_root: Path,
-    model_path: Path,
     adversarial_policy: str,
-    num_playouts: int,
-    passing_behavior: str,
+    model_path: Optional[Path],
+    num_playouts: Optional[int],
+    passing_behavior: Optional[str],
 ) -> Path:
     """Make a log directory and return the Path to it."""
-    desc = f"model={model_path.stem}"
-    desc += f"_policy={adversarial_policy}"
-    desc += f"_playouts={num_playouts}"
-    desc += f"_pass={passing_behavior}"
+    desc_list = []
+    if model_path is not None:
+        desc_list.append(f"model={model_path.stem}")
+    desc_list.append(f"policy={adversarial_policy}")
+    if num_playouts is not None:
+        desc_list.append(f"playouts={num_playouts}")
+    if passing_behavior is not None:
+        desc_list.append(f"pass={passing_behavior}")
+    desc = "_".join(desc_list)
 
     log_dir = log_root / desc
     log_dir.mkdir(exist_ok=True, parents=True)
@@ -109,38 +152,31 @@ def rollout_policy(
     # Regex that matches the "=" printed after a successful command that has no
     # output.
     SUCCESS_REGEX = re.compile(r"^=")
-    LEELA_SHOWBOARD_END_REGEX = re.compile(r"^White time:")
+    LEELA_SHOWBOARD_END_REGEX = re.compile(r"^Black time:")
+    from_engine_lines = map(lambda line: line.decode("ascii").strip(), from_engine)
 
     def maybe_print(msg):
         if verbose:
             print(msg)
 
-    def readline():
-        return from_engine.readline().decode("ascii").strip()
-
     def print_engine_board():
         send_msg(to_engine, "showboard")
         # The different engines have different showboard formats.
-        if engine_type == "elf":
-            while True:
-                msg = readline()
-                if SUCCESS_REGEX.fullmatch(msg):
-                    break
-                print(msg)
-        elif engine_type == "leela":
-            while True:
-                msg = readline()
-                print(msg)
-                if LEELA_SHOWBOARD_END_REGEX.match(msg):
-                    break
-        else:
-            for i in range(game.board_size + 3):
-                msg = readline()
-                print(msg)
+        predicates = {
+            "elf": lambda index_and_msg: not SUCCESS_REGEX.fullmatch(index_and_msg[1]),
+            "leela": lambda index_and_msg: not LEELA_SHOWBOARD_END_REGEX.match(
+                index_and_msg[1]
+            ),
+            "katago": lambda index_and_msg: index_and_msg[0] < game.board_size + 3,
+        }
+        for _, msg in itertools.takewhile(
+            predicates[engine_type], enumerate(from_engine_lines)
+        ):
+            print(msg)
 
     def get_msg(pattern: re.Pattern) -> re.Match:
         while True:
-            msg = readline()
+            msg = next(from_engine_lines)
             if hit := pattern.fullmatch(msg):
                 return hit
 
@@ -183,9 +219,9 @@ def rollout_policy(
             move_regex = re.compile(r"= ([A-Z][0-9]{1,2}|pass)", re.IGNORECASE)
             victim_move = get_msg(move_regex).group(1)
 
-        game.play_move(Move.from_str(victim_move))
         maybe_print(f"\nTurn {turn}")
         maybe_print(f"{engine_type} played: {victim_move}")
+        game.play_move(Move.from_str(victim_move))
 
         if game.is_over():
             break
@@ -215,10 +251,10 @@ def rollout_policy(
 
 
 def run_baseline_attack(
-    model_path: Path,
     adversarial_policy: str,
-    num_playouts: int,
-    passing_behavior: str,
+    model_path: Optional[Path] = None,
+    num_playouts: Optional[int] = None,
+    passing_behavior: Optional[str] = None,
     gpu: Optional[int] = None,
     *,
     allow_suicide: bool = False,
@@ -235,25 +271,16 @@ def run_baseline_attack(
     verbose: bool = False,
     victim: Literal["B", "W"] = "B",
 ) -> Sequence[Game]:
-    """Run a baseline attack against KataGo."""
+    """Run a baseline attack."""
     if adversarial_policy not in POLICIES:
         raise ValueError(
             f"Invalid policy '{adversarial_policy}', must be one of {POLICIES}",
         )
-    if passing_behavior not in PASSING_BEHAVIOR:
-        raise ValueError(
-            f"Invalid behavior '{passing_behavior}', must be one of {PASSING_BEHAVIOR}",
-        )
-    if not config_path.exists():
-        raise ValueError(f"config_path must exist: {config_path}")
-    if not model_path.exists():
-        raise ValueError(f"model_path must exist: {model_path}")
-    if gpu is None:
-        gpu = select_best_gpu(10)
 
-    # Start up the KataGo executable.
+    # Start up the executable.
     to_engine, from_engine = start_engine(
         executable_path,
+        engine_type,
         config_path,
         model_path,
         num_playouts,
@@ -266,8 +293,8 @@ def run_baseline_attack(
     if log_root is not None:
         log_dir = make_log_dir(
             log_root,
-            model_path,
             adversarial_policy,
+            model_path,
             num_playouts,
             passing_behavior,
         )

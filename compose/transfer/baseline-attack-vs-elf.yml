@@ -41,14 +41,13 @@ services:
       - type: bind
         source: ${HOST_REPO_ROOT}
         target: /go_attack
+        read_only: true
     command:
       sh -c "
         python3 -u /go_attack/scripts/baseline_attack.py
-        --config /go_attack/configs/katago/baseline_attack.cfg
         --engine elf
         --executable /engines/connect-to-victim.sh
         --log-dir /outputs/sgfs
-        --models /dev/null
         --num-games ${NUM_GAMES}
         --verbose
         2>&1 | tee --append /outputs/attack.log
