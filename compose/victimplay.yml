@@ -11,52 +11,7 @@
 version: "3"
 
 services:
-  curriculum:
-    image: humancompatibleai/goattack:python
-    build:
-      context: ..
-      dockerfile: ./compose/python/Dockerfile
-    volumes:
-      - type: bind
-        source: ${HOST_OUTPUT_DIR}
-        target: /outputs
-      - type: bind
-        source: ${HOST_VICTIMS_DIR}
-        target: /victims
-        read_only: true
-      - type: bind
-        source: ${HOST_CONFIG_DIR}
-        target: /configs
-        read_only: true
-    command: >
-      sh -c "
-        cd /engines/KataGo-custom/python &&
-        python curriculum.py \
-        -selfplay-dir=/outputs/selfplay \
-        -input-models-dir=/victims \
-        -output-models-dir=/outputs/victims \
-        -config-json-file=${VICTIMPLAY_CURRICULUM_CONFIG} \
-        ${VICTIMPLAY_CURRICULUM_EXTRA}
-      "
-  evaluate:
-    image: humancompatibleai/goattack:cpp
-    build:
-      context: ..
-      dockerfile: ./compose/cpp/Dockerfile
-    volumes:
-      - type: bind
-        source: ${HOST_OUTPUT_DIR}
-        target: /outputs
-    command: /engines/KataGo-custom/cpp/evaluate_loop.sh /outputs
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: ["gpu"]
-              driver: nvidia
-              device_ids: ["0"]
-
-  victimplay:
+  victimplay-1: &victimplay
     image: humancompatibleai/goattack:cpp
     build:
       context: ..
@@ -67,18 +22,16 @@ services:
         source: ${HOST_OUTPUT_DIR}
         target: /outputs
       - type: bind
-        source: ${HOST_CONFIG_DIR}
-        target: /configs
+        source: ${HOST_MODEL_DIR}
+        target: /models
         read_only: true
     command: >
       sh -c "
-        sleep 5 &&
-        mkdir -p /outputs/victims &&
         cd /engines/KataGo-custom &&
         ./cpp/katago victimplay \
         -output-dir /outputs/selfplay \
         -models-dir /outputs/models \
-        -nn-victim-path /outputs/victims \
+        -nn-victim-path ${VICTIM_FILE} \
         -config ${VICTIMPLAY_CONFIG}
       "
     deploy:
@@ -87,10 +40,69 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["1", "2", "3", "4", "5", "6", "7"]
+              device_ids: ["1"]
     cap_add:
       - SYS_PTRACE
-    stop_grace_period: 120s   # Nvidia driver bug workaround
+
+  victimplay-2:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["2"]
+
+  victimplay-3:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["3"]
+
+  victimplay-4:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["4"]
+
+  victimplay-5:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["5"]
+
+  victimplay-6:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["6"]
+
+  victimplay-7:
+    <<: *victimplay
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["7"]
 
   train:
     image: humancompatibleai/goattack:python
@@ -107,11 +119,12 @@ services:
         ./selfplay/train.sh \
         /outputs/ \
         ${TRAININGNAME} \
-        b6c96 \
+        ${ADV_NET_SIZE} \
         ${BATCH_SIZE} \
         main \
         -lr-scale 1.0 \
-        -max-train-bucket-per-new-data ${MAX_TRAIN_RATIO}
+        -max-train-bucket-per-new-data ${MAX_TRAIN_RATIO} \
+        -disable-vtimeloss
       "
     deploy:
       resources:
@@ -139,8 +152,7 @@ services:
         ${SCRATCH_DIRECTORY} \
         ${NUM_THREADS} \
         ${BATCH_SIZE} \
-        ${USE_GATING} \
-        ${SHUFFLE_EXTRA} &&
+        ${USE_GATING} &&
         sleep infinity
       "
     # shuffle_and_export_loop.sh disowns subprocesses and exits, which is why we
