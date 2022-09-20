@@ -80,6 +80,7 @@ services:
         -models-dir /outputs/models \
         -nn-victim-path /outputs/victims \
         -config ${VICTIMPLAY_CONFIG}
+        -config /configs/compute/7gpu.cfg
       "
     deploy:
       resources:
