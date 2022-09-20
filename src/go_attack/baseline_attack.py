@@ -152,7 +152,7 @@ def rollout_policy(
             move_regex = re.compile(r"= ([A-Z][0-9]{1,2}|pass)")
             victim_move = get_msg(move_regex).group(1)
 
-        game.play_move(Move.from_str(victim_move))
+        game.play_move(Move.from_str(victim_move), check_legal=False)
         maybe_print(f"\nTurn {turn}")
         maybe_print(f"KataGo played: {victim_move}")
 
