@@ -4,16 +4,22 @@ if [ $# -lt 1 ]; then
     exit 2
 fi
 
+GIT_ROOT=$(git rev-parse --show-toplevel)
 RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
 echo "Run name: $RUN_NAME"
 
+# Maybe build and push new Docker images
+python "$GIT_ROOT"/kubernetes/update_images.py
+# Load the env variables just created by update_images.py
+export "$(xargs < "$GIT_ROOT"/kubernetes/active-images.env)"
+
 # shellcheck disable=SC2215
 ctl job run --container \
-    humancompatibleai/goattack:2022-09-19 \
-    humancompatibleai/goattack:2022-09-19 \
-    humancompatibleai/goattack:2022-09-19-python-v2 \
-    humancompatibleai/goattack:2022-09-19-python-v2 \
-    humancompatibleai/goattack:2022-09-19-python-v2 \
+    "$CPP_IMAGE" \
+    "$CPP_IMAGE" \
+    "$PYTHON_IMAGE" \
+    "$PYTHON_IMAGE" \
+    "$PYTHON_IMAGE" \
     --volume_name go-attack \
     --volume_mount shared \
     --command "/shared/kubernetes/victimplay.sh $RUN_NAME" \
