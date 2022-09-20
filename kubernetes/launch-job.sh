@@ -4,7 +4,7 @@ if [ $# -lt 1 ]; then
     exit 2
 fi
 
-RUN_NAME="$1_$(date +%Y%m%d-%H:%M:%S)"
+RUN_NAME="$1-$(date +%Y.%m.%d-%H.%M.%S)"
 echo "Run name: $RUN_NAME"
 
 # shellcheck disable=SC2215
@@ -22,5 +22,5 @@ ctl job run --container \
     "/shared/kubernetes/shuffle-and-export.sh $RUN_NAME" \
     "/shared/kubernetes/curriculum.sh $RUN_NAME" \
     --gpu 1 1 1 0 0 \
-    --name go-training \
+    --name go-training-"${RUN_NAME}" \
     --replicas "${2:-7}" 1 1 1 1
