@@ -1,4 +1,5 @@
 #!/bin/sh
+mkdir -p /shared/victimplay/"$1"
 /engines/KataGo-custom/cpp/katago victimplay \
     -output-dir /shared/victimplay/"$1"/selfplay/ \
     -models-dir /shared/models/ \

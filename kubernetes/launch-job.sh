@@ -11,7 +11,10 @@ echo "Run name: $RUN_NAME"
 # Maybe build and push new Docker images
 python "$GIT_ROOT"/kubernetes/update_images.py
 # Load the env variables just created by update_images.py
-export "$(xargs < "$GIT_ROOT"/kubernetes/active-images.env)"
+# This line is weird because ShellCheck wants us to put double quotes around the
+# $() context but this changes the behavior to something we don't want
+# shellcheck disable=SC2046
+export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
 
 # shellcheck disable=SC2215
 ctl job run --container \
