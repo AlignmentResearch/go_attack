@@ -23,13 +23,17 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
+    "$PYTHON_IMAGE" \
+    "$PYTHON_IMAGE" \
     --volume_name go-attack \
     --volume_mount shared \
     --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh /shared/victimplay/$RUN_NAME" \
     "/go_attack/kubernetes/train.sh $RUN_NAME" \
-    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME" \
+    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME" \
-    --gpu 1 1 1 0 0 \
+    "/go_attack/kubernetes/shuffle-and-export.sh ${RUN_NAME}_victim $RUN_NAME/predictor" \
+    "/go_attack/kubernetes/train.sh $RUN_NAME/predictor" \
+    --gpu 1 1 1 0 0 0 1 \
     --name go-training-"$1" \
-    --replicas "${2:-7}" 1 1 1 1
+    --replicas "${2:-7}" 1 1 1 1 1 1

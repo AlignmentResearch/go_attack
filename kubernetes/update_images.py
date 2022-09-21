@@ -47,11 +47,7 @@ def main():
         assert isinstance(build_result, tuple) and len(build_result) == 2
         img, _ = build_result
         assert isinstance(img, Image)
-        print(f"Built image {img.short_id} with tags {img.tags}")
 
-        # For some reason we have to explicitly "tag the image in" to the local repo.
-        # Otherwise the image doesn't show up in `docker images` and you can't push it.
-        # img.tag(repository="humancompatibleai/goattack", tag=tag)
         print(f"Pushing humancompatibleai/goattack:{tag}")
         client.images.push(repository="humancompatibleai/goattack", tag=tag)
 
