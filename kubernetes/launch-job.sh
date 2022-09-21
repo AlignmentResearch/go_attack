@@ -16,6 +16,25 @@ python "$GIT_ROOT"/kubernetes/update_images.py
 # shellcheck disable=SC2046
 export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
 
+# The KUBECONFIG env variable is set in the user's .bashrc and is changed whenever you type
+# "loki" or "lambda" on the command line
+case "$KUBECONFIG" in
+    "$HOME/.kube/loki")
+        echo "Looks like we're on Loki. Will use the shared host directory instead of Weka."
+        VOLUME_FLAGS=""
+        VOLUME_NAME=data
+        ;;
+    "$HOME/.kube/lambda")
+        echo "Looks like we're on Lambda. Will use the shared Weka volume."
+        VOLUME_FLAGS="--volume_name go-attack --volume_mount shared"
+        VOLUME_NAME=shared
+        ;;
+    *)
+        echo "Unknown value for KUBECONFIG env variable: $KUBECONFIG"
+        exit 2
+        ;;
+esac
+
 # shellcheck disable=SC2215
 ctl job run --container \
     "$CPP_IMAGE" \
@@ -23,10 +42,9 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
-    --volume_name go-attack \
-    --volume_mount shared \
+    "$VOLUME_FLAGS" \
     --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME" \
-    "/engines/KataGo-custom/cpp/evaluate_loop.sh /shared/victimplay/$RUN_NAME" \
+    "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME" \
     "/go_attack/kubernetes/train.sh $RUN_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME" \
