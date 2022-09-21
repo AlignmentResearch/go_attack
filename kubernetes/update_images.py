@@ -9,22 +9,19 @@ def main():
     client = docker.from_env()
     images = client.images.list(name="humancompatibleai/goattack")
 
-    available_tags = [
-        # It's unclear why, but the Docker SDK gives a *list* of tags for each image.
-        # We filter out any images with no tag ("dangling" images). Apparently, when
-        # we explicitly call Image.tag() below, this causes the image to have *two*
-        # duplicate tags up here. This duplicate tag doesn't seem to show up in
-        # `docker images`. Also, the "tag" string actually includes the repo name
-        # as well (e.g. "humancompatibleai/goattack:c27e251"). These are all
-        # from the same repo, so we just look at the tag proper (e.g. "c27e251").
-        image.tags[0].split(":")[1]
-        for image in images
-        if isinstance(image, Image) and len(image.tags) > 0
-    ]
-
     # We use the Git hash to tag our images. Find the current hash.
     hash_raw = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
     current_hash = hash_raw.decode("ascii").strip()
+
+    # The "tag" string actually includes the repo name as well
+    # (e.g. "humancompatibleai/goattack:c27e251"). These are all
+    # from the same repo, so we just look at the tag proper (e.g. "c27e251").
+    available_tags = [
+        tag.split(":")[1]
+        for image in images
+        if isinstance(image, Image)
+        for tag in image.tags
+    ]
 
     # We also need to know the absolute path for the root Go Attack directory
     # in order to build the Docker images if necessary.
