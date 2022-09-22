@@ -5,10 +5,13 @@ import subprocess
 import docker
 from docker.models.images import Image
 
+REPO_NAME = "humancompatibleai/goattack"
+
 
 def main():
+    """Main entry point."""
     client = docker.from_env()
-    images = client.images.list(name="humancompatibleai/goattack")
+    images = client.images.list(name=REPO_NAME)
 
     # We use the Git hash to tag our images. Find the current hash.
     hash_raw = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
@@ -34,14 +37,14 @@ def main():
     for image_type in ("cpp", "python"):
         tag = f"{current_hash}-{image_type}"
         if tag in available_tags:
-            print(f"Using existing local copy of humancompatibleai/goattack:{tag}")
+            print(f"Using existing local copy of {REPO_NAME}:{tag}")
             continue
 
-        print(f"Building humancompatibleai/goattack:{tag}")
+        print(f"Building {REPO_NAME}:{tag}")
         build_result = client.images.build(
             path=rootdir,
             dockerfile=f"compose/{image_type}/Dockerfile",
-            tag=f"humancompatibleai/goattack:{tag}",
+            tag=f"{REPO_NAME}:{tag}",
         )
         # Pylance can't quite figure out the type of build_result; see
         # https://docker-py.readthedocs.io/en/stable/images.html#image-objects for info
@@ -49,17 +52,13 @@ def main():
         img, _ = build_result
         assert isinstance(img, Image)
         print(f"Built image {img.short_id} with tags {img.tags}")
-
-        # For some reason we have to explicitly "tag the image in" to the local repo.
-        # Otherwise the image doesn't show up in `docker images` and you can't push it.
-        # img.tag(repository="humancompatibleai/goattack", tag=tag)
-        print(f"Pushing humancompatibleai/goattack:{tag}")
-        client.images.push(repository="humancompatibleai/goattack", tag=tag)
+        print(f"Pushing {REPO_NAME}:{tag}")
+        client.images.push(repository=REPO_NAME, tag=tag)
 
     # Write the current image tags to a file so that Kubernetes can use them.
     with open(f"{rootdir}/kubernetes/active-images.env", "w") as f:
-        f.write(f"CPP_IMAGE=humancompatibleai/goattack:{current_hash}-cpp\n")
-        f.write(f"PYTHON_IMAGE=humancompatibleai/goattack:{current_hash}-python")
+        f.write(f"CPP_IMAGE={REPO_NAME}:{current_hash}-cpp\n")
+        f.write(f"PYTHON_IMAGE={REPO_NAME}:{current_hash}-python")
 
 
 if __name__ == "__main__":
