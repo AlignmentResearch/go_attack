@@ -265,7 +265,7 @@ def run_baseline_attack(
         if verbose:
             print(f"\n--- Game {i + 1} of {num_games} ---")
 
-        game = Game(board_size=board_size, allow_suicide=allow_suicide)
+        game = Game(board_size=board_size)
         policy = make_policy()
         game, analyses = rollout_policy(
             game,
