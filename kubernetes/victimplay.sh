@@ -1,8 +1,10 @@
 #!/bin/sh
-mkdir -p /shared/victimplay/"$1"
+RUN_NAME="$1"
+VOLUME_NAME="$2"
+mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 /engines/KataGo-custom/cpp/katago victimplay \
-    -output-dir /shared/victimplay/"$1"/selfplay/ \
-    -models-dir /shared/models/ \
-    -nn-victim-path /shared/victims/ \
-    -config /shared/configs/active-experiment.cfg \
-    -config /shared/configs/compute/1gpu.cfg
+    -output-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/ \
+    -models-dir /"$VOLUME_NAME"/models/ \
+    -nn-victim-path /"$VOLUME_NAME"/victims/ \
+    -config /"$VOLUME_NAME"/configs/active-experiment.cfg \
+    -config /"$VOLUME_NAME"/configs/compute/1gpu.cfg
