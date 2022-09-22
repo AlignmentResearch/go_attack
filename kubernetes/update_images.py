@@ -1,8 +1,9 @@
 """Automatically build and push new images to Docker Hub if necessary."""
 
-from docker.models.images import Image
-import docker
 import subprocess
+
+import docker
+from docker.models.images import Image
 
 
 def main():
@@ -57,14 +58,8 @@ def main():
 
     # Write the current image tags to a file so that Kubernetes can use them.
     with open(f"{rootdir}/kubernetes/active-images.env", "w") as f:
-        f.write(
-            "\n".join(
-                [
-                    f"CPP_IMAGE=humancompatibleai/goattack:{current_hash}-cpp",
-                    f"PYTHON_IMAGE=humancompatibleai/goattack:{current_hash}-python",
-                ]
-            )
-        )
+        f.write(f"CPP_IMAGE=humancompatibleai/goattack:{current_hash}-cpp\n")
+        f.write(f"PYTHON_IMAGE=humancompatibleai/goattack:{current_hash}-python")
 
 
 if __name__ == "__main__":
