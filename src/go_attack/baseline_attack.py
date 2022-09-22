@@ -19,9 +19,9 @@ from go_attack.go import Color, Game, Move
 from go_attack.utils import select_best_gpu
 
 ENGINE_TYPES = (
-    "katago",
     "elf",
     "leela",
+    "katago",
 )
 
 PASSING_BEHAVIOR = (
@@ -50,14 +50,14 @@ def start_engine(
     verbose: bool = False,
 ) -> Tuple[IO[bytes], IO[bytes]]:
     """Starts the engine, returning a tuple with the engines stdin and stdout."""
-    katago_specific_args = {
+    katago_required_args = {
         "config_path": config_path,
         "model_path": model_path,
         "num_playouts": num_playouts,
         "passing_behavior": passing_behavior,
     }
     if engine_type == "katago":
-        for arg_name, arg_value in katago_specific_args.items():
+        for arg_name, arg_value in katago_required_args.items():
             if arg_value is None:
                 raise ValueError(f"{arg_name} must not be None")
         if passing_behavior not in PASSING_BEHAVIOR:
@@ -93,9 +93,11 @@ def start_engine(
             stdout=PIPE,
         )
     else:
-        for arg_name, arg_value in katago_specific_args.items():
+        for arg_name, arg_value in katago_required_args.items():
             if arg_value is not None:
                 print(f"Warning: Ignoring argument f{arg_name}=f{arg_value}")
+        if gpu is not None:
+            print(f"Warning: Ignoring argument gpu=f{gpu}")
 
         args = [str(executable_path)]
         if verbose:

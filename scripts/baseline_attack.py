@@ -187,6 +187,8 @@ def main():  # noqa: D103
 
         with Pool(2 * num_devices) as p:
             baseline_fn = partial(baseline_fn, progress_bar=False)
+            # TODO(tomtseng) this is type error for ELF/Leela, and GPU isn't even
+            # used for ELF/Leela anyway
             configs = [(*config, i % num_devices) for i, config in enumerate(configs)]
             p.starmap(baseline_fn, configs)
 
