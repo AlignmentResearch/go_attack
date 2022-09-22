@@ -47,6 +47,7 @@ setup(
     package_dir={"": "src"},
     package_data={"go_attack": ["py.typed"]},
     install_requires=[
+        "docker",
         "matplotlib",
         "numpy",
         "pandas",
