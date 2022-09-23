@@ -240,6 +240,7 @@ def run_baseline_attack(
             policy = policy_cls(
                 game,
                 victim_color.opponent(),
+                allow_suicide,
                 to_engine,
                 from_engine,
             )  # pytype: disable=not-instantiable,wrong-arg-count
@@ -247,6 +248,7 @@ def run_baseline_attack(
             policy = policy_cls(
                 game,
                 victim_color.opponent(),
+                allow_suicide,
             )  # pytype: disable=not-instantiable
         return PassingWrapper(policy, moves_before_pass)
 
