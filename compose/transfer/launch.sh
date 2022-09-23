@@ -1,16 +1,39 @@
 #!/bin/bash
 
+# Directory of this script
+SCRIPT_DIR=$(dirname -- "$( readlink -f -- "$0"; )";)
+ENV_FILE=${SCRIPT_DIR}/baseline-attack.env
+
 function usage() {
-  echo "Usage: $0 experiment command"
+  echo "Usage: $0 [-e env_file] experiment command"
   echo
   echo "Launches a transfer experiment."
+  echo
+  echo "optional arguments:"
+  echo "  -e env_file, --env-file env_file"
+  echo "              Which file to use for environment variables."
+  echo "              default: ${ENV_FILE}"
   echo
   echo "positional arguments:"
   echo "  experiment  Which experiment to run."
   echo "              values: {baseline-attack-vs-elf, baseline-attack-vs-leela}"
   echo "  command     docker-compose command to run."
   echo "              values: {build, up}"
+  echo
+  echo "Optional arguments should be specified before positional arguments."
 }
+
+NUM_POSITIONAL_ARGUMENTS=2
+
+# Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
+while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
+  case $1 in
+    -e|--env-file) ENV_FILE=$2; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+  esac
+  shift
+done
 
 if [ $# -ne 2 ]; then
   usage; exit 1
@@ -28,11 +51,8 @@ if [ ${EXPERIMENT_NAME} = "baseline-attack-vs-leela" ]; then
   touch -a ${HOST_LEELA_TUNING_FILE}
 fi
 
-# Directory of this script
-SCRIPT_DIR=$(dirname -- "$( readlink -f -- "$0"; )";)
-
 docker-compose \
   --file ${SCRIPT_DIR}/${EXPERIMENT_NAME}.yml \
-  --env-file ${SCRIPT_DIR}/baseline-attack.env \
+  --env-file ${ENV_FILE} \
   --project-name ${EXPERIMENT_NAME} \
   ${DOCKER_COMPOSE_COMMAND}
