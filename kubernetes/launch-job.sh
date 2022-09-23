@@ -26,7 +26,8 @@ case "$KUBECONFIG" in
         ;;
     "$HOME/.kube/lambda")
         echo "Looks like we're on Lambda. Will use the shared Weka volume."
-        VOLUME_FLAGS="--volume_name go-attack --volume_mount shared"
+        # shellcheck disable=SC2089
+        VOLUME_FLAGS="--volume_name go-attack --volume_mount shared --shared-host-dir=''"
         VOLUME_NAME=shared
         ;;
     *)
@@ -35,7 +36,7 @@ case "$KUBECONFIG" in
         ;;
 esac
 
-# shellcheck disable=SC2215,SC2086
+# shellcheck disable=SC2215,SC2086,SC2089,SC2090
 ctl job run --container \
     "$CPP_IMAGE" \
     "$CPP_IMAGE" \
