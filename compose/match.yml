@@ -12,36 +12,152 @@
 version: "3"
 
 services:
-  match:
+  match-0: &match
     image: humancompatibleai/goattack:cpp
     build:
       context: ..
       dockerfile: ./compose/cpp/Dockerfile
       target: prod
     volumes:
-      - type: bind
-        source: ${HOST_OUTPUT_DIR}
-        target: /outputs
-      - type: bind
-        source: ${HOST_CONFIG_DIR}
-        target: /configs
-        read_only: true
-      - type: bind
+      - &vol_garoot
+        type: bind
         source: ${GO_ATTACK_ROOT_DIR}
         target: /garoot
         read_only: true
+      - &vol_models
+        type: bind
+        source: ${HOST_MODEL_DIR}
+        target: /models
+        read_only: true
+      - &vol_sgfs
+        type: bind
+        source: ${HOST_OUTPUT_DIR}/sgfs
+        target: /sgfs
+      - &vol_logs
+        type: bind
+        source: ${HOST_OUTPUT_DIR}/0
+        target: /logs
     command: >
         /engines/KataGo-custom/cpp/katago match
         -config ${MATCH_CONFIG}
-        -log-file /outputs/match.log
-        -sgf-output-dir /outputs/
-        -override-config maxVisits=${MAX_VISITS}
-        -override-config passingBehavior1=${PASSING_BEHAVIOR}
+        -log-file /logs/match.log
+        -sgf-output-dir /sgfs/
     deploy:
       resources:
         reservations:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["0", "1", "2", "3", "4", "5", "6", "7"]
-    stop_grace_period: 120s
+              device_ids: ["0"]
+
+  match-1:
+    <<: *match
+    volumes:
+      - *vol_garoot
+      - *vol_models
+      - *vol_sgfs
+      - <<: *vol_logs
+        source: ${HOST_OUTPUT_DIR}/1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["1"]
+
+  match-2:
+    <<: *match
+    volumes:
+      - *vol_garoot
+      - *vol_models
+      - *vol_sgfs
+      - <<: *vol_logs
+        source: ${HOST_OUTPUT_DIR}/2
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["2"]
+
+  match-3:
+    <<: *match
+    volumes:
+      - *vol_garoot
+      - *vol_models
+      - *vol_sgfs
+      - <<: *vol_logs
+        source: ${HOST_OUTPUT_DIR}/3
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["3"]
+
+  match-4:
+    <<: *match
+    volumes:
+      - *vol_garoot
+      - *vol_models
+      - *vol_sgfs
+      - <<: *vol_logs
+        source: ${HOST_OUTPUT_DIR}/4
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["4"]
+
+  match-5:
+    <<: *match
+    volumes:
+      - *vol_garoot
+      - *vol_models
+      - *vol_sgfs
+      - <<: *vol_logs
+        source: ${HOST_OUTPUT_DIR}/5
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["5"]
+
+  match-6:
+    <<: *match
+    volumes:
+      - *vol_garoot
+      - *vol_models
+      - *vol_sgfs
+      - <<: *vol_logs
+        source: ${HOST_OUTPUT_DIR}/6
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["6"]
+
+  match-7:
+    <<: *match
+    volumes:
+      - *vol_garoot
+      - *vol_models
+      - *vol_sgfs
+      - <<: *vol_logs
+        source: ${HOST_OUTPUT_DIR}/7
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["7"]
