@@ -51,8 +51,8 @@ if [ ${EXPERIMENT_NAME} = "baseline-attack-vs-leela" ]; then
   touch -a ${HOST_LEELA_TUNING_FILE}
 fi
 
-# docker-compose \
-#   --file ${SCRIPT_DIR}/${EXPERIMENT_NAME}.yml \
-#   --env-file ${ENV_FILE} \
-#   --project-name ${EXPERIMENT_NAME} \
-#   ${DOCKER_COMPOSE_COMMAND}
+docker-compose \
+  --file ${SCRIPT_DIR}/${EXPERIMENT_NAME}.yml \
+  --env-file ${ENV_FILE} \
+  --project-name ${EXPERIMENT_NAME} \
+  ${DOCKER_COMPOSE_COMMAND}
