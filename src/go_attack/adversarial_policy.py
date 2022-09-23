@@ -198,7 +198,9 @@ class NonmyopicWhiteBoxPolicy(BasicPolicy):
         self.gtp_stdin.write(b"kata-raw-nn 0\n")
         size = self.game.board_size
         ownership_dist = parse_array(self.gtp_stdout, "whiteOwnership", size)
-        ownership_dist += (1 - self.game.legal_move_mask(allow_suicide=self.allow_suicide).T) * np.inf
+        ownership_dist += (
+            1 - self.game.legal_move_mask(allow_suicide=self.allow_suicide).T
+        ) * np.inf
 
         try:
             flat_idx = np.nanargmin(ownership_dist)

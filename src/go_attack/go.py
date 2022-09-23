@@ -160,7 +160,13 @@ class Game:
             next_board = self.virtual_move(*move, turn_idx=turn_idx)
         return next_board[cartesian_to_numpy(move.x, move.y)] == Color.EMPTY.value
 
-    def is_legal(self, move: Move, *, turn_idx: Optional[int] = None, allow_suicide: bool = True):
+    def is_legal(
+        self,
+        move: Move,
+        *,
+        turn_idx: Optional[int] = None,
+        allow_suicide: bool = True,
+    ):
         """Return `True` iff `move` is legal at `turn_idx`."""
         # Rule 7. A move consists of coloring an *empty* point one's own color...
         if self.get_color(*move, turn_idx=turn_idx) != Color.EMPTY:
@@ -196,7 +202,12 @@ class Game:
         history = self.board_states[:turn_idx]
         return any(np.all(board == earlier) for earlier in history)
 
-    def legal_move_mask(self, *, turn_idx: Optional[int] = None, allow_suicide = True) -> np.ndarray:
+    def legal_move_mask(
+        self,
+        *,
+        turn_idx: Optional[int] = None,
+        allow_suicide=True,
+    ) -> np.ndarray:
         """Return a mask of all legal moves for the current player."""
         board = np.zeros((self.board_size, self.board_size), dtype=np.uint8)
         for x, y in self.legal_moves(turn_idx=turn_idx, allow_suicide=allow_suicide):
@@ -204,11 +215,20 @@ class Game:
 
         return board
 
-    def legal_moves(self, *, turn_idx: Optional[int] = None, allow_suicide: bool = True) -> Iterable[Move]:
+    def legal_moves(
+        self,
+        *,
+        turn_idx: Optional[int] = None,
+        allow_suicide: bool = True,
+    ) -> Iterable[Move]:
         """Return a generator over all legal moves for the current player."""
         for x in range(self.board_size):
             for y in range(self.board_size):
-                if self.is_legal(Move(x, y), turn_idx=turn_idx, allow_suicide=allow_suicide):
+                if self.is_legal(
+                    Move(x, y),
+                    turn_idx=turn_idx,
+                    allow_suicide=allow_suicide,
+                ):
                     yield Move(x, y)
 
     def move(self, x: int, y: int, *, check_legal: bool = True) -> None:
