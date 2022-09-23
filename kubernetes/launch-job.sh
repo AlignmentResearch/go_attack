@@ -21,12 +21,12 @@ export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
 case "$KUBECONFIG" in
     "$HOME/.kube/loki")
         echo "Looks like we're on Loki. Will use the shared host directory instead of Weka."
-        # VOLUME_FLAGS=""
+        VOLUME_FLAGS=""
         VOLUME_NAME=data
         ;;
     "$HOME/.kube/lambda")
         echo "Looks like we're on Lambda. Will use the shared Weka volume."
-        # VOLUME_FLAGS="--volume_name go-attack --volume_mount shared"
+        VOLUME_FLAGS="--volume_name go-attack --volume_mount shared"
         VOLUME_NAME=shared
         ;;
     *)
@@ -42,7 +42,7 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
-    --volume_name go-attack --volume_mount shared \
+    "$VOLUME_FLAGS" \
     --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
