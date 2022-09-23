@@ -35,14 +35,14 @@ case "$KUBECONFIG" in
         ;;
 esac
 
-# shellcheck disable=SC2215
+# shellcheck disable=SC2215,SC2086
 ctl job run --container \
     "$CPP_IMAGE" \
     "$CPP_IMAGE" \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
-    "$VOLUME_FLAGS" \
+    $VOLUME_FLAGS \
     --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \

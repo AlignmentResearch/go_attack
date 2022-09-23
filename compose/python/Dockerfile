@@ -46,6 +46,7 @@ COPY ./engines/KataGo-raw/python /engines/KataGo-raw/python
 COPY ./engines/KataGo-custom/python /engines/KataGo-custom/python
 
 RUN mkdir -p /go_attack/src
+COPY ./configs/ /go_attack/configs
 COPY ./kubernetes/ /go_attack/kubernetes
 COPY ./scripts/ /go_attack/scripts
 COPY ./src/go_attack /go_attack/src/go_attack
