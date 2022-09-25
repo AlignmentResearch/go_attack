@@ -1,276 +1,264 @@
 """Module to extract game information from SGF files."""
 
-import dataclasses
-import enum
+import multiprocessing
 import os
 import pathlib
 import re
-from typing import Any, Mapping, Optional, Sequence
-
-import tqdm.auto as tqdm
-from sgfmill import sgf
+from itertools import chain
+from typing import Any, Dict, Optional, Sequence
 
 
-@enum.unique
-class Color(enum.Enum):
-    """Color of Go stones (black or white)."""
-
-    BLACK = "B"
-    WHITE = "W"
-
-    @staticmethod
-    def from_string(color: str) -> "Color":
-        color = color.upper()
-        return Color(color)
+def get_game_str(path: pathlib.Path, line_num: int):
+    """Return the string at a given path and line number."""
+    with open(path, "r") as f:
+        for i, line in enumerate(f):
+            if i + 1 == line_num:
+                return line
 
 
-def find_sgf_files(root: pathlib.Path) -> Sequence[pathlib.Path]:
-    """Finds all SGF files in `root` (recursively)."""
+def find_sgf_files(
+    root: pathlib.Path,
+    max_scan_length: int = 10000,
+) -> Sequence[pathlib.Path]:
+    """Finds all SGF files in `root` (recursively).
+
+    Args:
+        root: The root directory to search.
+        max_scan_length: The maximum number of directories to search.
+
+    Returns:
+        List of sgf paths.
+    """
     sgf_paths = []
-    for dirpath, dirnames, filenames in os.walk(root):
+    directories_scanned = 0
+    for dirpath, _, filenames in os.walk(root):
         sgf_filenames = [x for x in filenames if x.endswith(".sgfs")]
         sgf_paths += [pathlib.Path(dirpath) / x for x in sgf_filenames]
+        directories_scanned += 1
+        if directories_scanned >= max_scan_length:
+            break
     return sgf_paths
 
 
-def read_and_concat_all_files(paths: Sequence[pathlib.Path]) -> Sequence[str]:
+def read_and_parse_file(
+    path: pathlib.Path,
+    fast_parse: bool = False,
+) -> Sequence[Dict[str, Any]]:
+    """Parse all lines of an sgf file to a list of dictionaries with game info."""
+    parsed_games = []
+    with open(path, "r") as f:
+        for i, line in enumerate(f):
+            parsed_games.append(
+                parse_game_str_to_dict(
+                    str(path),
+                    i + 1,
+                    line.strip(),
+                    fast_parse=fast_parse,
+                ),
+            )
+    return parsed_games
+
+
+def read_and_parse_file_fast(path: pathlib.Path) -> Sequence[Dict[str, Any]]:
+    """Only top level function can be pickled. Used for multiprocessing."""
+    return read_and_parse_file(path, fast_parse=True)
+
+
+def read_and_parse_file_slow(path: pathlib.Path) -> Sequence[Dict[str, Any]]:
+    """Only top level function can be pickled. Used for multiprocessing."""
+    return read_and_parse_file(path, fast_parse=False)
+
+
+def read_and_parse_all_files(
+    paths: Sequence[pathlib.Path],
+    fast_parse: bool = False,
+    processes: Optional[int] = None,
+) -> Sequence[Dict[str, Any]]:
     """Returns concatenated contents of all files in `paths`."""
-    result = []
-    for path in tqdm.tqdm(paths):
-        with open(path, "r") as f:
-            for line in f.readlines():
-                result.append(line.strip())
-    return result
+    if not processes:
+        processes = min(128, len(paths) // 2)
+    with multiprocessing.Pool(processes=max(processes, 1)) as pool:
+        if fast_parse:
+            parsed_games = pool.map(read_and_parse_file_fast, paths)
+        else:
+            parsed_games = pool.map(read_and_parse_file_slow, paths)
+
+    return list(chain.from_iterable(parsed_games))
 
 
-@dataclasses.dataclass
-class GameInfo:
-    """Statistics about a Go game."""
-
-    board_size: int
-    gtype: str
-    start_turn_idx: int
-    init_turn_num: int
-    used_initial_position: bool
-
-    b_name: str
-    w_name: str
-
-    b_visits: Optional[int]
-    w_visits: Optional[int]
-
-    win_color: Optional[str]
-
-    komi: float  # Positive if white has the advantage
-
-    # Number of extra stones black places at start of game,
-    # equivalent to the number of white passes at start of game.
-    handicap: int
-
-    is_continuation: bool  # Whether game is continuation of previous game
-
-    # Total number of moves (including passes)
-    num_moves: int
-
-    # How many times each player passed
-    # num_b_pass: int
-    # num_w_pass: int
-
-    ko_rule: str
-    score_rule: str
-    tax_rule: str
-    sui_legal: bool
-    has_button: bool
-    whb: str  # whiteHandicapBonus
-    fpok: bool  # friendly pass ok
-
-    sgf_str: str  # raw sgf string
-
-    @property
-    def lose_color(self) -> Optional[str]:
-        """Color of loser."""
-        return {"b": "w", "w": "b", None: None}[self.win_color]
-
-    @property
-    def win_name(self) -> Optional[str]:
-        """Name of winning agent."""
-        return {"b": self.b_name, "w": self.w_name, None: None}[self.win_color]
-
-    @property
-    def lose_name(self) -> Optional[str]:
-        """Name of losing agent."""
-        return {"b": self.b_name, "w": self.w_name, None: None}[self.lose_color]
-
-    def to_dict(self) -> Mapping[str, Any]:
-        """Convert to dict, including @property methods (derived fields)."""
-        res = dataclasses.asdict(self)
-        for k, v in self.__class__.__dict__.items():
-            if isinstance(v, property):
-                res[k] = getattr(self, k)
-        return res
-
-
-@dataclasses.dataclass
-class AdversarialGameInfo(GameInfo):
-    """Statistics about a Go game played between an adversary and victim."""
-
-    victim_color: str
-    victim_name: str
-    victim_visits: Optional[int]
-
-    adv_color: str
-    adv_name: str
-    adv_visits: Optional[int]
-    adv_steps: int
-    adv_win: bool
-    adv_minus_victim_score: float  # With komi
-
-    # num_adv_pass: int  # Number of time adversary passed in the game
-    # num_victim_pass: int  # Number of times victim passed in the game
-
-    @property
-    def adv_komi(self) -> float:
-        """Adversary's komi."""
-        return self.komi * {"w": 1, "b": -1}[self.adv_color]
-
-    @property
-    def adv_minus_victim_score_wo_komi(self) -> float:
-        """Difference between adversary and victim score without komi."""
-        return self.adv_minus_victim_score - self.adv_komi
-
-
-def comment_prop(
-    sgf_game: sgf.Sgf_game,
-    prop_name: str,
-    default: Optional[str] = None,
-) -> Optional[str]:
-    """Returns `prop_name` property from comment of `sgf_game`, or `default`."""
-    comments = sgf_game.root.get("C")
-    if prop_name not in comments:
-        return default
-    return comments.split(f"{prop_name}=")[1].split(",")[0]
-
-
-def num_pass(col: str, sgf_game: sgf.Sgf_game) -> int:
-    """Number of times `color` passes in `sgf_game`."""
-    return sum(node.get_move == (col, None) for node in sgf_game.get_main_sequence())
-
-
-def get_max_visits(game: sgf.Sgf_game, color: Color) -> Optional[int]:
-    """Get max visits for player `color` in `game`."""
-    prop = color.value + "R"  # BR or WR: black/white rank
-    if not game.root.has_property(prop):
-        return None
-    return int(game.root.get(prop).lstrip("v"))
-
-
-def extract_re(subject: str, pattern: str) -> str:
+def extract_re(pattern: str, subject: str) -> Optional[str]:
     """Extract first group matching `pattern` from `subject`."""
     match = re.search(pattern, subject)
-    assert match is not None
-    return match.group(1)
+    return match.group(1) if match is not None else None
 
 
-def extract_basic_game_info(sgf_str: str, sgf_game: sgf.Sgf_game) -> GameInfo:
-    """Build `GameInfo` from `sgf_str` and `sgf_game`."""
-    rule_str = sgf_game.root.get("RU")
+def extract_optional_prop(property_name: str, sgf_str: str) -> Optional[str]:
+    """Extract a property. Eg. PW[white_player]."""
+    return extract_re(f"{property_name}\\[([^]]+?)]", sgf_str)
 
+
+def extract_prop(property_name: str, sgf_str: str) -> str:
+    """Extract a property. Eg. PW[white_player]."""
+    ret = extract_optional_prop(property_name, sgf_str)
+    assert ret is not None
+    return ret
+
+
+def extract_optional_comment_prop(
+    property_name: str,
+    sgf_str: str,
+) -> Optional[str]:
+    """Extract property from a comment. Eg. C[startTurnIdx=0]."""
+    return extract_re(f"{property_name}=([^,\\]]+)", sgf_str)
+
+
+def extract_comment_prop(
+    property_name: str,
+    sgf_str: str,
+) -> str:
+    """Extract property from a comment. Eg. C[startTurnIdx=0]."""
+    ret = extract_optional_comment_prop(property_name, sgf_str)
+    assert ret is not None
+    return ret
+
+
+num_b_pass_pattern = re.compile("B\\[]")
+num_w_pass_pattern = re.compile("W\\[]")
+semicolon_pattern = re.compile(";")
+
+
+def parse_game_str_to_dict(
+    path: str,
+    line_number: int,
+    sgf_str: str,
+    fast_parse: bool = False,
+) -> Dict[str, Any]:
+    """Parse an sgf string to a dictionary containing game_info.
+
+    Args:
+        path: Path where this string was read from. We want to keep this
+            information so that we can later retrieve the original string.
+        line_number: Line number in the above path.
+        sgf_str: The string to parse.
+        fast_parse: Include additional fields that are slower to extract
+            or generally less useful.
+
+    Returns:
+        Dictionary containing game_info.
+    """
+    rule_str = extract_prop("RU", sgf_str)
+    comment_str = extract_prop("C", sgf_str)
+    size_str = extract_prop("SZ", sgf_str)
+    board_size = int(size_str.split(":")[0])
     whb = "0"
-    if "whb" in rule_str:
-        whb = extract_re(rule_str, r"whb([A-Z0-9\-]+)")
+    if rule_str and "whb" in rule_str:
+        whb = extract_re(r"whb([A-Z0-9\-]+)", rule_str)
+    b_name = extract_prop("PB", sgf_str)
+    w_name = extract_prop("PW", sgf_str)
+    result = extract_optional_prop("RE", sgf_str)
+    if result is None:
+        return {}
+    komi = float(extract_prop("KM", sgf_str))
+    win_color = result[0].lower() if result else None
 
-    return GameInfo(
-        board_size=sgf_game.get_size(),
-        gtype=comment_prop(sgf_game, "gtype"),
-        start_turn_idx=int(comment_prop(sgf_game, "startTurnIdx")),
-        init_turn_num=int(comment_prop(sgf_game, "initTurnNum")),
-        used_initial_position=comment_prop(sgf_game, "usedInitialPosition") == "1",
-        b_name=sgf_game.get_player_name("b"),
-        w_name=sgf_game.get_player_name("w"),
-        b_visits=get_max_visits(sgf_game, Color.BLACK),
-        w_visits=get_max_visits(sgf_game, Color.WHITE),
-        win_color=sgf_game.get_winner(),
-        komi=sgf_game.get_komi(),
-        handicap=int(sgf_game.root.get("HA")),
-        is_continuation=sgf_game.get_root().has_setup_stones(),
-        num_moves=len(sgf_game.get_main_sequence()) - 1,
-        # num_b_pass=num_pass("b", sgf_game),
-        # num_w_pass=num_pass("w", sgf_game),
-        sgf_str=sgf_str,
-        ko_rule=extract_re(rule_str, r"ko([A-Z]+)"),
-        score_rule=extract_re(rule_str, r"score([A-Z]+)"),
-        tax_rule=extract_re(rule_str, r"tax([A-Z]+)"),
-        sui_legal=extract_re(rule_str, r"sui([0-9])") == "1",
-        has_button="button1" in rule_str,
-        whb=whb,
-        fpok="fpok" in rule_str,
+    assert b_name is not None
+    victim_color = {b_name: "b", w_name: "w"}.get(
+        "victim", "b" if "victim" in b_name else "w"
     )
-
-
-def extract_adversarial_game_info(
-    basic_info: GameInfo,
-    sgf_game: sgf.Sgf_game,
-) -> AdversarialGameInfo:
-    """Adds adversarial game info to `basic_info` from `sgf_game`."""
-    victim_color = {basic_info.b_name: "b", basic_info.w_name: "w"}.get(
-        "victim", "b" if "victim" in basic_info.b_name else "w"
-    )
-    victim_name = {"b": basic_info.b_name, "w": basic_info.w_name}[victim_color]
+    victim_name = {"b": b_name, "w": w_name}[victim_color]
     adv_color = {"b": "w", "w": "b"}[victim_color]
-    adv_raw_name = {"b": basic_info.b_name, "w": basic_info.w_name}[adv_color]
+    adv_raw_name = {"b": b_name, "w": w_name}[adv_color]
     adv_name = (
         adv_raw_name.split("__victim")[0]
         if adv_color == "b"
         else adv_raw_name.split("victim__")[-1]
     )
-    adv_steps = (
-        0 if adv_name == "random" else int(extract_re(adv_name, r"\-s([0-9]+)\-"))
-    )
 
-    if basic_info.win_color is None:
+    b_meta = extract_optional_prop("BR", sgf_str)
+    w_meta = extract_optional_prop("WR", sgf_str)
+    b_visits = int(extract_re(r"v([0-9]+)", b_meta) or extract_re(r"v=([0-9]+)", b_meta) or "-1") if b_meta else None
+    w_visits = int(extract_re(r"v([0-9]+)", w_meta) or extract_re(r"v=([0-9]+)", w_meta) or "-1") if w_meta else None
+    victim_visits = {"b": b_visits, "w": w_visits}[victim_color]
+    adv_visits = {"b": b_visits, "w": w_visits}[adv_color]
+
+    if win_color is None:
         adv_minus_victim_score = 0
     else:
-        win_score = float(sgf_game.get_root().get("RE").split("+")[1])
-        adv_minus_victim_score = {
-            basic_info.win_color: win_score,
-            basic_info.lose_color: -win_score,
-        }[adv_color]
+        win_score = float(result.split("+")[-1])
+        adv_minus_victim_score = win_score if adv_color == win_color else -win_score
+    adv_steps_str = extract_re(r"\-s([0-9]+)\-", adv_name)
+    adv_samples_str = extract_re(r"\-d([0-9]+)", adv_name)
+    adv_komi = komi * {"w": 1, "b": -1}[adv_color]
 
-    adv_visits = {"b": basic_info.b_visits, "w": basic_info.w_visits}[adv_color]
-    victim_visits = {"b": basic_info.b_visits, "w": basic_info.w_visits}[victim_color]
+    parsed_info = {
+        "b_name": b_name,
+        "w_name": w_name,
+        # Victim info
+        "victim_color": victim_color,
+        "victim_name": victim_name,
+        "victim_visits": victim_visits,
+        # Adversary info
+        "adv_color": adv_color,
+        "adv_name": adv_name,
+        "adv_visits": adv_visits,
+        "adv_steps": int(adv_steps_str) if adv_steps_str is not None else 0,
+        "adv_samples": int(adv_samples_str) if adv_samples_str is not None else 0,
+        # Scoring info
+        "win_color": win_color,
+        "adv_win": adv_color == win_color,
+        "komi": komi,
+        "adv_komi": adv_komi,
+        "adv_minus_victim_score": adv_minus_victim_score,
+        "adv_minus_victim_score_wo_komi": adv_minus_victim_score - adv_komi,
+        # Other info
+        "board_size": board_size,
+        "start_turn_idx": int(extract_comment_prop("startTurnIdx", comment_str)),
+        "handicap": int(extract_prop("HA", sgf_str)),
+        "num_moves": len(semicolon_pattern.findall(sgf_str)) - 1,
+        "ko_rule": extract_re(r"ko([A-Z]+)", rule_str),
+        "score_rule": extract_re(r"score([A-Z]+)", rule_str),
+        "tax_rule": extract_re(r"tax([A-Z]+)", rule_str),
+        "sui_legal": extract_re(r"sui([0-9])", rule_str) == "1",
+        "has_button": "button1" in rule_str,
+        "whb": whb,
+        "fpok": "fpok" in rule_str,
+        "init_turn_num": int(extract_comment_prop("initTurnNum", comment_str)),
+        "used_initial_position": extract_optional_comment_prop(
+            "usedInitialPosition",
+            comment_str,
+        )
+        == "1",
+        "gtype": extract_comment_prop("gtype", comment_str),
+        "is_continuation": False,
+        # Parsing metadata
+        "sgf_path": path,
+        "sgf_line": line_number,
+    }
 
-    # num_passes = {"b": basic_info.num_b_pass, "w": basic_info.num_w_pass}
+    if not fast_parse:
+        # findall() is much slower than extracting a single regex
+        num_b_pass = (
+            len(num_b_pass_pattern.findall(sgf_str))
+            + (
+                len(
+                    re.findall(
+                        "B\\[tt]",
+                        sgf_str,
+                    ),
+                )
+                if board_size <= 19
+                else 0
+            ),
+        )
+        num_w_pass = (
+            len(num_w_pass_pattern.findall(sgf_str))
+            + (len(re.findall("W\\[tt]", sgf_str)) if board_size <= 19 else 0),
+        )
+        parsed_info["num_b_pass"] = num_b_pass
+        parsed_info["num_w_pass"] = num_w_pass
+        parsed_info["num_adv_pass"] = num_b_pass if adv_color == "b" else num_w_pass
+        parsed_info["num_victim_pass"] = num_w_pass if adv_color == "b" else num_b_pass
+        parsed_info["b_name"] = b_name
+        parsed_info["w_name"] = w_name
 
-    return AdversarialGameInfo(
-        **dataclasses.asdict(basic_info),
-        victim_color=victim_color,
-        victim_name=victim_name,
-        victim_visits=victim_visits,
-        adv_color=adv_color,
-        adv_name=adv_name,
-        adv_visits=adv_visits,
-        adv_steps=adv_steps,
-        adv_win=adv_color == basic_info.win_color,
-        adv_minus_victim_score=adv_minus_victim_score,
-        # num_adv_pass=num_passes[adv_color],
-        # num_victim_pass=num_passes[victim_color],
-    )
-
-
-def parse_game_info(sgf_str: str) -> GameInfo:
-    """Parse game information from `sgf_str`.
-
-    Args:
-        sgf_str: A string describing the game in the SGF format.
-
-    Returns:
-        An `AdversarialGameInfo` when one of the players is called `'victim'`;
-        otherwise, returns a `GameInfo`.
-    """
-    sgf_game = sgf.Sgf_game.from_string(sgf_str)
-    game_info = extract_basic_game_info(sgf_str, sgf_game)
-
-    if "victim" in game_info.b_name or "victim" in game_info.w_name:
-        game_info = extract_adversarial_game_info(game_info, sgf_game)
-
-    return game_info
+    return parsed_info
