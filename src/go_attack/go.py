@@ -104,15 +104,11 @@ class Game:
     """
 
     DEFAULT_KOMI: ClassVar[float] = 7.5
-    DEFAULT_ALLOW_SUICIDE: ClassVar[bool] = True
 
     board_size: int
     board_states: List[np.ndarray] = field(default_factory=list)
     moves: List[Optional[Move]] = field(default_factory=list)
     komi: float = DEFAULT_KOMI
-    # Tromp-Taylor rules allow suicide, but we may want to disallow suicide to
-    # play against engines like ELF OpenGo that also disallow suicide.
-    allow_suicide: bool = DEFAULT_ALLOW_SUICIDE
 
     def __len__(self) -> int:
         """Return the number of turns in this game."""
@@ -164,7 +160,13 @@ class Game:
             next_board = self.virtual_move(*move, turn_idx=turn_idx)
         return next_board[cartesian_to_numpy(move.x, move.y)] == Color.EMPTY.value
 
-    def is_legal(self, move: Move, *, turn_idx: Optional[int] = None):
+    def is_legal(
+        self,
+        move: Move,
+        *,
+        turn_idx: Optional[int] = None,
+        allow_suicide: bool = True,
+    ):
         """Return `True` iff `move` is legal at `turn_idx`."""
         # Rule 7. A move consists of coloring an *empty* point one's own color...
         if self.get_color(*move, turn_idx=turn_idx) != Color.EMPTY:
@@ -176,7 +178,7 @@ class Game:
         if self.is_repetition(next_board):
             return False
 
-        if not self.allow_suicide and self.is_suicide(
+        if not allow_suicide and self.is_suicide(
             move,
             turn_idx=turn_idx,
             next_board=next_board,
@@ -200,19 +202,33 @@ class Game:
         history = self.board_states[:turn_idx]
         return any(np.all(board == earlier) for earlier in history)
 
-    def legal_move_mask(self, *, turn_idx: Optional[int] = None) -> np.ndarray:
+    def legal_move_mask(
+        self,
+        *,
+        turn_idx: Optional[int] = None,
+        allow_suicide=True,
+    ) -> np.ndarray:
         """Return a mask of all legal moves for the current player."""
         board = np.zeros((self.board_size, self.board_size), dtype=np.uint8)
-        for x, y in self.legal_moves(turn_idx=turn_idx):
+        for x, y in self.legal_moves(turn_idx=turn_idx, allow_suicide=allow_suicide):
             board[cartesian_to_numpy(x, y)] = 1
 
         return board
 
-    def legal_moves(self, *, turn_idx: Optional[int] = None) -> Iterable[Move]:
+    def legal_moves(
+        self,
+        *,
+        turn_idx: Optional[int] = None,
+        allow_suicide: bool = True,
+    ) -> Iterable[Move]:
         """Return a generator over all legal moves for the current player."""
         for x in range(self.board_size):
             for y in range(self.board_size):
-                if self.is_legal(Move(x, y), turn_idx=turn_idx):
+                if self.is_legal(
+                    Move(x, y),
+                    turn_idx=turn_idx,
+                    allow_suicide=allow_suicide,
+                ):
                     yield Move(x, y)
 
     def move(self, x: int, y: int, *, check_legal: bool = True) -> None:
@@ -230,9 +246,6 @@ class Game:
                 raise IllegalMoveError(
                     "Superko violation: Cannot repeat an earlier board state",
                 )
-
-            if not self.allow_suicide and self.is_suicide(move=Move(x, y)):
-                raise IllegalMoveError("Cannot make a suicide move")
 
         self.board_states.append(next_board)
         self.moves.append(Move(x, y))
@@ -364,19 +377,13 @@ class Game:
         """Create a `Board` from an SGF string."""
         sgf_string = str(sgf_string).strip()
 
-        # Try to detect board size from SZ[] property, komi from the KM[]
-        # property, and whether suicide moves are allowed from the C[] property.
+        # Try to detect board size from SZ[] property and komi from the KM[]
+        # property.
         maybe_size = re.search(r"SZ\[([0-9]+)\]", sgf_string)
         board_size = int(maybe_size.group(1)) if maybe_size else 19
         maybe_komi = re.search(r"KM\[(-?\d+\.?\d*)\]", sgf_string)
         komi = float(maybe_komi.group(1)) if maybe_komi else cls.DEFAULT_KOMI
-        maybe_allow_suicide = re.search(r"C\[sui([0-1])", sgf_string)
-        allow_suicide = (
-            maybe_allow_suicide.group(1) == "1"
-            if maybe_allow_suicide
-            else cls.DEFAULT_ALLOW_SUICIDE
-        )
-        game = cls(board_size=board_size, komi=komi, allow_suicide=allow_suicide)
+        game = cls(board_size=board_size, komi=komi)
 
         turn_regex = re.compile(r"(B|W)\[([a-z]{0,2})\]")
         for i, hit in enumerate(turn_regex.finditer(sgf_string)):
@@ -400,9 +407,7 @@ class Game:
 
     def to_sgf(self, comment: str = "") -> str:
         """Return an SGF string representing the game."""
-        sgf_comment = (
-            f"C[sui{int(self.allow_suicide)}" + (f";{comment}" if comment else "") + "]"
-        )
+        sgf_comment = f"C[{comment}]" if comment else ""
         # We say we're using "New Zealand" rules in the SGF
         header = f"(;FF[4]SZ[{self.board_size}]RU[NZ]KM[{self.komi}]{sgf_comment}"
 

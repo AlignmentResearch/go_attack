@@ -28,12 +28,10 @@ def create_game(
         {
             "board_size": 19,
             "komi": 0.0,
-            "allow_suicide": True,
         },
         {
             "board_size": 5,
             "komi": -50.0,
-            "allow_suicide": False,
         },
     ],
 )
@@ -43,7 +41,6 @@ def test_sgf_convert_arguments(game_kwargs: Dict):
     parsed_game = Game.from_sgf(game.to_sgf())
     assert parsed_game.board_size == game.board_size
     assert parsed_game.komi == game.komi
-    assert parsed_game.allow_suicide == game.allow_suicide
 
 
 def test_is_suicide():
