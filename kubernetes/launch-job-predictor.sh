@@ -5,7 +5,7 @@ if [ $# -lt 1 ]; then
 fi
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
-RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
+RUN_NAME="$1"
 echo "Run name: $RUN_NAME"
 
 # Maybe build and push new Docker images
