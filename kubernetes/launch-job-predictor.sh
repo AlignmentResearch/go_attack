@@ -5,7 +5,7 @@ if [ $# -lt 1 ]; then
 fi
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
-RUN_NAME="$1"
+RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
 echo "Run name: $RUN_NAME"
 
 # Maybe build and push new Docker images
@@ -46,11 +46,11 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
     --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME" \
-    "/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME" \
-    --gpu 1 1 0 0 0 1 \
+    "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
+    "/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME b20c256x2-s5303129600-d1228401921" \
+    "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
+    --gpu 1 0 0 1 1 0 \
     --name go-training-"$1" \
     --replicas "${2:-7}" 1 1 1 1 1
