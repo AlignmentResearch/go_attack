@@ -62,7 +62,8 @@ def start_engine(
                 raise ValueError(f"{arg_name} must not be None")
         if passing_behavior not in PASSING_BEHAVIOR:
             raise ValueError(
-                f"Invalid behavior '{passing_behavior}', must be one of {PASSING_BEHAVIOR}",
+                f"Invalid behavior '{passing_behavior}', must be one of "
+                f"{PASSING_BEHAVIOR}",
             )
         if config_path and not config_path.exists():
             raise ValueError(f"config_path must exist: {config_path}")
@@ -150,7 +151,6 @@ def rollout_policy(
     verbose: bool,
 ) -> Tuple[Game, Sequence[str]]:
     """Rollouts `policy` against engine with pipe `from_engine`."""
-
     # Regex that matches the "=" printed after a successful command that has no
     # output.
     SUCCESS_REGEX = re.compile(r"^=")
@@ -167,12 +167,13 @@ def rollout_policy(
         predicates = {
             "elf": lambda index_and_msg: not SUCCESS_REGEX.fullmatch(index_and_msg[1]),
             "leela": lambda index_and_msg: not LEELA_SHOWBOARD_END_REGEX.match(
-                index_and_msg[1]
+                index_and_msg[1],
             ),
             "katago": lambda index_and_msg: index_and_msg[0] < game.board_size + 3,
         }
         for _, msg in itertools.takewhile(
-            predicates[engine_type], enumerate(from_engine_lines)
+            predicates[engine_type],
+            enumerate(from_engine_lines),
         ):
             print(msg)
 

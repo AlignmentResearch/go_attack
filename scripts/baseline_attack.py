@@ -49,7 +49,11 @@ def main():  # noqa: D103
         type=str,
     )
     parser.add_argument(
-        "--models", type=Path, default=None, help="KataGo model weights", nargs="+"
+        "--models",
+        type=Path,
+        default=None,
+        help="KataGo model weights",
+        nargs="+",
     )
     parser.add_argument(
         "-n",
@@ -85,7 +89,10 @@ def main():  # noqa: D103
         "--moves-before-pass",
         type=int,
         default=211,  # Avg. game length
-        help="Number of moves before accepting a pass from the victim and ending the game",
+        help=(
+            "Number of moves before accepting a pass from the victim and ending "
+            "the game"
+        ),
     )
     parser.add_argument(
         "-v",
@@ -168,12 +175,10 @@ def main():  # noqa: D103
         victim=args.victim,
     )
 
-    configs = (
-        list(
-            product(args.policy, model_paths, args.num_playouts, args.passing_behavior)
-        )
+    configs = list(
+        product(args.policy, model_paths, args.num_playouts, args.passing_behavior)
         if args.engine == "katago"
-        else list(product(args.policy))
+        else product(args.policy),
     )
 
     if len(configs) > 1:
@@ -184,7 +189,7 @@ def main():  # noqa: D103
                 f"`socat` setup for {args.engine} does not support scheduling runs "
                 "on different GPUs. Parallelize runs by launching a separate "
                 "instance of baseline_attack vs. a separate instance of "
-                f"{args.engine}."
+                f"{args.engine}.",
             )
             raise ValueError(f"Parallel runs not supported for engine: {args.engine}")
 
