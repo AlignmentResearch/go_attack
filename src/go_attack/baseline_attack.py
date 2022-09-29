@@ -82,17 +82,7 @@ def start_engine(
             "-config",
             str(config_path),
         ]
-        if verbose:
-            print(f"Starting engine with args: {args}")
-
-        proc = Popen(
-            args,
-            bufsize=0,  # We need to disable buffering to get stdout line-by-line
-            env={"CUDA_VISIBLE_DEVICES": str(gpu)},
-            stderr=open("/tmp/go-baseline-attack.stderr", "w"),
-            stdin=PIPE,
-            stdout=PIPE,
-        )
+        env = {"CUDA_VISIBLE_DEVICES": str(gpu)}
     else:
         for arg_name, arg_value in katago_required_args.items():
             if arg_value is not None:
@@ -101,15 +91,18 @@ def start_engine(
             print(f"Warning: Ignoring argument gpu=f{gpu}")
 
         args = [str(executable_path)]
-        if verbose:
-            print(f"Starting engine with args: {args}")
-        proc = Popen(
-            args,
-            bufsize=0,  # We need to disable buffering to get stdout line-by-line
-            stderr=open("/tmp/go-baseline-attack.stderr", "w"),
-            stdin=PIPE,
-            stdout=PIPE,
-        )
+        env = {}
+
+    if verbose:
+        print(f"Starting engine with args: {args}")
+    proc = Popen(
+        args,
+        bufsize=0,  # We need to disable buffering to get stdout line-by-line
+        env=env,
+        stderr=open("/tmp/go-baseline-attack.stderr", "w"),
+        stdin=PIPE,
+        stdout=PIPE,
+    )
     to_engine = proc.stdin
     from_engine = proc.stdout
     assert to_engine is not None and from_engine is not None
