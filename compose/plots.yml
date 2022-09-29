@@ -1,0 +1,25 @@
+# Launches a container for generating plots.
+#
+# See https://stackoverflow.com/a/52641495/1337463 for documentation on how to
+# run commands with `sh -c`.
+# docker-compose -f compose/plots.yml up
+
+version: "3"
+
+services:
+  plots:
+    image: humancompatibleai/goattack:plots
+    build:
+      context: ..
+      dockerfile: ./compose/plots/Dockerfile
+    volumes:
+      - type: bind
+        source: ..
+        target: /go_attack
+      - type: bind
+        source: /nas/ucb
+        target: /nas/ucb
+        read_only: true
+    cap_add:
+      - SYS_PTRACE  # to enable gdb debugging
+    tty: true

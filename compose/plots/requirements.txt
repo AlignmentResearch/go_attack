@@ -1,0 +1,25 @@
+# tbparse stuff
+tbparse
+tensorboard
+tensorflow
+
+# Libs needed by KataGo
+psutil
+scipy
+
+# Computational libraries
+numpy
+pandas
+
+# Plotting
+matplotlib
+seaborn
+
+# Utilities
+black
+flake8
+isort
+ipywidgets
+jupyterlab
+mypy
+tqdm
