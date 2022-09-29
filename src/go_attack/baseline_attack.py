@@ -95,7 +95,7 @@ def start_engine(
     else:
         for arg_name, arg_value in katago_required_args.items():
             if arg_value is not None:
-                print(f"Warning: Ignoring argument f{arg_name}=f{arg_value}")
+                print(f"Warning: Ignoring argument {arg_name}={arg_value}")
         if gpu is not None:
             print(f"Warning: Ignoring argument gpu=f{gpu}")
 

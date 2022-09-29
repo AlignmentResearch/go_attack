@@ -173,13 +173,20 @@ def main():  # noqa: D103
             product(args.policy, model_paths, args.num_playouts, args.passing_behavior)
         )
         if args.engine == "katago"
-        else [args.policy]
+        else list(product(args.policy))
     )
 
-    # TODO(tomtseng) may want to block elf/leela from launching >1 process at
-    # once... or need to modify setup to make it work properly
     if len(configs) > 1:
         print(f"Running {len(configs)} configurations in parallel")
+        if args.engine != "katago":
+            print(
+                f"WARNING: {args.engine} is not set up for parallel runs, as the "
+                f"`socat` setup for {args.engine} does not support scheduling runs "
+                "on different GPUs. Parallelize runs by launching a separate "
+                "instance of baseline_attack vs. a separate instance of "
+                f"{args.engine}."
+            )
+            raise ValueError(f"Parallel runs not supported for engine: {args.engine}")
 
         nvmlInit()
         num_devices = min(len(configs), nvmlDeviceGetCount())
@@ -187,8 +194,6 @@ def main():  # noqa: D103
 
         with Pool(2 * num_devices) as p:
             baseline_fn = partial(baseline_fn, progress_bar=False)
-            # TODO(tomtseng) this is type error for ELF/Leela, and GPU isn't even
-            # used for ELF/Leela anyway
             configs = [(*config, i % num_devices) for i, config in enumerate(configs)]
             p.starmap(baseline_fn, configs)
 
