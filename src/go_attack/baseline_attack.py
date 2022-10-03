@@ -36,7 +36,7 @@ def start_engine(
     executable_path: Path,
     config_path: Path,
     model_path: Path,
-    num_playouts: int,
+    num_visits: int,
     passing_behavior: str,
     gpu: int,
     verbose: bool,
@@ -48,7 +48,7 @@ def start_engine(
         "-model",
         str(model_path),
         "-override-config",
-        f"passingBehavior={passing_behavior},maxPlayouts={num_playouts}",
+        f"passingBehavior={passing_behavior},maxVisits={num_visits}",
         "-config",
         str(config_path),
     ]
@@ -73,13 +73,13 @@ def make_log_dir(
     log_root: Path,
     model_path: Path,
     adversarial_policy: str,
-    num_playouts: int,
+    num_visits: int,
     passing_behavior: str,
 ) -> Path:
     """Make a log directory and return the Path to it."""
     desc = f"model={model_path.stem}"
     desc += f"_policy={adversarial_policy}"
-    desc += f"_playouts={num_playouts}"
+    desc += f"_visits={num_visits}"
     desc += f"_pass={passing_behavior}"
 
     log_dir = log_root / desc
@@ -181,7 +181,7 @@ def rollout_policy(
 def run_baseline_attack(
     model_path: Path,
     adversarial_policy: str,
-    num_playouts: int,
+    num_visits: int,
     passing_behavior: str,
     gpu: Optional[int] = None,
     *,
@@ -219,7 +219,7 @@ def run_baseline_attack(
         executable_path,
         config_path,
         model_path,
-        num_playouts,
+        num_visits,
         passing_behavior,
         gpu,
         verbose,
@@ -231,7 +231,7 @@ def run_baseline_attack(
             log_root,
             model_path,
             adversarial_policy,
-            num_playouts,
+            num_visits,
             passing_behavior,
         )
 

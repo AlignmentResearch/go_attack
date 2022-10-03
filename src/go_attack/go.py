@@ -3,8 +3,7 @@
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
-from typing import ClassVar, Iterable, List, NamedTuple, Optional, Tuple, Union
+from typing import ClassVar, Iterable, List, NamedTuple, Optional, Tuple
 
 import numpy as np
 from scipy.ndimage import distance_transform_cdt, label
@@ -373,9 +372,9 @@ class Game:
         return board
 
     @classmethod
-    def from_sgf(cls, sgf_string: Union[Path, str], check_legal: bool = True) -> "Game":
+    def from_sgf(cls, sgf_string: str, check_legal: bool = True) -> "Game":
         """Create a `Board` from an SGF string."""
-        sgf_string = str(sgf_string).strip()
+        sgf_string = sgf_string.strip()
 
         # Try to detect board size from SZ[] property and komi from the KM[]
         # property.
@@ -405,11 +404,26 @@ class Game:
 
         return game
 
-    def to_sgf(self, comment: str = "") -> str:
+    def to_sgf(
+        self,
+        comment: str = "",
+        black_name: str = "black",
+        white_name: str = "white",
+    ) -> str:
         """Return an SGF string representing the game."""
-        sgf_comment = f"C[{comment}]" if comment else ""
         # We say we're using "New Zealand" rules in the SGF
-        header = f"(;FF[4]SZ[{self.board_size}]RU[NZ]KM[{self.komi}]{sgf_comment}"
+        header = f"(;FF[4]SZ[{self.board_size}]RU[NZ]"
+        header += f"KM[{self.komi}]PB[{black_name}]PW[{white_name}]"
+        if comment:
+            header += f"C[{comment}]"
+
+        # Add score if game is over
+        if self.is_over():
+            black_score, white_score = self.score()
+            if black_score > white_score:
+                header += f"RE[B+{black_score - white_score}]"
+            elif white_score > black_score:
+                header += f"RE[W+{white_score - black_score}]"
 
         ascii_a = ord("a")
         sgf_moves = []
