@@ -3,8 +3,7 @@
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from pathlib import Path
-from typing import Iterable, List, NamedTuple, Optional, Tuple, Union
+from typing import ClassVar, Iterable, List, NamedTuple, Optional, Tuple
 
 import numpy as np
 from scipy.ndimage import distance_transform_cdt, label
@@ -103,10 +102,12 @@ class Game:
     a board state, the pieces are arranged visually the way you expect.
     """
 
+    DEFAULT_KOMI: ClassVar[float] = 7.5
+
     board_size: int
     board_states: List[np.ndarray] = field(default_factory=list)
     moves: List[Optional[Move]] = field(default_factory=list)
-    komi: float = 7.5
+    komi: float = DEFAULT_KOMI
 
     def __len__(self) -> int:
         """Return the number of turns in this game."""
@@ -146,7 +147,25 @@ class Game:
         self.moves.pop()
         return self.board_states.pop()
 
-    def is_legal(self, move: Move, *, turn_idx: Optional[int] = None):
+    def is_suicide(
+        self,
+        move: Move,
+        *,
+        turn_idx: Optional[int] = None,
+        next_board: Optional[np.ndarray] = None,
+    ) -> bool:
+        """Return `True` iff `move` is a suicide move."""
+        if next_board is None:
+            next_board = self.virtual_move(*move, turn_idx=turn_idx)
+        return next_board[cartesian_to_numpy(move.x, move.y)] == Color.EMPTY.value
+
+    def is_legal(
+        self,
+        move: Move,
+        *,
+        turn_idx: Optional[int] = None,
+        allow_suicide: bool = True,
+    ):
         """Return `True` iff `move` is legal at `turn_idx`."""
         # Rule 7. A move consists of coloring an *empty* point one's own color...
         if self.get_color(*move, turn_idx=turn_idx) != Color.EMPTY:
@@ -155,7 +174,17 @@ class Game:
         # Rule 6. A turn is either a pass; or a move that *doesn't repeat* an
         # earlier grid coloring.
         next_board = self.virtual_move(*move, turn_idx=turn_idx)
-        return not self.is_repetition(next_board)
+        if self.is_repetition(next_board):
+            return False
+
+        if not allow_suicide and self.is_suicide(
+            move,
+            turn_idx=turn_idx,
+            next_board=next_board,
+        ):
+            return False
+
+        return True
 
     def is_over(self) -> bool:
         """Return `True` iff there have been two consecutive passes."""
@@ -172,19 +201,33 @@ class Game:
         history = self.board_states[:turn_idx]
         return any(np.all(board == earlier) for earlier in history)
 
-    def legal_move_mask(self, *, turn_idx: Optional[int] = None) -> np.ndarray:
+    def legal_move_mask(
+        self,
+        *,
+        turn_idx: Optional[int] = None,
+        allow_suicide=True,
+    ) -> np.ndarray:
         """Return a mask of all legal moves for the current player."""
         board = np.zeros((self.board_size, self.board_size), dtype=np.uint8)
-        for x, y in self.legal_moves(turn_idx=turn_idx):
+        for x, y in self.legal_moves(turn_idx=turn_idx, allow_suicide=allow_suicide):
             board[cartesian_to_numpy(x, y)] = 1
 
         return board
 
-    def legal_moves(self, *, turn_idx: Optional[int] = None) -> Iterable[Move]:
+    def legal_moves(
+        self,
+        *,
+        turn_idx: Optional[int] = None,
+        allow_suicide: bool = True,
+    ) -> Iterable[Move]:
         """Return a generator over all legal moves for the current player."""
         for x in range(self.board_size):
             for y in range(self.board_size):
-                if self.is_legal(Move(x, y), turn_idx=turn_idx):
+                if self.is_legal(
+                    Move(x, y),
+                    turn_idx=turn_idx,
+                    allow_suicide=allow_suicide,
+                ):
                     yield Move(x, y)
 
     def move(self, x: int, y: int, *, check_legal: bool = True) -> None:
@@ -241,7 +284,7 @@ class Game:
             raise IllegalMoveError("Y coordinate out of bounds")
 
         board = self.board_states[turn_idx if turn_idx is not None else -1].copy()
-        color = self.current_player()
+        color = self.current_player(turn_idx=turn_idx)
 
         # Rule 7. A move consists of coloring an empty point one's own color...
         board[cartesian_to_numpy(x, y)] = color.value
@@ -329,14 +372,17 @@ class Game:
         return board
 
     @classmethod
-    def from_sgf(cls, sgf_string: Union[Path, str], check_legal: bool = True) -> "Game":
+    def from_sgf(cls, sgf_string: str, check_legal: bool = True) -> "Game":
         """Create a `Board` from an SGF string."""
-        sgf_string = str(sgf_string).strip()
+        sgf_string = sgf_string.strip()
 
-        # Try to detect the board size from the SGF string using the SZ[]
-        # property; if that fails, use the default board size of 19.
+        # Try to detect board size from SZ[] property and komi from the KM[]
+        # property.
         maybe_size = re.search(r"SZ\[([0-9]+)\]", sgf_string)
-        game = cls(int(maybe_size.group(1)) if maybe_size else 19)
+        board_size = int(maybe_size.group(1)) if maybe_size else 19
+        maybe_komi = re.search(r"KM\[(-?\d+\.?\d*)\]", sgf_string)
+        komi = float(maybe_komi.group(1)) if maybe_komi else cls.DEFAULT_KOMI
+        game = cls(board_size=board_size, komi=komi)
 
         turn_regex = re.compile(r"(B|W)\[([a-z]{0,2})\]")
         for i, hit in enumerate(turn_regex.finditer(sgf_string)):
@@ -358,12 +404,26 @@ class Game:
 
         return game
 
-    def to_sgf(self, comment: str = "") -> str:
+    def to_sgf(
+        self,
+        comment: str = "",
+        black_name: str = "black",
+        white_name: str = "white",
+    ) -> str:
         """Return an SGF string representing the game."""
         # We say we're using "New Zealand" rules in the SGF
         header = f"(;FF[4]SZ[{self.board_size}]RU[NZ]"
+        header += f"KM[{self.komi}]PB[{black_name}]PW[{white_name}]"
         if comment:
             header += f"C[{comment}]"
+
+        # Add score if game is over
+        if self.is_over():
+            black_score, white_score = self.score()
+            if black_score > white_score:
+                header += f"RE[B+{black_score - white_score}]"
+            elif white_score > black_score:
+                header += f"RE[W+{white_score - black_score}]"
 
         ascii_a = ord("a")
         sgf_moves = []
