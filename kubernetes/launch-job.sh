@@ -8,6 +8,12 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
 echo "Run name: $RUN_NAME"
 
+# Make sure we don't miss any changes
+if [ "$(git status --porcelain --untracked-files=no | wc -l)" -gt 0 ]; then
+    echo "Git repo is dirty, aborting" 1>&2
+    exit 1
+fi
+
 # Maybe build and push new Docker images
 python "$GIT_ROOT"/kubernetes/update_images.py
 # Load the env variables just created by update_images.py
