@@ -63,9 +63,9 @@ def main():  # noqa: D103
         help="Number of games",
     )
     parser.add_argument(
-        "--num-playouts",
+        "--num-visits",
         type=int,
-        help="Maximum number of MCTS playouts KataGo is allowed to use",
+        help="Maximum number of MCTS visits KataGo is allowed to use",
         nargs="+",
     )
     parser.add_argument("--log-analysis", action="store_true", help="Log analysis")
@@ -176,7 +176,7 @@ def main():  # noqa: D103
     )
 
     configs = list(
-        product(args.policy, model_paths, args.num_playouts, args.passing_behavior)
+        product(args.policy, model_paths, args.num_visits, args.passing_behavior)
         if args.engine == "katago"
         else product(args.policy),
     )

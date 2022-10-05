@@ -44,7 +44,7 @@ def start_engine(
     engine_type: str,
     config_path: Optional[Path] = None,
     model_path: Optional[Path] = None,
-    num_playouts: Optional[int] = None,
+    num_visits: Optional[int] = None,
     passing_behavior: Optional[str] = None,
     gpu: Optional[int] = None,
     verbose: bool = False,
@@ -53,7 +53,7 @@ def start_engine(
     katago_required_args = {
         "config_path": config_path,
         "model_path": model_path,
-        "num_playouts": num_playouts,
+        "num_visits": num_visits,
         "passing_behavior": passing_behavior,
     }
     if engine_type == "katago":
@@ -78,7 +78,7 @@ def start_engine(
             "-model",
             str(model_path),
             "-override-config",
-            f"passingBehavior={passing_behavior},maxPlayouts={num_playouts}",
+            f"passingBehavior={passing_behavior},maxVisits={num_visits}",
             "-config",
             str(config_path),
         ]
@@ -113,7 +113,7 @@ def make_log_dir(
     log_root: Path,
     adversarial_policy: str,
     model_path: Optional[Path],
-    num_playouts: Optional[int],
+    num_visits: Optional[int],
     passing_behavior: Optional[str],
 ) -> Path:
     """Make a log directory and return the Path to it."""
@@ -121,8 +121,8 @@ def make_log_dir(
     if model_path is not None:
         desc_list.append(f"model={model_path.stem}")
     desc_list.append(f"policy={adversarial_policy}")
-    if num_playouts is not None:
-        desc_list.append(f"playouts={num_playouts}")
+    if num_visits is not None:
+        desc_list.append(f"visits={num_visits}")
     if passing_behavior is not None:
         desc_list.append(f"pass={passing_behavior}")
     desc = "_".join(desc_list)
@@ -249,7 +249,7 @@ def rollout_policy(
 def run_baseline_attack(
     adversarial_policy: str,
     model_path: Optional[Path] = None,
-    num_playouts: Optional[int] = None,
+    num_visits: Optional[int] = None,
     passing_behavior: Optional[str] = None,
     gpu: Optional[int] = None,
     *,
@@ -279,7 +279,7 @@ def run_baseline_attack(
         engine_type,
         config_path,
         model_path,
-        num_playouts,
+        num_visits,
         passing_behavior,
         gpu,
         verbose,
@@ -291,7 +291,7 @@ def run_baseline_attack(
             log_root,
             adversarial_policy,
             model_path,
-            num_playouts,
+            num_visits,
             passing_behavior,
         )
 
@@ -300,6 +300,7 @@ def run_baseline_attack(
             policy = policy_cls(
                 game,
                 victim_color.opponent(),
+                allow_suicide,
                 to_engine,
                 from_engine,
             )  # pytype: disable=not-instantiable,wrong-arg-count
@@ -307,6 +308,7 @@ def run_baseline_attack(
             policy = policy_cls(
                 game,
                 victim_color.opponent(),
+                allow_suicide,
             )  # pytype: disable=not-instantiable
         return PassingWrapper(policy, moves_before_pass)
 
@@ -325,7 +327,7 @@ def run_baseline_attack(
         if verbose:
             print(f"\n--- Game {i + 1} of {num_games} ---")
 
-        game = Game(board_size=board_size, allow_suicide=allow_suicide)
+        game = Game(board_size=board_size)
         policy = make_policy()
         game, analyses = rollout_policy(
             game,
