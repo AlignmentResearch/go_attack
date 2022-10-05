@@ -4,12 +4,15 @@
 # Argument parsing #
 ####################
 
+# Exported variables like these are used inside the docker-compose yml file.
+export HOST_REPO_ROOT=$(git rev-parse --show-toplevel)
+
 DEFAULT_GPUS_STR="all"
 DEFAULT_NUM_GAMES_TOTAL=100
 DEFAULT_NUM_THREADS=16
 
 function usage() {
-  echo "Usage: $0 [-g GPUS] [-l LABEL] [-n NUM_GAMES] [-t NUM_THREADS] EXPERIMENT COMMAND"
+  echo "Usage: $0 [-g GPUS] [-l LABEL] [-n NUM_GAMES] [-o OUTPUT_DIR] [-t NUM_THREADS] EXPERIMENT COMMAND"
   echo
   echo "Launches a transfer experiment."
   echo
@@ -28,6 +31,9 @@ function usage() {
   echo "  -n NUM_GAMES, --num-games NUM_GAMES"
   echo "              The total number of games to be played."
   echo "              default: ${DEFAULT_NUM_GAMES_TOTAL}"
+  echo "  -o OUTPUT_DIR, --output-dir OUTPUT_DIR"
+  echo "              The directory to which to output SGFs and logs."
+  echo "              default: ${HOST_REPO_ROOT}/transfer-logs/<experiment>/<label>-<date>"
   echo "  -t NUM_THREADS, --num-threads NUM_THREADS"
   echo "              The number of games to be played at once."
   echo "              default: ${DEFAULT_NUM_THREADS}"
@@ -51,6 +57,7 @@ while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
   case $1 in
     -g|--gpus) GPUS_STR=$2; shift ;;
     -l|--label) LABEL=$2; shift ;;
+    -o|--output-dir) HOST_BASE_OUTPUT_DIR=$2; shift ;;
     -n|--num-games) NUM_GAMES_TOTAL=$2; shift ;;
     -t|--num-threads) NUM_THREADS=$2; shift ;;
     -h|--help) usage; exit 0 ;;
@@ -85,8 +92,6 @@ fi
 
 # Directory of this script
 SCRIPT_DIR=$(dirname -- "$( readlink -f -- "$0"; )";)
-# Exported variables like these are used inside the docker-compose yml file.
-export HOST_REPO_ROOT=$(git rev-parse --show-toplevel)
 
 if [[ "${DOCKER_COMPOSE_COMMAND}" != "up" ]]; then
   docker-compose --file ${SCRIPT_DIR}/${EXPERIMENT_NAME}.yml \
@@ -94,9 +99,11 @@ if [[ "${DOCKER_COMPOSE_COMMAND}" != "up" ]]; then
   exit 0
 fi
 
-HOST_BASE_OUTPUT_DIR=${HOST_REPO_ROOT}/transfer-logs/${EXPERIMENT_NAME}/
-[[ -n "${LABEL}" ]] && HOST_BASE_OUTPUT_DIR+="${LABEL}-"
-HOST_BASE_OUTPUT_DIR+=$(date +%Y%m%d-%H%M%S)
+if [[ -z "${HOST_BASE_OUTPUT_DIR}" ]]; then
+  HOST_BASE_OUTPUT_DIR=${HOST_REPO_ROOT}/transfer-logs/${EXPERIMENT_NAME}/
+  [[ -n "${LABEL}" ]] && HOST_BASE_OUTPUT_DIR+="${LABEL}-"
+  HOST_BASE_OUTPUT_DIR+=$(date +%Y%m%d-%H%M%S)
+fi
 
 if [[ "${EXPERIMENT_NAME}" = "baseline-attack-vs-leela" ]]; then
   export HOST_LEELA_TUNING_FILE=${HOST_REPO_ROOT}/engines/leela/leelaz_opencl_tuning
