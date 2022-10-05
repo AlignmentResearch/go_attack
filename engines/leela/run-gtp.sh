@@ -20,10 +20,9 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
-FLAGS=""
+FLAGS="--noponder"
 if [[ -n "${FAST}" ]]; then
   FLAGS+="\
-    --noponder \
     --playouts 1 \
     --timemanage fast \
     --visits 1 \
