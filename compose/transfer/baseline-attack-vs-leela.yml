@@ -20,6 +20,7 @@ services:
       - type: bind
         source: ${HOST_LEELA_TUNING_FILE}
         target: /root/.local/share/leela-zero/leelaz_opencl_tuning
+        read_only: ${ARE_SHARED_FILES_READ_ONLY:-false}
     command: >
       sh -c "
         socat TCP4-LISTEN:80,reuseaddr EXEC:'./run-gtp.sh --verbose' \
@@ -31,7 +32,7 @@ services:
           devices:
             - capabilities: ["gpu"]
               driver: nvidia
-              device_ids: ["${VICTIM_GPU:-0}"]
+              device_ids: ["${GPU:-0}"]
   baseline_attack:
     image: humancompatibleai/goattack:cpp
     build:
@@ -58,10 +59,3 @@ services:
         --verbose
         2>&1 | tee --append /outputs/attack.log
       "
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: ["gpu"]
-              driver: nvidia
-              device_ids: ["0"]
