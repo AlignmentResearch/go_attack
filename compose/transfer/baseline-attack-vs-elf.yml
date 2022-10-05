@@ -52,10 +52,3 @@ services:
         --verbose
         2>&1 | tee --append /outputs/attack.log
       "
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: ["gpu"]
-              driver: nvidia
-              device_ids: ["0"]

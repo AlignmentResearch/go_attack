@@ -4,9 +4,9 @@
 # Argument parsing #
 ####################
 
-GPUS_STR="all"
-NUM_GAMES_TOTAL=100
-NUM_THREADS=16
+DEFAULT_GPUS_STR="all"
+DEFAULT_NUM_GAMES_TOTAL=100
+DEFAULT_NUM_THREADS=16
 
 function usage() {
   echo "Usage: $0 [-g GPUS] [-l LABEL] [-n NUM_GAMES] [-t NUM_THREADS] EXPERIMENT COMMAND"
@@ -18,7 +18,7 @@ function usage() {
   echo "              Which GPUs to run the victim on. This can be a"
   echo "              comma-separated list (with no spaces in between) or"
   echo "              'all'."
-  echo "              default: ${VICTIM_GPUS}"
+  echo "              default: ${DEFAULT_GPUS_STR}"
   echo "  -l LABEL, --label LABEL"
   echo "              Label attached to the output directory and docker-compose"
   echo "              project-name. If you are running multiple instances of"
@@ -27,8 +27,10 @@ function usage() {
   echo "              instances don't interfere with each other."
   echo "  -n NUM_GAMES, --num-games NUM_GAMES"
   echo "              The total number of games to be played."
+  echo "              default: ${DEFAULT_NUM_GAMES_TOTAL}"
   echo "  -t NUM_THREADS, --num-threads NUM_THREADS"
   echo "              The number of games to be played at once."
+  echo "              default: ${DEFAULT_NUM_THREADS}"
   echo
   echo "positional arguments:"
   echo "  EXPERIMENT  Which experiment to run."
@@ -41,6 +43,9 @@ function usage() {
 
 NUM_POSITIONAL_ARGUMENTS=2
 
+GPUS_STR=${DEFAULT_GPUS_STR}
+NUM_GAMES_TOTAL=${DEFAULT_NUM_GAMES_TOTAL}
+NUM_THREADS=${DEFAULT_NUM_THREADS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
   case $1 in
@@ -78,27 +83,25 @@ fi
 # Launching the experiment #
 ############################
 
-
-# Exported variables like these are used inside the docker-compose yml file.
-export HOST_REPO_ROOT=$(git rev-parse --show-toplevel)
-HOST_BASE_OUTPUT_DIR=${HOST_REPO_ROOT}/transfer-logs/${EXPERIMENT_NAME}/
-[[ -n "${LABEL}" ]] && HOST_BASE_OUTPUT_DIR+="${LABEL}-"
-HOST_BASE_OUTPUT_DIR+=$(date +%Y%m%d-%H%M%S)
-mkdir --parents ${HOST_BASE_OUTPUT_DIR}
-
-if [[ "${EXPERIMENT_NAME}" = "baseline-attack-vs-leela" ]]; then
-  export HOST_LEELA_TUNING_FILE=${HOST_REPO_ROOT}/engines/leela/leelaz_opencl_tuning
-  # Make sure $HOST_LEELA_TUNING_FILE exists.
-  touch -a ${HOST_LEELA_TUNING_FILE}
-fi
-
 # Directory of this script
 SCRIPT_DIR=$(dirname -- "$( readlink -f -- "$0"; )";)
+# Exported variables like these are used inside the docker-compose yml file.
+export HOST_REPO_ROOT=$(git rev-parse --show-toplevel)
 
 if [[ "${DOCKER_COMPOSE_COMMAND}" != "up" ]]; then
   docker-compose --file ${SCRIPT_DIR}/${EXPERIMENT_NAME}.yml \
     ${DOCKER_COMPOSE_COMMAND}
   exit 0
+fi
+
+HOST_BASE_OUTPUT_DIR=${HOST_REPO_ROOT}/transfer-logs/${EXPERIMENT_NAME}/
+[[ -n "${LABEL}" ]] && HOST_BASE_OUTPUT_DIR+="${LABEL}-"
+HOST_BASE_OUTPUT_DIR+=$(date +%Y%m%d-%H%M%S)
+
+if [[ "${EXPERIMENT_NAME}" = "baseline-attack-vs-leela" ]]; then
+  export HOST_LEELA_TUNING_FILE=${HOST_REPO_ROOT}/engines/leela/leelaz_opencl_tuning
+  # Make sure $HOST_LEELA_TUNING_FILE exists.
+  touch -a ${HOST_LEELA_TUNING_FILE}
 fi
 
 for (( thread_idx = 0; thread_idx < NUM_THREADS; thread_idx++)) ; do
