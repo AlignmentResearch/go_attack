@@ -51,7 +51,7 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
-    --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
+    --command "/go_attack/kubernetes/victimplay-predictor.sh $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
