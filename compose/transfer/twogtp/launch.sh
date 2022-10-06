@@ -15,30 +15,11 @@
 #  TODO(tomtseng) print warning about -alternate: "Black and White
 #  are exchanged every odd game; the scores saved in the results table -sgffile
 #  are still using the name Black and White as given with -black and -white."
-# TODO probably noponder on leelaz for consistency
-#
-# TODO one serious issue is that each game takes so long to run. I need to
-# figure out to what extent I can multi-thread this. Definitely not to the
-# extent katago match does since I'll need a separate instance of the victim for
-# each thread. I should check compute/memory usage to do some estimating here
-#   - for leela: maybe 2 threads per GPU?
-# ^^ socat might be better for this, but GPU assignment becomes an issue again.
-# I need to experiment with that before swapping the current twogtp impl for
-# socat
-#   - dumb af solution: what if I just launch socat for every GPU on diff ports
-#   lol
-# there's an annoying aspect to this where multiple threads may try to write to
-# leelaz_opencl_tuning at once? maybe only one thread should have write-access,
-# though i'm not sure i can enforce that tbh. that's actually easier to handle
-# in the docker-in-docker solution --- all but one thread can get a read-only
-# copy
-# also need to make sure each thread gets a separate sgf prefix 
-#
-# TODO should put logs of the two detached containers somewhere? else it's hard
-# to debug if a command fails
-# TODO uhhh this fails really ungracefully if you kill the command midway thru
-# --- your docker containers are still running... maybe docker compose really is
-# more reasonable here
+# TODO write a script that can reverse results in the SGF files? ehhh this is
+# lower priority, we can just look at .dat files for now maybe?
+
+# also need to make sure each thread gets a separate sgf prefix
+# TODO merge this with the other launch file
 
 NUM_GAMES=2
 # output directory
@@ -66,7 +47,7 @@ docker run --rm --volume ${HOST_DOCKER_SOCKET}:/var/run/docker.sock \
   --volume ${HOST_OUTPUT_DIR}:/output \
   humancompatibleai/goattack:twogtp bin/gogui-twogtp \
   -black "docker attach ${BLACK_ID}" -white "docker attach ${WHITE_ID}" \
-  -alternate -auto -games ${NUM_GAMES} -komi 6.5 -maxmoves 1600 \ 
+  -alternate -auto -games ${NUM_GAMES} -komi 6.5 -maxmoves 1600 \
   -sgffile /output/game -verbose
 
 docker rm --force ${BLACK_ID} ${WHITE_ID}
