@@ -45,11 +45,6 @@ def main():
         type=str,
         help="Specify a service to run, otherwise will run all services",
     )
-    parser.add_argument(
-        "--use-predictor",
-        action="store_true",
-        help="Train and use a predictor network to model the victim",
-    )
     args = parser.parse_args()
 
     # If the parent directory is not specified, use the user's home directory on the NAS
@@ -83,17 +78,13 @@ def main():
             print(f"Bizarrely, directory {full_dir} already exists. Exiting.")
             exit(1)
 
-    predictor_arg = (
-        "-nn-predictor-path /outputs/predictor/models" if args.use_predictor else ""
-    )
     victimplay_args = f"""\
     victimplay \
     -output-dir /outputs/selfplay \
-    -models-dir /outputs/models {predictor_arg} \
+    -models-dir /outputs/models \
     -nn-victim-path /outputs/victims \
     -config {args.config} \
     -config /configs/compute/{args.gpus}gpu.cfg \
-    -victim-output-dir /outputs/predictor/selfplay
     """
 
     if args.debug:
@@ -124,27 +115,14 @@ def main():
         print("Running all services")
         docker_cmd = "up"
 
-    extra_var, extra_yaml = "", ""
-    if args.use_predictor:
-        extra_yaml = f"-f {compose_dir}/victimplay-predictor.yml"
-        host_victim_weights_dir = go_attack_dir / "victim-weights"
-        if not host_victim_weights_dir.exists():
-            print(
-                "Warning: --use-predictor is set but no victim-weights directory "
-                "exists. train.py will not be able to run the victim policy net as "
-                "a baseline to compare the predictor against."
-            )
-        else:
-            extra_var = f"HOST_VICTIM_WEIGHTS_DIR={host_victim_weights_dir}"
-
     os.system(
         f"""
     HOST_OUTPUT_DIR={full_dir} \
-    HOST_VICTIMS_DIR={host_victims_dir} {extra_var} \
+    HOST_VICTIMS_DIR={host_victims_dir} \
     NAMEOFRUN={full_dir.name} \
     VICTIMPLAY_CMD="{victimplay_cmd}" \
     docker-compose \
-    -f {compose_dir}/victimplay.yml {extra_yaml} \
+    -f {compose_dir}/victimplay.yml \
     --env-file {compose_dir}/{'victimplay-debug' if args.fast else 'victimplay'}.env \
     {docker_cmd}
     """
