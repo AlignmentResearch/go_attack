@@ -115,8 +115,12 @@ else
 fi
 
 if [[ -z "${KOMI}" ]]; then
-  [[ "${EXPERIMENT_NAME}" = katago-vs-leela ]] && KOMI=6.5
+  KOMI=6.5
   [[ "${EXPERIMENT_NAME}" = katago-vs-elf ]] && KOMI=7.5
+fi
+if [[ "${EXPERIMENT_NAME}" = katago-vs-elf ]] && [[ $KOMI != "7.5" ]]; then
+  echo "Warning: ELF only allows KOMI=7.5. Setting KOMI=7.5."
+  KOMI=7.5
 fi
 
 if [[ "${EXPERIMENT_NAME}" = katago-vs-* ]]; then
