@@ -1,0 +1,98 @@
+# Launches games between KataGo and Leela OpenGo.
+#
+# Launch command:
+#   ./compose/transfer/launch.sh --katago-model <model> --katago-victim-model <victim-model> katago-vs-leela up
+version: "3"
+
+services:
+  victim:
+    image: humancompatibleai/goattack:leela
+    build:
+      context: ${HOST_REPO_ROOT}/engines/leela
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      # Leela takes a minute to do OpenCL tuning on its first run and caches
+      # the result. Mounting a host file to the cache at
+      # `/root/.local/share/leela-zero/leelaz_opencl_tuning` on the container
+      # saves the cache across different launches of the container.
+      - type: bind
+        source: ${HOST_LEELA_TUNING_FILE}
+        target: /root/.local/share/leela-zero/leelaz_opencl_tuning
+        read_only: ${ARE_SHARED_FILES_READ_ONLY:-false}
+    command: >
+      sh -c "
+        socat TCP4-LISTEN:80,reuseaddr EXEC:'./run-gtp.sh --verbose' \
+        2>&1 | tee --append /outputs/victim.log
+      "
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["${GPU:-0}"]
+  katago:
+    image: humancompatibleai/goattack:cpp
+    build:
+      context: ${HOST_REPO_ROOT}
+      dockerfile: ${HOST_REPO_ROOT}/compose/cpp/Dockerfile
+      target: prod
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      - type: bind
+        source: ${HOST_REPO_ROOT}/configs
+        target: ${HOST_REPO_ROOT}/configs
+        read_only: true
+      - type: bind
+        source: ${KATAGO_MODEL}
+        target: ${KATAGO_MODEL}
+        read_only: true
+      - type: bind
+        source: ${KATAGO_VICTIM_MODEL}
+        target: ${KATAGO_VICTIM_MODEL}
+        read_only: true
+    # ELF does not accept suicide moves. For consistency, we set
+    # multiStoneSuicideLegal=false even for Leela.
+    command: >
+      sh -c "
+        socat TCP4-LISTEN:80,reuseaddr \
+        EXEC:\"/engines/KataGo-custom/cpp/katago gtp \
+          -config ${KATAGO_CONFIG} \
+          -model ${KATAGO_MODEL} \
+          -victim-model ${KATAGO_VICTIM_MODEL} \
+          -override-config multiStoneSuicideLegal=false \
+          \" \
+        2>&1 | tee --append /outputs/katago.log
+      "
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["${GPU:-0}"]
+  twogtp:
+    image: humancompatibleai/goattack:twogtp
+    build:
+      context: ${HOST_REPO_ROOT}
+      dockerfile: ${HOST_REPO_ROOT}/compose/transfer/twogtp/Dockerfile
+    depends_on:
+      - victim
+      - katago
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+    command:
+      sh -c "
+        mkdir --parents /outputs/sgfs &&
+        bin/gogui-twogtp
+          -black 'nc victim 80' -white 'nc katago 80'
+          -alternate -auto -games ${NUM_GAMES} -komi ${KOMI} -maxmoves 1600
+          -sgffile /outputs/sgfs/game -verbose
+        2>&1 | tee --append /outputs/twogtp.log
+      "

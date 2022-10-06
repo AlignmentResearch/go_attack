@@ -13,6 +13,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update --quiet \
   && apt-get install --assume-yes \
   git \
+  netcat \
   wget \
   zip
 
