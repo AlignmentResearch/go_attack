@@ -3,9 +3,6 @@
 #
 # Run `bin/gogui-twogtp` inside the container to run twogtp.
 
-# After building this image as humancompatibleai/goattack:twogtp, use
-# `launch.sh` to run an example twogtp match.
-
 FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
