@@ -111,6 +111,7 @@ if [[ "${EXPERIMENT_NAME}" = "baseline-attack-vs-leela" ]]; then
   touch -a ${HOST_LEELA_TUNING_FILE}
 fi
 
+PROJECT_NAME_PREFIX=${EXPERIMENT_NAME}-${LABEL}-thread
 for (( thread_idx = 0; thread_idx < NUM_THREADS; thread_idx++)) ; do
   export HOST_OUTPUT_DIR=${HOST_BASE_OUTPUT_DIR}/thread${thread_idx}
   mkdir --parents ${HOST_OUTPUT_DIR}
@@ -122,8 +123,14 @@ for (( thread_idx = 0; thread_idx < NUM_THREADS; thread_idx++)) ; do
 
   docker-compose ${DOCKER_FLAGS} \
     --file ${SCRIPT_DIR}/${EXPERIMENT_NAME}.yml \
-    --project-name ${EXPERIMENT_NAME}-${LABEL}-thread${thread_idx} \
+    --project-name ${PROJECT_NAME_PREFIX}${thread_idx} \
     ${DOCKER_COMPOSE_COMMAND} --abort-on-container-exit &
 done
 
 wait $(jobs -p)
+
+# We need to clean up the networks created by all the many docker-compose calls
+# or else Docker might later run out of addresses, giving an error:
+#   ERROR: could not find an available, non-overlapping IPv4 address pool among
+#   the defaults to assign to the network
+docker network rm $(docker network ls | grep "${PROJECT_NAME_PREFIX}" | awk '{print $1;}')
