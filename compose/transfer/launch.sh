@@ -141,7 +141,7 @@ if [[ "${EXPERIMENT_NAME}" = katago-vs-* ]]; then
   echo "  colors of the players on every odd-indexed game, but confusingly does"
   echo "  NOT flip PB[] and PW[] in the resulting SGF files."
 
-  # Each thread gets an even number of threads so that the number of games of
+  # Each thread gets an even number of games so that the number of games of
   # KataGo being black and being white are balanced.
   NUM_GAMES_DIVISOR=$((2 * NUM_THREADS))
   NUM_GAMES_ROUNDED=$((($NUM_GAMES_TOTAL + $NUM_GAMES_DIVISOR - 1) / $NUM_GAMES_DIVISOR * $NUM_GAMES_DIVISOR))
