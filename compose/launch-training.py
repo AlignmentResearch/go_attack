@@ -137,7 +137,7 @@ def build_docker_compose_cmd(
     """
 
 
-def main():
+def main():  # noqa: D103
     parser = ArgumentParser(description="Launch a victimplay training job")
     parser.add_argument(
         "name_prefix",
