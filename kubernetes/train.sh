@@ -1,5 +1,5 @@
-#!/bin/sh
-cd /engines/KataGo-custom/python || exit
+#!/bin/bash -e
+cd /engines/KataGo-custom/python
 RUN_NAME="$1"
 VOLUME_NAME="$2"
 INITIAL_WEIGHTS="$3"
