@@ -53,7 +53,7 @@ services:
       sh -c "
         python3 -u /go_attack/scripts/baseline_attack.py
         --engine leela
-        --executable /engines/connect-to-victim.sh
+        --executable /go_attack/compose/transfer/connect-to-victim.sh
         --log-dir /outputs/sgfs
         --num-games ${NUM_GAMES}
         --verbose

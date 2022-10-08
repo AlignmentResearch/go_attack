@@ -158,14 +158,12 @@ def rollout_policy(
         send_msg(to_engine, "showboard")
         # The different engines have different showboard formats.
         predicates = {
-            "elf": lambda index_and_msg: not SUCCESS_REGEX.fullmatch(index_and_msg[1]),
-            "leela": lambda index_and_msg: not LEELA_SHOWBOARD_END_REGEX.match(
-                index_and_msg[1],
-            ),
-            "katago": lambda index_and_msg: index_and_msg[0] < game.board_size + 3,
+            "elf": lambda _, msg: not SUCCESS_REGEX.fullmatch(msg),
+            "leela": lambda _, msg: not LEELA_SHOWBOARD_END_REGEX.match(msg),
+            "katago": lambda index, _: index < game.board_size + 3,
         }
         for _, msg in itertools.takewhile(
-            predicates[engine_type],
+            lambda tup: predicates[engine_type](*tup),
             enumerate(from_engine_lines),
         ):
             print(msg)
