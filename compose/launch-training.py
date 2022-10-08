@@ -3,6 +3,7 @@ import os
 from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 
 def get_output_dir(name_prefix: str, parent_dir: Path, *, resume: bool) -> Path:
@@ -88,7 +89,7 @@ def build_docker_compose_cmd(
     victimplay_cmd: str,
     *,
     fast: bool,
-    service: str,
+    service: Optional[str],
 ) -> str:
     """Build the docker-compose command to run the training job.
 
