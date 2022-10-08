@@ -14,10 +14,6 @@ RUN apt-get update --quiet \
   wget \
   zip
 
-# Install docker
-RUN wget https://get.docker.com --output-document=get-docker.sh
-RUN sh get-docker.sh
-
 RUN git clone --depth=1 --branch=v1.5.1 https://github.com/Remi-Coulom/gogui
 WORKDIR gogui
 
