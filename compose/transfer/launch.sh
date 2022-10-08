@@ -101,6 +101,18 @@ fi
 EXPERIMENT_NAME=$1
 DOCKER_COMPOSE_COMMAND=$2
 
+ATTACKER=${EXPERIMENT_NAME%%-vs-*}
+export VICTIM=${EXPERIMENT_NAME##*-vs-}
+# Directory of this script
+SCRIPT_DIR=$(dirname -- "$( readlink -f -- "$0"; )";)
+
+if [[ "${DOCKER_COMPOSE_COMMAND}" != "up" ]]; then
+  docker-compose --file ${SCRIPT_DIR}/compose.yml \
+    --profile ${ATTACKER} --profile ${VICTIM} \
+    ${DOCKER_COMPOSE_COMMAND}
+  exit 0
+fi
+
 GPUS=()
 if [[ "${GPUS_STR}" == "all" ]]; then
   NUM_GPUS=$(nvidia-smi --list-gpus | wc -l)
@@ -116,14 +128,14 @@ fi
 
 if [[ -z "${KOMI}" ]]; then
   KOMI=6.5
-  [[ "${EXPERIMENT_NAME}" = katago-vs-elf ]] && KOMI=7.5
+  [[ "${VICTIM}" == "elf" ]] && KOMI=7.5
 fi
 if [[ "${EXPERIMENT_NAME}" = katago-vs-elf ]] && [[ $KOMI != "7.5" ]]; then
   echo "Warning: ELF only allows KOMI=7.5. Setting KOMI=7.5."
   KOMI=7.5
 fi
 
-if [[ "${EXPERIMENT_NAME}" = katago-vs-* ]]; then
+if [[ "${ATTACKER}" == "katago" ]]; then
   if [[ ! -f "${KATAGO_CONFIG}" ]]; then
     echo "KataGo config does not exist: ${KATAGO_CONFIG}"
     exit 1
@@ -157,22 +169,13 @@ fi
 # Launching the experiment #
 ############################
 
-# Directory of this script
-SCRIPT_DIR=$(dirname -- "$( readlink -f -- "$0"; )";)
-
-if [[ "${DOCKER_COMPOSE_COMMAND}" != "up" ]]; then
-  docker-compose --file ${SCRIPT_DIR}/${EXPERIMENT_NAME}.yml \
-    ${DOCKER_COMPOSE_COMMAND}
-  exit 0
-fi
-
 if [[ -z "${HOST_BASE_OUTPUT_DIR}" ]]; then
   HOST_BASE_OUTPUT_DIR=${HOST_REPO_ROOT}/transfer-logs/${EXPERIMENT_NAME}/
   [[ -n "${LABEL}" ]] && HOST_BASE_OUTPUT_DIR+="${LABEL}-"
   HOST_BASE_OUTPUT_DIR+=$(date +%Y%m%d-%H%M%S)
 fi
 
-if [[ "${EXPERIMENT_NAME}" = *-vs-leela ]]; then
+if [[ "${VICTIM}" == "leela" ]]; then
   export HOST_LEELA_TUNING_FILE=${HOST_REPO_ROOT}/engines/leela/leelaz_opencl_tuning
   # Make sure $HOST_LEELA_TUNING_FILE exists.
   touch -a ${HOST_LEELA_TUNING_FILE}
@@ -188,8 +191,8 @@ for (( thread_idx = 0; thread_idx < NUM_THREADS; thread_idx++)) ; do
   # We don't want multiple threads racing to write to shared files.
   export ARE_SHARED_FILES_READ_ONLY=$([[ $thread_idx -eq "0" ]] && echo "false" || echo "true")
 
-  docker-compose ${DOCKER_FLAGS} \
-    --file ${SCRIPT_DIR}/${EXPERIMENT_NAME}.yml \
+  docker-compose --file ${SCRIPT_DIR}/compose.yml \
+    --profile ${ATTACKER} --profile ${VICTIM} \
     --project-name ${PROJECT_NAME_PREFIX}${thread_idx} \
     ${DOCKER_COMPOSE_COMMAND} --abort-on-container-exit &
 done
