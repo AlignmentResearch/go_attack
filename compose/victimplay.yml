@@ -75,11 +75,7 @@ services:
         sleep 5 &&
         mkdir -p /outputs/victims &&
         cd /engines/KataGo-custom &&
-        ./cpp/katago victimplay \
-        -output-dir /outputs/selfplay \
-        -models-dir /outputs/models \
-        -nn-victim-path /outputs/victims \
-        -config ${VICTIMPLAY_CONFIG}
+        ${VICTIMPLAY_CMD}
       "
     deploy:
       resources:
@@ -145,10 +141,3 @@ services:
       "
     # shuffle_and_export_loop.sh disowns subprocesses and exits, which is why we
     # sleep at the end so the docker container doesn't exit.
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: ["gpu"]
-              driver: nvidia
-              device_ids: ["0"]

@@ -16,7 +16,7 @@ executors:
       - image: cimg/python:3.8.13
     resource_class: large
     environment:
-      SRC_FILES: scripts/ src/ tests/ notebooks/ setup.py
+      SRC_FILES: compose/ kubernetes/ scripts/ src/ tests/ notebooks/ setup.py
       NUM_CPUS: 4
 
 commands:
