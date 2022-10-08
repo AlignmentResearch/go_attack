@@ -18,6 +18,7 @@ match_sgfs
 selfplay-training
 training
 victim-models
+victim-weights
 victimplay-training
 
 # Ignore certain scripts

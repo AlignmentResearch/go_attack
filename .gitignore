@@ -4,6 +4,7 @@
 *.swp
 
 # Ignore folders containing logs and data
+kubernetes/active-images.env
 analysis_logs
 analysis_tmp
 core
@@ -17,6 +18,7 @@ sgf4test
 training
 transfer-logs
 victim-models
+victim-weights
 victimplay-training
 
 # Ignore certain scripts
