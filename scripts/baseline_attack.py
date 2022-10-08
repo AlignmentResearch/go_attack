@@ -9,7 +9,11 @@ from pathlib import Path
 from pynvml import nvmlDeviceGetCount, nvmlInit, nvmlShutdown
 
 from go_attack.adversarial_policy import POLICIES
-from go_attack.baseline_attack import PASSING_BEHAVIOR, run_baseline_attack
+from go_attack.baseline_attack import (
+    ENGINE_TYPES,
+    PASSING_BEHAVIOR,
+    run_baseline_attack,
+)
 
 
 def main():  # noqa: D103
@@ -23,6 +27,12 @@ def main():  # noqa: D103
         default=None,
         help="Path to KataGo executable",
     )
+    parser.add_argument(
+        "--engine",
+        choices=ENGINE_TYPES,
+        default="katago",
+        help="The type of engine that the victim is running on",
+    )
     # Because ELF OpenGo disallows suicide moves and we want to launch
     # consistent attacks across all engines, we default to disallowing suicide
     # moves.
@@ -34,12 +44,17 @@ def main():  # noqa: D103
     parser.add_argument(
         "--passing-behavior",
         choices=PASSING_BEHAVIOR,
-        default=["standard"],
         help="Behavior that KataGo uses when passing",
         nargs="+",
         type=str,
     )
-    parser.add_argument("--models", type=Path, default=None, help="model", nargs="+")
+    parser.add_argument(
+        "--models",
+        type=Path,
+        default=None,
+        help="KataGo model weights",
+        nargs="+",
+    )
     parser.add_argument(
         "-n",
         "--num-games",
@@ -50,7 +65,6 @@ def main():  # noqa: D103
     parser.add_argument(
         "--num-visits",
         type=int,
-        default=[512],
         help="Maximum number of MCTS visits KataGo is allowed to use",
         nargs="+",
     )
@@ -75,7 +89,10 @@ def main():  # noqa: D103
         "--moves-before-pass",
         type=int,
         default=211,  # Avg. game length
-        help="Number of moves before accepting a pass from KataGo and ending the game",
+        help=(
+            "Number of moves before accepting a pass from the victim and ending "
+            "the game"
+        ),
     )
     parser.add_argument(
         "-v",
@@ -91,56 +108,64 @@ def main():  # noqa: D103
         help="The color the victim plays as (black or white)",
     )
     args = parser.parse_args()
+    if args.engine == "katago":
+        if args.num_playouts is None:
+            args.num_playouts = [512]
+        if args.passing_behavior is None:
+            args.passing_behavior = ["standard"]
 
     # The mirror policy only makes sense when we're attacking black because we need
     # the victim to play first in order to know where to play next
     if args.policy == "mirror" and args.victim != "B":
         raise ValueError("Mirror policy only works when victim == black")
 
-    # Try to find the config file automatically
     config_path = args.config
-    if config_path is None:
-        config_path = Path("/go_attack") / "configs" / "katago" / "baseline_attack.cfg"
-    if not config_path.exists():
-        raise FileNotFoundError("Could not find config file")
+    if args.engine == "katago":
+        # Try to find the config file automatically
+        if config_path is None:
+            config_path = (
+                Path("/go_attack") / "configs" / "katago" / "baseline_attack.cfg"
+            )
+        if not config_path.exists():
+            raise FileNotFoundError("Could not find config file")
+        print(f"Using config file at '{str(config_path)}'")
+
+        # Try to find the model automatically
+        if args.models is None:
+            root = Path("/go_attack") / "models"
+            model_paths = [
+                min(
+                    root.glob("*.gz"),
+                    key=lambda x: x.stat().st_size,
+                    default=None,
+                ),
+            ]
+            if model_paths[0] is None:
+                raise FileNotFoundError(
+                    "Could not find model; please set the --models flag",
+                )
+        else:
+            model_paths = args.models
+            if not all(p.exists() for p in model_paths):
+                raise FileNotFoundError("Could not find model")
+        print(f"Using models at '{list(map(str, model_paths))}'")  # type: ignore
 
     # Try to find the executable automatically
-    katago_exe = args.executable
-    if katago_exe is None:
-        katago_exe = Path("/engines") / "KataGo-custom" / "cpp" / "katago"
-    if not katago_exe.exists():
-        raise FileNotFoundError("Could not find KataGo executable")
-
-    # Try to find the model automatically
-    if args.models is None:
-        root = Path("/go_attack") / "models"
-        model_paths = [
-            min(
-                root.glob("*.gz"),
-                key=lambda x: x.stat().st_size,
-                default=None,
-            ),
-        ]
-        if model_paths[0] is None:
-            raise FileNotFoundError(
-                "Could not find model; please set the --models flag",
-            )
-    else:
-        model_paths = args.models
-        if not all(p.exists() for p in model_paths):
-            raise FileNotFoundError("Could not find model")
+    executable_path = args.executable
+    if executable_path is None and args.engine == "katago":
+        executable_path = Path("/engines") / "KataGo-custom" / "cpp" / "katago"
+    if not executable_path.exists():
+        raise FileNotFoundError("Could not find executable")
+    print(f"Using executable at '{str(executable_path)}'")
 
     print(f"Running {args.policy} attack baseline\n")
-    print(f"Using KataGo executable at '{str(katago_exe)}'")
-    print(f"Using models at '{list(map(str, model_paths))}'")  # type: ignore
-    print(f"Using config file at '{str(config_path)}'")
-
     baseline_fn = partial(
         run_baseline_attack,
         allow_suicide=args.allow_suicide,
         board_size=args.size,
         config_path=config_path,
-        executable_path=katago_exe,
+        engine_type=args.engine,
+        executable_path=executable_path,
         log_analysis=args.log_analysis,
         log_root=args.log_dir,
         moves_before_pass=args.moves_before_pass,
@@ -149,12 +174,24 @@ def main():  # noqa: D103
         verbose=args.verbose,
         victim=args.victim,
     )
+
     configs = list(
-        product(model_paths, args.policy, args.num_visits, args.passing_behavior),
+        product(args.policy, model_paths, args.num_visits, args.passing_behavior)
+        if args.engine == "katago"
+        else product(args.policy),
     )
 
     if len(configs) > 1:
         print(f"Running {len(configs)} configurations in parallel")
+        if args.engine != "katago":
+            print(
+                f"WARNING: {args.engine} is not set up for parallel runs, as the "
+                f"`socat` setup for {args.engine} does not support scheduling runs "
+                "on different GPUs. Parallelize runs by launching a separate "
+                "instance of baseline_attack vs. a separate instance of "
+                f"{args.engine}.",
+            )
+            raise ValueError(f"Parallel runs not supported for engine: {args.engine}")
 
         nvmlInit()
         num_devices = min(len(configs), nvmlDeviceGetCount())

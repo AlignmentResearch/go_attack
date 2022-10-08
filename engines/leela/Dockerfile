@@ -2,7 +2,7 @@
 # for Leela Zero, so use the `--gpus` flag when running this image with `docker
 # run`.
 #
-# Run `./leelaz --gtp` inside the Docker container to play against
+# Run `./run-gtp` inside the Docker container to play against
 # Leela Zero via GTP.
 
 FROM nvidia/opencl:devel-ubuntu18.04 AS build-deps
@@ -19,8 +19,8 @@ RUN apt-get update --quiet \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth=1 --branch=v0.17 --recurse-submodules \
-  --shallow-submodules https://github.com/leela-zero/leela-zero
+RUN git clone --depth=1 --branch=v0.0.0 --recurse-submodules \
+  --shallow-submodules https://github.com/HumanCompatibleAI/leela-zero
 WORKDIR leela-zero/build
 RUN cmake .. && cmake --build . -- -j16
 
@@ -32,6 +32,7 @@ RUN apt-get update --quiet \
  && apt-get install --assume-yes \
   libboost-filesystem-dev \
   libboost-program-options-dev \
+  socat \
   wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
@@ -42,3 +43,4 @@ RUN mkdir --parents /root/.local/share/leela-zero \
   && wget --output-document=/root/.local/share/leela-zero/best-network \
   https://zero.sjeng.org/networks/0e9ea880fd3c4444695e8ff4b8a36310d2c03f7c858cadd37af3b76df1d1d15f.gz
 WORKDIR /leela-zero/build/
+COPY run-gtp.sh .
