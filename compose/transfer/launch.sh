@@ -149,10 +149,6 @@ if [[ "${ATTACKER}" == "katago" ]]; then
     exit 1
   fi
 
-  echo "Warning for parsing SGF files: \`gogui-twogtp -alternate\` flips the"
-  echo "  colors of the players on every odd-indexed game, but confusingly does"
-  echo "  NOT flip PB[] and PW[] in the resulting SGF files."
-
   # Each thread gets an even number of games so that the number of games of
   # KataGo being black and being white are balanced.
   NUM_GAMES_DIVISOR=$((2 * NUM_THREADS))

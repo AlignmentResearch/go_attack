@@ -14,7 +14,7 @@ RUN apt-get update --quiet \
   wget \
   zip
 
-RUN git clone --depth=1 --branch=v1.5.1 https://github.com/Remi-Coulom/gogui
+RUN git clone --depth=1 --branch=v0.0.0 https://github.com/HumanCompatibleAI/gogui
 WORKDIR gogui
 
 # Modify ubuntu_setup.sh to play nice with Docker build
