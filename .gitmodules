@@ -1,6 +1,6 @@
 [submodule "controllers/gogui"]
 	path = controllers/gogui
-	url = git@github.com:Remi-Coulom/gogui.git
+	url = git@github.com:HumanCompatibleAI/gogui.git
 [submodule "engines/KataGo-custom"]
 	path = engines/KataGo-custom
 	url = git@github.com:HumanCompatibleAI/KataGo-custom.git
