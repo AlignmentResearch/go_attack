@@ -1,8 +1,9 @@
 #!/bin/sh
-RUN_NAME="$1"
-VOLUME_NAME="$2"
+BASE_DIR="$1"
+MODEL_DIR="$2"
+mkdir -p "$BASE_DIR"/selfplay
 python /engines/KataGo-custom/python/curriculum.py \
-    -selfplay-dir=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/ \
-    -input-models-dir=/"$VOLUME_NAME"/victims \
-    -output-models-dir=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/victims \
+    -selfplay-dir="$BASE_DIR"/selfplay \
+    -input-models-dir="$MODEL_DIR" \
+    -output-models-dir="$BASE_DIR"/victims \
     -config-json-file=/go_attack/configs/curriculum.json
