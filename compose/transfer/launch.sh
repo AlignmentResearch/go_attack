@@ -106,7 +106,7 @@ export VICTIM=${EXPERIMENT_NAME##*-vs-}
 # Directory of this script
 SCRIPT_DIR=$(dirname -- "$( readlink -f -- "$0"; )";)
 
-if [[ "${DOCKER_COMPOSE_COMMAND}" != "up" ]]; then
+if [[ "${DOCKER_COMPOSE_COMMAND}" == "build" ]]; then
   docker-compose --file ${SCRIPT_DIR}/compose.yml \
     --profile ${ATTACKER} --profile ${VICTIM} \
     ${DOCKER_COMPOSE_COMMAND}
