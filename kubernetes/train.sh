@@ -16,7 +16,7 @@ train_cmd=(
     ./selfplay/train.sh
     "$BASE_DIR"
     t0          # Name to prefix models with, specific to this training daemon
-    b10c128     # Network size (if no initial weights specified)
+    b15c192     # Network size (if no initial weights specified)
     256         # Batch size
     main        # EXPORTMODE
     -disable-vtimeloss
