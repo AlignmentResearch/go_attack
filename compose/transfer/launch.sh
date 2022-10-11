@@ -8,11 +8,15 @@
 export HOST_REPO_ROOT=$(git rev-parse --show-toplevel)
 
 DEFAULT_GPUS_STR="all"
-DEFAULT_NUM_GAMES_TOTAL=100
+DEFAULT_KATAGO_CONFIG="${HOST_REPO_ROOT}/configs/gtp.cfg"
+DEFAULT_NUM_GAMES_TOTAL=64
 DEFAULT_NUM_THREADS=16
 
 function usage() {
-  echo "Usage: $0 [-g GPUS] [-l LABEL] [-n NUM_GAMES] [-o OUTPUT_DIR] [-t NUM_THREADS] EXPERIMENT COMMAND"
+  echo "Usage: $0 [-g GPUS] [-k KOMI] [--katago-config CONFIG] "
+  echo "         [--katago-model MODEL] [--katago-victim-model MODEL]"
+  echo "         [-l LABEL] [-n NUM_GAMES] [-o OUTPUT_DIR] [-t NUM_THREADS]"
+  echo "         EXPERIMENT COMMAND"
   echo
   echo "Launches a transfer experiment."
   echo
@@ -22,6 +26,21 @@ function usage() {
   echo "              comma-separated list (with no spaces in between) or"
   echo "              'all'."
   echo "              default: ${DEFAULT_GPUS_STR}"
+  echo "  -k KOMI, --komi KOMI"
+  echo "              The komi of the games."
+  echo "              ELF only accepts a komi of 7.5."
+  echo "              Only used by katago-vs-* experiments."
+  echo "              default: 6.5 vs. Leela, 7.5 vs. ELF"
+  echo "  --katago-config CONFIG"
+  echo "              Config for KataGo to use."
+  echo "              Only used by katago-vs-* experiments."
+  echo "              default: ${DEFAULT_KATAGO_CONFIG}"
+  echo "  --katago-model MODEL"
+  echo "              Model for KataGo to use."
+  echo "              Only used by katago-vs-* experiments."
+  echo "  --katago-victim-model MODEL"
+  echo "              Victim model for KataGo to use in EMCTS."
+  echo "              Only used by katago-vs-* experiments."
   echo "  -l LABEL, --label LABEL"
   echo "              Label attached to the output directory and docker-compose"
   echo "              project-name. If you are running multiple instances of"
@@ -40,7 +59,8 @@ function usage() {
   echo
   echo "positional arguments:"
   echo "  EXPERIMENT  Which experiment to run."
-  echo "              values: {baseline-attack-vs-elf, baseline-attack-vs-leela}"
+  echo "              values: {baseline-attack-vs-elf, baseline-attack-vs-leela,"
+  echo "                       katago-vs-elf, katago-vs-leela}"
   echo "  COMMAND     docker-compose command to run."
   echo "              values: {build, up}"
   echo
@@ -50,12 +70,20 @@ function usage() {
 NUM_POSITIONAL_ARGUMENTS=2
 
 GPUS_STR=${DEFAULT_GPUS_STR}
+export KATAGO_CONFIG=${DEFAULT_KATAGO_CONFIG}
+export KATAGO_MODEL=
+export KATAGO_VICTIM_MODEL=
+export KOMI=
 NUM_GAMES_TOTAL=${DEFAULT_NUM_GAMES_TOTAL}
 NUM_THREADS=${DEFAULT_NUM_THREADS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
   case $1 in
     -g|--gpus) GPUS_STR=$2; shift ;;
+    -k|--komi) KOMI=$2; shift ;;
+    --katago-config) KATAGO_CONFIG=$2; shift ;;
+    --katago-model) KATAGO_MODEL=$2; shift ;;
+    --katago-victim-model) KATAGO_VICTIM_MODEL=$2; shift ;;
     -l|--label) LABEL=$2; shift ;;
     -o|--output-dir) HOST_BASE_OUTPUT_DIR=$2; shift ;;
     -n|--num-games) NUM_GAMES_TOTAL=$2; shift ;;
@@ -73,6 +101,18 @@ fi
 EXPERIMENT_NAME=$1
 DOCKER_COMPOSE_COMMAND=$2
 
+ATTACKER=${EXPERIMENT_NAME%%-vs-*}
+export VICTIM=${EXPERIMENT_NAME##*-vs-}
+# Directory of this script
+SCRIPT_DIR=$(dirname -- "$( readlink -f -- "$0"; )";)
+
+if [[ "${DOCKER_COMPOSE_COMMAND}" == "build" ]]; then
+  docker-compose --file ${SCRIPT_DIR}/compose.yml \
+    --profile ${ATTACKER} --profile ${VICTIM} \
+    ${DOCKER_COMPOSE_COMMAND}
+  exit 0
+fi
+
 GPUS=()
 if [[ "${GPUS_STR}" == "all" ]]; then
   NUM_GPUS=$(nvidia-smi --list-gpus | wc -l)
@@ -86,18 +126,44 @@ else
   done
 fi
 
+if [[ -z "${KOMI}" ]]; then
+  KOMI=6.5
+  [[ "${VICTIM}" == "elf" ]] && KOMI=7.5
+fi
+if [[ "${EXPERIMENT_NAME}" = katago-vs-elf ]] && [[ $KOMI != "7.5" ]]; then
+  echo "Warning: ELF only allows KOMI=7.5. Setting KOMI=7.5."
+  KOMI=7.5
+fi
+
+if [[ "${ATTACKER}" == "katago" ]]; then
+  if [[ ! -f "${KATAGO_CONFIG}" ]]; then
+    echo "KataGo config does not exist: ${KATAGO_CONFIG}"
+    exit 1
+  fi
+  if [[ ! -f "${KATAGO_MODEL}" ]]; then
+    echo "KataGo model does not exist: ${KATAGO_MODEL}"
+    exit 1
+  fi
+  if [[ ! -f "${KATAGO_VICTIM_MODEL}" ]]; then
+    echo "KataGo victim model does not exist: ${KATAGO_VICTIM_MODEL}"
+    exit 1
+  fi
+
+  # Each thread gets an even number of games so that the number of games of
+  # KataGo being black and being white are balanced.
+  NUM_GAMES_DIVISOR=$((2 * NUM_THREADS))
+  NUM_GAMES_ROUNDED=$((($NUM_GAMES_TOTAL + $NUM_GAMES_DIVISOR - 1) / $NUM_GAMES_DIVISOR * $NUM_GAMES_DIVISOR))
+  if [[ $NUM_GAMES_TOTAL -ne $NUM_GAMES_ROUNDED  ]]; then
+    echo "Warning: To get an equal number of games of KataGo being black and"
+    echo "  being white, NUM_GAMES=${NUM_GAMES_TOTAL} is rounded up to the"
+    echo "  nearest multiple of (2*NUM_THREADS)=${NUM_GAMES_DIVISOR}: ${NUM_GAMES_ROUNDED}"
+    NUM_GAMES_TOTAL=NUM_GAMES_ROUNDED
+  fi
+fi
+
 ############################
 # Launching the experiment #
 ############################
-
-# Directory of this script
-SCRIPT_DIR=$(dirname -- "$( readlink -f -- "$0"; )";)
-
-if [[ "${DOCKER_COMPOSE_COMMAND}" != "up" ]]; then
-  docker-compose --file ${SCRIPT_DIR}/${EXPERIMENT_NAME}.yml \
-    ${DOCKER_COMPOSE_COMMAND}
-  exit 0
-fi
 
 if [[ -z "${HOST_BASE_OUTPUT_DIR}" ]]; then
   HOST_BASE_OUTPUT_DIR=${HOST_REPO_ROOT}/transfer-logs/${EXPERIMENT_NAME}/
@@ -105,7 +171,7 @@ if [[ -z "${HOST_BASE_OUTPUT_DIR}" ]]; then
   HOST_BASE_OUTPUT_DIR+=$(date +%Y%m%d-%H%M%S)
 fi
 
-if [[ "${EXPERIMENT_NAME}" = "baseline-attack-vs-leela" ]]; then
+if [[ "${VICTIM}" == "leela" ]]; then
   export HOST_LEELA_TUNING_FILE=${HOST_REPO_ROOT}/engines/leela/leelaz_opencl_tuning
   # Make sure $HOST_LEELA_TUNING_FILE exists.
   touch -a ${HOST_LEELA_TUNING_FILE}
@@ -121,8 +187,8 @@ for (( thread_idx = 0; thread_idx < NUM_THREADS; thread_idx++)) ; do
   # We don't want multiple threads racing to write to shared files.
   export ARE_SHARED_FILES_READ_ONLY=$([[ $thread_idx -eq "0" ]] && echo "false" || echo "true")
 
-  docker-compose ${DOCKER_FLAGS} \
-    --file ${SCRIPT_DIR}/${EXPERIMENT_NAME}.yml \
+  docker-compose --file ${SCRIPT_DIR}/compose.yml \
+    --profile ${ATTACKER} --profile ${VICTIM} \
     --project-name ${PROJECT_NAME_PREFIX}${thread_idx} \
     ${DOCKER_COMPOSE_COMMAND} --abort-on-container-exit &
 done

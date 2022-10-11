@@ -102,6 +102,7 @@ RUN apt-get update -q \
   python3 \
   python3-pip \
   rsync \
+  socat \
   sudo \
   tmux \
   unzip \

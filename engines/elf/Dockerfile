@@ -30,7 +30,7 @@ RUN conda install pytorch cudatoolkit=11.6 -c pytorch -c conda-forge
 # This fork of ELF fixes the code to work with newer versions of PyTorch that
 # are the only versions compatible with CUDA 11 but that introduced a
 # breaking change.
-RUN git clone --depth=1 --branch=v0.0.0 --recurse-submodules \
+RUN git clone --depth=1 --branch=v0.0.1 --recurse-submodules \
   --shallow-submodules https://github.com/HumanCompatibleAI/ELF
 WORKDIR ELF
 RUN make -j16

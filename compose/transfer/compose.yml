@@ -1,0 +1,159 @@
+# Launches a transfer experiment. Use `launch.sh` for starting these
+# experiments.
+version: "3"
+
+services:
+  # This service may throw a benign EOFError at the end of the job.
+  elf:
+    profiles:
+      - elf
+    image: humancompatibleai/goattack:elf
+    build:
+      context: ${HOST_REPO_ROOT}/engines/elf
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+    command: >
+      sh -c "
+        socat TCP4-LISTEN:80,reuseaddr EXEC:'./run-gtp.sh --verbose' \
+        2>&1 | tee --append /outputs/victim.log
+      "
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["${GPU:-0}"]
+  leela:
+    profiles:
+      - leela
+    image: humancompatibleai/goattack:leela
+    build:
+      context: ${HOST_REPO_ROOT}/engines/leela
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      # Leela takes a minute to do OpenCL tuning on its first run and caches the
+      # result. Mounting a host file to the cache at
+      # `/root/.local/share/leela-zero/leelaz_opencl_tuning` on the container
+      # saves the cache across different launches of the container.
+      - type: bind
+        source: ${HOST_LEELA_TUNING_FILE}
+        target: /root/.local/share/leela-zero/leelaz_opencl_tuning
+        read_only: ${ARE_SHARED_FILES_READ_ONLY:-false}
+    command: >
+      sh -c "
+        socat TCP4-LISTEN:80,reuseaddr EXEC:'./run-gtp.sh --verbose' \
+        2>&1 | tee --append /outputs/victim.log
+      "
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["${GPU:-0}"]
+
+  baseline-attack:
+    profiles:
+      - baseline-attack
+    image: humancompatibleai/goattack:cpp
+    build:
+      context: ${HOST_REPO_ROOT}
+      dockerfile: ${HOST_REPO_ROOT}/compose/cpp/Dockerfile
+      target: prod
+    depends_on:
+      - ${VICTIM}
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      - type: bind
+        source: ${HOST_REPO_ROOT}
+        target: /go_attack
+        read_only: true
+    command:
+      sh -c "
+        printf '#!/bin/bash\nnc ${VICTIM} 80' > /connect-to-victim.sh
+        && chmod +x /connect-to-victim.sh
+        && python3 -u /go_attack/scripts/baseline_attack.py
+        --engine ${VICTIM}
+        --executable /connect-to-victim.sh
+        --log-dir /outputs/sgfs
+        --num-games ${NUM_GAMES}
+        --verbose
+        2>&1 | tee --append /outputs/attack.log
+      "
+
+  katago:
+    profiles:
+      - katago
+    image: humancompatibleai/goattack:cpp
+    build:
+      context: ${HOST_REPO_ROOT}
+      dockerfile: ${HOST_REPO_ROOT}/compose/cpp/Dockerfile
+      target: prod
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+      - type: bind
+        source: ${HOST_REPO_ROOT}/configs
+        target: ${HOST_REPO_ROOT}/configs
+        read_only: true
+      # We prefix the target of KATAGO_MODEL and KATAGO_VICTIM_MODEL differently
+      # so that Docker doesn't complain about duplicate volumes when
+      # KATAGO_MODEL == KATAGO_VICTIM_MODEL
+      - type: bind
+        source: ${KATAGO_MODEL}
+        target: /adversary-model/${KATAGO_MODEL}
+        read_only: true
+      - type: bind
+        source: ${KATAGO_VICTIM_MODEL}
+        target: /victim-model/${KATAGO_VICTIM_MODEL}
+        read_only: true
+    # ELF does not accept suicide moves, so we set multiStoneSuicideLegal=false.
+    command: >
+      sh -c "
+        socat TCP4-LISTEN:80,reuseaddr \
+        EXEC:\"/engines/KataGo-custom/cpp/katago gtp \
+          -config ${KATAGO_CONFIG} \
+          -model /adversary-model/${KATAGO_MODEL} \
+          -victim-model /victim-model/${KATAGO_VICTIM_MODEL} \
+          -override-config multiStoneSuicideLegal=false \
+          \" \
+        2>&1 | tee --append /outputs/katago.log
+      "
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["${GPU:-0}"]
+  twogtp:
+    profiles:
+      - katago
+    image: humancompatibleai/goattack:twogtp
+    build:
+      context: ${HOST_REPO_ROOT}
+      dockerfile: ${HOST_REPO_ROOT}/compose/transfer/twogtp/Dockerfile
+    depends_on:
+      - ${VICTIM}
+      - katago
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+    command:
+      sh -c "
+        mkdir --parents /outputs/sgfs &&
+        bin/gogui-twogtp
+          -black 'nc ${VICTIM} 80' -white 'nc katago 80'
+          -alternate -auto -games ${NUM_GAMES} -komi ${KOMI} -maxmoves 1600
+          -sgffile /outputs/sgfs/game -verbose
+        2>&1 | tee --append /outputs/twogtp.log
+      "
