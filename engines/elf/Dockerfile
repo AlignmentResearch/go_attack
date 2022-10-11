@@ -1,7 +1,7 @@
 # Builds an image that can run ELF OpenGo. A CUDA-compatible GPU is needed for
 # ELF, so use the `--gpus` flags when running this image with `docker run`.
 #
-# Run `./gtp-defaults.sh` inside the Docker container to play against ELF OpenGo
+# Run `./run-gtp.sh` inside the Docker container to play against ELF OpenGo
 # via GTP.
 
 # ELF's README suggests using CUDA 10.0 and cuDNN 7. A6000 GPUs need CUDA
@@ -30,7 +30,7 @@ RUN conda install pytorch cudatoolkit=11.6 -c pytorch -c conda-forge
 # This fork of ELF fixes the code to work with newer versions of PyTorch that
 # are the only versions compatible with CUDA 11 but that introduced a
 # breaking change.
-RUN git clone --depth=1 --branch=v0.0.0 --recurse-submodules \
+RUN git clone --depth=1 --branch=v0.0.1 --recurse-submodules \
   --shallow-submodules https://github.com/HumanCompatibleAI/ELF
 WORKDIR ELF
 RUN make -j16
@@ -43,6 +43,7 @@ ENV PATH=/conda/bin:${PATH}
 
 RUN apt-get update --quiet \
   && apt-get install --assume-yes \
+  socat \
   wget \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
@@ -55,6 +56,6 @@ RUN wget --output-document=pretrained-model.bin \
 
 WORKDIR /ELF/scripts/elfgames/go/
 COPY entrypoint.sh /
-COPY gtp-defaults.sh .
+COPY run-gtp.sh .
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]

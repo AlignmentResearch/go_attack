@@ -98,9 +98,11 @@ RUN apt-get update -q \
   git \
   gpustat \
   htop \
+  netcat \
   python3 \
   python3-pip \
   rsync \
+  socat \
   sudo \
   tmux \
   unzip \
