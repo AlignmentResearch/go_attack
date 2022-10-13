@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Automatically build and push new images to Docker Hub if necessary."""
 
 import subprocess
