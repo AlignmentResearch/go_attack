@@ -5,7 +5,7 @@ if [ $# -lt 1 ]; then
 fi
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
-RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
+RUN_NAME="$1"
 echo "Run name: $RUN_NAME"
 
 # Make sure we don't miss any changes
@@ -33,7 +33,7 @@ case "$KUBECONFIG" in
     "$HOME/.kube/lambda")
         echo "Looks like we're on Lambda. Will use the shared Weka volume."
         # shellcheck disable=SC2089
-        VOLUME_FLAGS="--volume_name go-attack --volume_mount shared --shared-host-dir=''"
+        VOLUME_FLAGS="--volume_name go-attack --volume_mount shared"
         VOLUME_NAME=shared
         ;;
     *)
@@ -57,4 +57,4 @@ ctl job run --container \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
     --gpu 1 1 1 0 0 \
     --name go-training-"$1" \
-    --replicas "${2:-7}" 1 1 1 1
+    --replicas "${2:-4}" 1 1 1 1
