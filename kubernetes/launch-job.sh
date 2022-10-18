@@ -1,6 +1,6 @@
 #!/bin/sh
 GIT_ROOT=$(git rev-parse --show-toplevel)
-RUN_NAME="ttseng-s34m-ov-vs-cp505-v1_to_512-$(date +%Y%m%d-%H%M%S)"
+RUN_NAME="ttseng-s34m-ov-vs-cp505-v16-$(date +%Y%m%d-%H%M%S)"
 echo "Run name: $RUN_NAME"
 
 # Make sure we don't miss any changes
