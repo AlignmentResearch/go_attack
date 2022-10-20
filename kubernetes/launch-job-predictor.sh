@@ -1,11 +1,6 @@
 #!/bin/sh
-if [ $# -lt 1 ]; then
-    echo "Must provide prefix for run" 1>&2
-    exit 2
-fi
-
 GIT_ROOT=$(git rev-parse --show-toplevel)
-RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
+RUN_NAME="tony-vpred/b10-curr-cp505-init"
 echo "Run name: $RUN_NAME"
 
 # Make sure we don't miss any changes
@@ -55,7 +50,7 @@ ctl job run --container \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME b20c256x2-s5303129600-d1228401921" \
+    "/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
     --gpu 1 0 0 1 1 0 \
     --name go-training-"$1" \
