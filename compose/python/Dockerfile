@@ -45,12 +45,6 @@ FROM python-deps as prod
 COPY ./engines/KataGo-raw/python /engines/KataGo-raw/python
 COPY ./engines/KataGo-custom/python /engines/KataGo-custom/python
 
-COPY ./configs/ /go_attack/configs
-COPY ./kubernetes/ /go_attack/kubernetes
-COPY ./scripts/ /go_attack/scripts
-COPY ./src/go_attack /go_attack/src/go_attack
-COPY ./setup.py /go_attack/setup.py
-
 # Make /engines/KataGo-* git repos to make scripts run nicely.
 # TODO: Make this less hacky...
 WORKDIR /engines/KataGo-raw
@@ -65,6 +59,15 @@ RUN git init . \
   && git config user.name dummy_name \
   && git config user.email dummy@email.com \
   && git commit -m "Dummy commit"
+
+# Copy over other files
+COPY ./scripts/ /go_attack/scripts
+COPY ./src/go_attack /go_attack/src/go_attack
+COPY ./setup.py /go_attack/setup.py
+
+# Copy over configs and launch scripts
+COPY ./configs/ /go_attack/configs
+COPY ./kubernetes/ /go_attack/kubernetes
 
 # Reset working directory
 WORKDIR /
