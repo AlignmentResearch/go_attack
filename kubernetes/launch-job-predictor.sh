@@ -1,5 +1,6 @@
 #!/bin/sh
 GIT_ROOT=$(git rev-parse --show-toplevel)
+RUN_NAME_SHORT="b10-curr-cp505-init"
 RUN_NAME="tony-vpred/b10-curr-cp505-init"
 echo "Run name: $RUN_NAME"
 
@@ -54,5 +55,5 @@ ctl job run --container \
     "/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
     --gpu 1 0 0 1 1 0 \
-    --name go-training-"$1" \
+    --name go-training-"$RUN_NAME_SHORT" \
     --replicas "${2:-7}" 1 1 1 1 1
