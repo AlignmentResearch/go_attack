@@ -56,4 +56,5 @@ ctl job run --container \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
     --gpu 1 0 0 1 1 0 \
     --name go-training-"$RUN_NAME_SHORT" \
-    --replicas "${2:-7}" 1 1 1 1 1
+    --replicas "${2:-7}" 1 1 1 1 1 \
+    --high_priority
