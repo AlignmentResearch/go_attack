@@ -1,7 +1,7 @@
 #!/bin/sh
 GIT_ROOT=$(git rev-parse --show-toplevel)
-RUN_NAME_SHORT="b10-curr-cp505-init"
-RUN_NAME="tony-vpred/b10-curr-cp505-init"
+RUN_NAME_SHORT="b10-curr-cp505-init-try1"
+RUN_NAME="tony-vpred/b10-curr-cp505-init-try1"
 echo "Run name: $RUN_NAME"
 
 # Make sure we don't miss any changes
