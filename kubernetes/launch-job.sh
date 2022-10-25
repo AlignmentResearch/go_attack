@@ -24,23 +24,26 @@ export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
 
 # The KUBECONFIG env variable is set in the user's .bashrc and is changed whenever you type
 # "loki" or "lambda" on the command line
-case "$KUBECONFIG" in
-    "$HOME/.kube/loki")
-        echo "Looks like we're on Loki. Will use the shared host directory instead of Weka."
-        VOLUME_FLAGS=""
-        VOLUME_NAME=data
-        ;;
-    "$HOME/.kube/lambda")
-        echo "Looks like we're on Lambda. Will use the shared Weka volume."
-        # shellcheck disable=SC2089
-        VOLUME_FLAGS="--volume_name go-attack --volume_mount shared"
-        VOLUME_NAME=shared
-        ;;
-    *)
-        echo "Unknown value for KUBECONFIG env variable: $KUBECONFIG"
-        exit 2
-        ;;
-esac
+# case "$KUBECONFIG" in
+#     "$HOME/.kube/loki")
+#         echo "Looks like we're on Loki. Will use the shared host directory instead of Weka."
+#         VOLUME_FLAGS=""
+#         VOLUME_NAME=data
+#         ;;
+#     "$HOME/.kube/lambda")
+#         echo "Looks like we're on Lambda. Will use the shared Weka volume."
+#         # shellcheck disable=SC2089
+#         VOLUME_FLAGS="--volume_name go-attack --volume_mount shared"
+#         VOLUME_NAME=shared
+#         ;;
+#     *)
+#         echo "Unknown value for KUBECONFIG env variable: $KUBECONFIG"
+#         exit 2
+#         ;;
+# esac
+
+VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
+VOLUME_NAME="shared"
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
 ctl job run --container \
@@ -57,4 +60,4 @@ ctl job run --container \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
     --gpu 1 1 1 0 0 \
     --name go-training-"$1" \
-    --replicas "${2:-7}" 1 1 1 1
+    --replicas "${2:-6}" 1 1 1 1
