@@ -33,7 +33,7 @@ case "$KUBECONFIG" in
     "$HOME/.kube/lambda")
         echo "Looks like we're on Lambda. Will use the shared Weka volume."
         # shellcheck disable=SC2089
-        VOLUME_FLAGS="--volume_name go-attack --volume_mount shared --shared-host-dir=''"
+        VOLUME_FLAGS="--volume-name go-attack --volume-mount shared --shared-host-dir=''"
         VOLUME_NAME=shared
         ;;
     *)
