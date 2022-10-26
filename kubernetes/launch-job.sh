@@ -1,8 +1,51 @@
-#!/bin/sh
-if [ $# -lt 1 ]; then
+#!/bin/bash
+
+####################
+# Argument parsing #
+####################
+
+DEFAULT_NUM_VICTIMPLAY_GPUS=7
+
+function usage() {
+  echo "Usage: $0 [--victimplay-gpus GPUS] [--use-weka] PREFIX"
+  echo
+  echo "positional arguments:"
+  echo "  PREFIX  Identifying label used for the name of the job and the name"
+  echo "          of the output directory."
+  echo
+  echo "optional arguments:"
+  echo "  -g GPUS, --victimplay-gpus GPUS"
+  echo "    Number of GPUs to use for victimplay."
+  echo "    default: ${DEFAULT_NUM_VICTIMPLAY_GPUS}"
+  echo "  -w, --use-weka"
+  echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
+  echo "    volume."
+  echo
+  echo "Optional arguments should be specified before positional arguments."
+}
+
+NUM_POSITIONAL_ARGUMENTS=1
+
+NUM_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
+# Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
+while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
+  case $1 in
+    -h|--help) usage; exit 0 ;;
+    -g|--victimplay-gpus) NUM_VICTIMPLAY_GPUS=$2; shift ;;
+    -w|--use-weka) USE_WEKA=1 ;;
+    *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+  esac
+  shift
+done
+
+if [[ $# -ne NUM_POSITIONAL_ARGUMENTS ]]; then
     echo "Must provide prefix for run" 1>&2
     exit 2
 fi
+
+############################
+# Launching the experiment #
+############################
 
 GIT_ROOT=$(git rev-parse --show-toplevel)
 RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
@@ -22,25 +65,12 @@ python "$GIT_ROOT"/kubernetes/update_images.py
 # shellcheck disable=SC2046
 export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
 
-# The KUBECONFIG env variable is set in the user's .bashrc and is changed whenever you type
-# "loki" or "lambda" on the command line
-case "$KUBECONFIG" in
-    "$HOME/.kube/loki")
-        echo "Looks like we're on Loki. Will use the shared host directory instead of Weka."
-        VOLUME_FLAGS=""
-        VOLUME_NAME=data
-        ;;
-    "$HOME/.kube/lambda")
-        echo "Looks like we're on Lambda. Will use the shared Weka volume."
-        # shellcheck disable=SC2089
-        VOLUME_FLAGS="--volume-name go-attack --volume-mount shared --shared-host-dir=''"
-        VOLUME_NAME=shared
-        ;;
-    *)
-        echo "Unknown value for KUBECONFIG env variable: $KUBECONFIG"
-        exit 2
-        ;;
-esac
+if [[ -n "${USE_WEKA}" ]]; then
+  VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
+else
+  VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
+fi
+VOLUME_NAME="shared"
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
 ctl job run --container \
@@ -57,4 +87,4 @@ ctl job run --container \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
     --gpu 1 1 1 0 0 \
     --name go-training-"$1" \
-    --replicas "${2:-7}" 1 1 1 1
+    --replicas "${NUM_VICTIMPLAY_GPUS}" 1 1 1 1
