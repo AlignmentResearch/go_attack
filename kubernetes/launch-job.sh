@@ -66,7 +66,7 @@ python "$GIT_ROOT"/kubernetes/update_images.py
 export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
 
 if [ -n "${USE_WEKA}" ]; then
-  VOLUME_FLAGS="--volume-name go-attack --volume-mount shared"
+  VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
 else
   VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
 fi
