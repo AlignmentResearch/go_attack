@@ -39,8 +39,8 @@ while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
 done
 
 if [[ $# -ne NUM_POSITIONAL_ARGUMENTS ]]; then
-    echo "Must provide prefix for run" 1>&2
-    exit 2
+  usage
+  exit 1
 fi
 
 ############################
