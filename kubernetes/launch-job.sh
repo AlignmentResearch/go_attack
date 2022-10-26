@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ####################
 # Argument parsing #
@@ -6,7 +6,7 @@
 
 DEFAULT_NUM_VICTIMPLAY_GPUS=7
 
-function usage() {
+usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
@@ -28,7 +28,7 @@ NUM_POSITIONAL_ARGUMENTS=1
 
 NUM_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
-while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
+while [ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]; do
   case $1 in
     -h|--help) usage; exit 0 ;;
     -g|--victimplay-gpus) NUM_VICTIMPLAY_GPUS=$2; shift ;;
@@ -38,7 +38,7 @@ while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
   shift
 done
 
-if [[ $# -ne NUM_POSITIONAL_ARGUMENTS ]]; then
+if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
   usage
   exit 1
 fi
@@ -65,8 +65,8 @@ python "$GIT_ROOT"/kubernetes/update_images.py
 # shellcheck disable=SC2046
 export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
 
-if [[ -n "${USE_WEKA}" ]]; then
-  VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
+if [ -n "${USE_WEKA}" ]; then
+  VOLUME_FLAGS="--volume-name go-attack --volume-mount shared"
 else
   VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
 fi
