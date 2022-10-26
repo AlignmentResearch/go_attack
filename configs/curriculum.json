@@ -1,5 +1,20 @@
 [
     {
+        "_comment": "cp39@1",
+        "name": "kata1-b6c96-s45189632-d6589032.txt.gz",
+        "max_visits_victim": 1,
+        "win_rate": 0.5,
+        "score_diff": null,
+        "score_wo_komi_diff": null,
+        "policy_loss": null
+    },
+    {
+        "_comment": "cp49@1",
+        "name": "kata1-b6c96-s69427456-d10051148.txt.gz",
+        "max_visits_victim": 1,
+        "win_rate": 0.5
+    },
+    {
         "_comment": "cp63@1",
         "name": "kata1-b6c96-s175395328-d26788732.txt.gz",
         "max_visits_victim": 1,
