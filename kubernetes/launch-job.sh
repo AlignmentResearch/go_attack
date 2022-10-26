@@ -79,7 +79,7 @@ fi
 VOLUME_NAME="shared"
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
-echo ctl job run --container \
+ctl job run --container \
     "$CPP_IMAGE" \
     "$CPP_IMAGE" \
     "$PYTHON_IMAGE" \
@@ -98,7 +98,7 @@ echo ctl job run --container \
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 # shellcheck disable=SC2086
-echo ctl job run --container \
+ctl job run --container \
     "$CPP_IMAGE" \
     $VOLUME_FLAGS \
     --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
