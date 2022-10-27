@@ -1,10 +1,10 @@
-#!/bin/sh
+#!/bin/bash -e
 
 ####################
 # Argument parsing #
 ####################
 
-DEFAULT_NUM_VICTIMPLAY_GPUS=7
+DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--use-weka] PREFIX"
@@ -15,8 +15,11 @@ usage() {
   echo
   echo "optional arguments:"
   echo "  -g GPUS, --victimplay-gpus GPUS"
-  echo "    Number of GPUs to use for victimplay."
+  echo "    Minimum number of GPUs to use for victimplay."
   echo "    default: ${DEFAULT_NUM_VICTIMPLAY_GPUS}"
+  echo "  -m GPUS, --victimplay-max-gpus GPUS"
+  echo "    Maximum number of GPUs to use for victimplay."
+  echo "    default: twice the minimum number of GPUs."
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
   echo "    volume."
@@ -26,12 +29,13 @@ usage() {
 
 NUM_POSITIONAL_ARGUMENTS=1
 
-NUM_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
+MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while [ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]; do
   case $1 in
     -h|--help) usage; exit 0 ;;
-    -g|--victimplay-gpus) NUM_VICTIMPLAY_GPUS=$2; shift ;;
+    -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
+    -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
     -w|--use-weka) USE_WEKA=1 ;;
     *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
   esac
@@ -42,6 +46,8 @@ if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
   usage
   exit 1
 fi
+
+MAX_VICTIMPLAY_GPUS=${MAX_VICTIMPLAY_GPUS:-$((2*MIN_VICTIMPLAY_GPUS))}
 
 ############################
 # Launching the experiment #
@@ -85,6 +91,17 @@ ctl job run --container \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
+    --high-priority \
     --gpu 1 1 1 0 0 \
-    --name go-training-"$1" \
-    --replicas "${NUM_VICTIMPLAY_GPUS}" 1 1 1 1
+    --name go-training-"$1"-essentials \
+    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
+
+EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
+# shellcheck disable=SC2086
+ctl job run --container \
+    "$CPP_IMAGE" \
+    $VOLUME_FLAGS \
+    --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
+    --gpu 1 \
+    --name go-training-"$1"-victimplay \
+    --replicas "${EXTRA_VICTIMPLAY_GPUS}"
