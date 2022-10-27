@@ -34,7 +34,7 @@ def main():
 
     # There's 2 images we care about: {current_hash}-cpp and {current_hash}-python.
     # If either is missing, we need to build and push a new image.
-    for image_type in ("cpp", "python"):
+    for image_type in ["cpp"]:
         tag = f"{current_hash}-{image_type}"
         if tag in available_tags:
             print(f"Using existing local copy of {REPO_NAME}:{tag}")
@@ -58,7 +58,6 @@ def main():
     # Write the current image tags to a file so that Kubernetes can use them.
     with open(f"{rootdir}/kubernetes/active-images.env", "w") as f:
         f.write(f"CPP_IMAGE={REPO_NAME}:{current_hash}-cpp\n")
-        f.write(f"PYTHON_IMAGE={REPO_NAME}:{current_hash}-python")
 
 
 if __name__ == "__main__":

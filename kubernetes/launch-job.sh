@@ -74,17 +74,9 @@ VOLUME_NAME="shared"
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
 ctl job run --container \
-    "$CPP_IMAGE" \
-    "$CPP_IMAGE" \
-    "$PYTHON_IMAGE" \
-    "$PYTHON_IMAGE" \
-    "$PYTHON_IMAGE" \
+    ${CPP_IMAGE} \
     $VOLUME_FLAGS \
-    --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
-    "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME" \
-    "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
-    --gpu 1 1 1 0 0 \
-    --name go-training-"$1" \
-    --replicas "${NUM_VICTIMPLAY_GPUS}" 1 1 1 1
+    --command "/go_attack/kubernetes/match.sh /shared/match/${RUN_NAME}" \
+    --gpu 1 \
+    --name match-"$1" \
+    --replicas 1 \
