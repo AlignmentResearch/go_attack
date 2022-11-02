@@ -3,7 +3,7 @@
 OUTPUT_DIR=$1
 NUM_GAMES=$2
 shift; shift
-if [ "${NUM_GAMES}" -lt 0 ]; then
+if [ "${NUM_GAMES}" -ge 0 ]; then
   GAMES_OVERRIDE="-override-config numGamesTotal=${NUM_GAMES}"
 fi
 mkdir --parents "${OUTPUT_DIR}"
