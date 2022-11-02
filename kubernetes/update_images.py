@@ -1,8 +1,8 @@
 """Automatically build and push new images to Docker Hub if necessary."""
 
-from argparse import ArgumentParser
 import json
 import subprocess
+from argparse import ArgumentParser
 
 import docker
 from docker.models.images import Image
@@ -14,7 +14,7 @@ REPO_NAME = "humancompatibleai/goattack"
 def main():
     """Main entry point."""
     parser = ArgumentParser(
-        description="Automatically build and push new images to Docker Hub if necessary."
+        description="Builds and pushes new KataGo images to Docker Hub.",
     )
     parser.add_argument(
         "--image",
@@ -82,7 +82,7 @@ def main():
     with open(f"{rootdir}/kubernetes/active-images.env", "w") as f:
         for image_type in image_types:
             f.write(
-                f"{image_type.upper()}_IMAGE={REPO_NAME}:{current_hash}-{image_type}\n"
+                f"{image_type.upper()}_IMAGE={REPO_NAME}:{current_hash}-{image_type}\n",
             )
 
 
