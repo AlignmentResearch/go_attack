@@ -7,6 +7,8 @@
 DEFAULT_NUM_GPUS=1
 
 usage() {
+  echo "Schedules a job that runs \`match\`."
+  echo
   echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] [--use-weka] PREFIX"
   echo "         [-- EXTRA_MATCH_FLAGS]"
   echo
@@ -20,7 +22,7 @@ usage() {
   echo "    default: ${DEFAULT_NUM_GPUS}"
   echo "  -n NUM_GAMES, --games NUM_GAMES"
   echo "    Number of match games to play. If not specified, then the number of"
-  echo "    games will be the numGamesTotal specified in the `match` config"
+  echo "    games will be the numGamesTotal specified in the \`match\` config"
   echo "    multiplied by the number of GPUs."
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
@@ -28,8 +30,8 @@ usage() {
   echo
   echo "Optional arguments should be specified before positional arguments."
   echo
-  echo "Extra flags to `match` can be specified by adding them after the"
-  echo "positional arguments with "--" in between, e.g.,"
+  echo "Extra flags to \`match\` can be specified by adding them after the"
+  echo "positional arguments with \"--\" in between, e.g.,"
   echo "  $0 test-run -- -override-config nnModelFile0=/dev/null"
 }
 
