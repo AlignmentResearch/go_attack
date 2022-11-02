@@ -4,29 +4,22 @@
 # Argument parsing #
 ####################
 
-DEFAULT_NUM_GPUS=4
+DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
-  echo "Usage: $0 [--gpus GPUS] [--max-victimplay-gpus GPUS] [--match]"
-  echo "         [--num-match-games NUM_MATCH_GAMES] [--use-weka] PREFIX"
+  echo "Usage: $0 [--victimplay-gpus GPUS] [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
   echo "          of the output directory."
   echo
   echo "optional arguments:"
-  echo "  -g GPUS, --gpus GPUS"
-  echo "    Minimum number of GPUs to use for the victimplay/match game loop."
-  echo "    default: ${DEFAULT_NUM_GPUS}"
-  echo "  -m GPUS, --max-victimplay-gpus GPUS"
-  echo "    Maximum number of GPUs to use for the victimplay game loop."
-  echo "    (Only for victimplay, not match.)"
+  echo "  -g GPUS, --victimplay-gpus GPUS"
+  echo "    Minimum number of GPUs to use for victimplay."
+  echo "    default: ${DEFAULT_NUM_VICTIMPLAY_GPUS}"
+  echo "  -m GPUS, --victimplay-max-gpus GPUS"
+  echo "    Maximum number of GPUs to use for victimplay."
   echo "    default: twice the minimum number of GPUs."
-  echo "  --num-match-games NUM_MATCH_GAMES"
-  echo "    Number of match games to play."
-  echo "    (Only for match, not victimplay.)"
-  echo "  --match"
-  echo "    Run match instead of victimplay."
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
   echo "    volume."
@@ -36,15 +29,13 @@ usage() {
 
 NUM_POSITIONAL_ARGUMENTS=1
 
-MIN_GPUS=${DEFAULT_NUM_GPUS}
+MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while [ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]; do
   case $1 in
     -h|--help) usage; exit 0 ;;
-    -g|--gpus) MIN_GPUS=$2; shift ;;
+    -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
-    --match) MATCH=1 ;;
-    --num-match-games) NUM_MATCH_GAMES=$2; shift ;;
     -w|--use-weka) USE_WEKA=1 ;;
     *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
   esac
@@ -56,7 +47,7 @@ if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
   exit 1
 fi
 
-MAX_VICTIMPLAY_GPUS=${MAX_VICTIMPLAY_GPUS:-$((2*MIN_GPUS))}
+MAX_VICTIMPLAY_GPUS=${MAX_VICTIMPLAY_GPUS:-$((2*MIN_VICTIMPLAY_GPUS))}
 
 ############################
 # Launching the experiment #
@@ -72,42 +63,20 @@ if [ "$(git status --porcelain --untracked-files=no | wc -l)" -gt 0 ]; then
     exit 1
 fi
 
-if [ -n "${USE_WEKA}" ]; then
-  VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
-else
-  VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
-fi
-VOLUME_NAME="shared"
-
-if [ -n "${MATCH}" ]; then
-  IMAGE_TYPES="--image cpp"
-else
-  IMAGE_TYPES="--image cpp --image python"
-fi
-
 # Maybe build and push new Docker images
-# shellcheck disable=SC2086
-python "$GIT_ROOT"/kubernetes/update_images.py ${IMAGE_TYPES}
+python "$GIT_ROOT"/kubernetes/update_images.py
 # Load the env variables just created by update_images.py
 # This line is weird because ShellCheck wants us to put double quotes around the
 # $() context but this changes the behavior to something we don't want
 # shellcheck disable=SC2046
 export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
 
-if [ -n "${MATCH}" ]; then
-  if [ -n "${NUM_MATCH_GAMES}" ]; then
-    GAMES_PER_REPLICA=$(((NUM_MATCH_GAMES + MIN_GPUS - 1) / MIN_GPUS))
-  fi
-  # shellcheck disable=SC2086
-  ctl job run --container \
-    "$CPP_IMAGE" \
-    $VOLUME_FLAGS \
-    --command "/go_attack/kubernetes/match.sh /shared/match/${RUN_NAME} ${NUM_GAMES} ${GAMES_PER_REPLICA}" \
-    --gpu 1 \
-    --name go-match-"$1" \
-    --replicas "${MIN_GPUS}"
-  exit 0
+if [ -n "${USE_WEKA}" ]; then
+  VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
+else
+  VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
 fi
+VOLUME_NAME="shared"
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
 ctl job run --container \
@@ -125,9 +94,9 @@ ctl job run --container \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-training-"$1"-essentials \
-    --replicas "${MIN_GPUS}" 1 1 1 1
+    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
-EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_GPUS))
+EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 # shellcheck disable=SC2086
 ctl job run --container \
     "$CPP_IMAGE" \
