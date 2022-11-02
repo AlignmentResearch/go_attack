@@ -12,6 +12,7 @@ if [ "${NUM_GAMES}" -ge 0 ]; then
 fi
 # Each replica of `match` should output to a different log file.
 ID=$(openssl rand -hex 4)
+
 mkdir --parents "${OUTPUT_DIR}"
 # shellcheck disable=SC2068,SC2086
 /engines/KataGo-custom/cpp/katago match \
