@@ -103,7 +103,7 @@ fi
 ctl job run --container \
   "$CPP_IMAGE" \
   $VOLUME_FLAGS \
-  --command "bash -x /go_attack/kubernetes/match.sh /shared/match/${RUN_NAME} ${NUM_GAMES} $*" \
+  --command "bash -x /go_attack/kubernetes/match.sh /shared/match/${RUN_NAME} ${GAMES_PER_REPLICA} $*" \
   --gpu 1 \
   --name go-match-"$PREFIX" \
   --replicas "${NUM_GPUS}"
