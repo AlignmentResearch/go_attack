@@ -7,7 +7,7 @@
 DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
-  echo "Usage: $0 [--victimplay-gpus GPUS] [--use-weka] PREFIX"
+  echo "Usage: $0 [--victimplay-gpus GPUS] [--predictor] [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -20,6 +20,8 @@ usage() {
   echo "  -m GPUS, --victimplay-max-gpus GPUS"
   echo "    Maximum number of GPUs to use for victimplay."
   echo "    default: twice the minimum number of GPUs."
+  echo "  -p, --predictor"
+  echo "    Use EMCTS with a predictor network."
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
   echo "    volume."
@@ -36,6 +38,7 @@ while [ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]; do
     -h|--help) usage; exit 0 ;;
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
+    -p|--predictor) USE_PREDICTOR=1 ;;
     -w|--use-weka) USE_WEKA=1 ;;
     *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
   esac
@@ -78,6 +81,32 @@ else
 fi
 VOLUME_NAME="shared"
 
+# Use both single and double quotes to ensure that it's still got double quotes after
+# we eval it
+CMDS=(
+  '"/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME"'
+  '"/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME"'
+  '"/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME"'
+  '"/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME"'
+)
+GPU_LIST=(1 1 0 0)
+REPLICA_LIST=(1 1 1 1)
+
+if [ -n "$PREDICTOR" ]; then
+  CMDS+=(
+    '"/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME b20c256x2-s5303129600-d1228401921"'
+    '"/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME"'
+    '"/go_attack/kubernetes/victimplay-predictor.sh $RUN_NAME $VOLUME_NAME"'
+  )
+  GPU_LIST+=(1 0)
+  REPLICA_LIST+=(1 1)
+else
+  CMDS+=('"/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME"')
+fi
+
+GPU_LIST+=(1)
+REPLICA_LIST+=("${MIN_VICTIMPLAY_GPUS}")
+
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
 ctl job run --container \
     "$CPP_IMAGE" \
@@ -86,22 +115,18 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
-    --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
-    "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME" \
-    "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
+    --command ${CMDS[@]} \
     --high-priority \
-    --gpu 1 1 1 0 0 \
+    --gpu ${GPU_LIST[@]} \
     --name go-training-"$1"-essentials \
-    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
+    --replicas ${REPLICA_LIST[@]}
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 # shellcheck disable=SC2086
 ctl job run --container \
     "$CPP_IMAGE" \
     $VOLUME_FLAGS \
-    --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
+    --command ${CMDS[-1]} \
     --gpu 1 \
     --name go-training-"$1"-victimplay \
     --replicas "${EXTRA_VICTIMPLAY_GPUS}"
