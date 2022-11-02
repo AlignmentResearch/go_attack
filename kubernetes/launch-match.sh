@@ -4,11 +4,11 @@
 # Argument parsing #
 ####################
 
-DEFAULT_NUM_GPUS=4
-DEFAULT_NUM_GAMES=1000
+DEFAULT_NUM_GPUS=1
 
 usage() {
   echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] [--use-weka] PREFIX"
+  echo "         [-- EXTRA_MATCH_FLAGS]"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -19,19 +19,23 @@ usage() {
   echo "    Number of GPUs to use."
   echo "    default: ${DEFAULT_NUM_GPUS}"
   echo "  -n NUM_GAMES, --games NUM_GAMES"
-  echo "    Number of match games to play."
-  echo "    default: ${DEFAULT_NUM_GAMES}"
+  echo "    Number of match games to play. If not specified, then the number of"
+  echo "    games will be the numGamesTotal specified in the `match` config"
+  echo "    multiplied by the number of GPUs."
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
   echo "    volume."
   echo
   echo "Optional arguments should be specified before positional arguments."
+  echo
+  echo "Extra flags to `match` can be specified by adding them after the"
+  echo "positional arguments with "--" in between, e.g.,"
+  echo "  $0 test-run -- -override-config nnModelFile0=/dev/null"
 }
 
 NUM_POSITIONAL_ARGUMENTS=1
 
 NUM_GPUS=${DEFAULT_NUM_GPUS}
-NUM_GAMES=${DEFAULT_NUM_GAMES}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while true; do
   case $1 in
@@ -49,7 +53,8 @@ if [ $# -lt ${NUM_POSITIONAL_ARGUMENTS} ]; then
   exit 1
 fi
 
-RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
+PREFIX=$1
+RUN_NAME="$PREFIX-$(date +%Y%m%d-%H%M%S)"
 echo "Run name: $RUN_NAME"
 shift
 
@@ -89,14 +94,17 @@ else
   VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
 fi
 
-
-GAMES_PER_REPLICA=$(((NUM_MATCH_GAMES + NUM_GPUS - 1) / NUM_GPUS))
+if [ -n "${NUM_GAMES}" ]; then
+  GAMES_PER_REPLICA=$(((NUM_GAMES + NUM_GPUS - 1) / NUM_GPUS))
+else
+  GAMES_PER_REPLICA=-1
+fi
 # shellcheck disable=SC2086
 ctl job run --container \
   "$CPP_IMAGE" \
   $VOLUME_FLAGS \
-  --command "/go_attack/kubernetes/match.sh /shared/match/${RUN_NAME} ${NUM_GAMES} ${GAMES_PER_REPLICA} $*" \
+  --command "bash -x /go_attack/kubernetes/match.sh /shared/match/${RUN_NAME} ${NUM_GAMES} $*" \
   --gpu 1 \
-  --name go-match-"$1" \
+  --name go-match-"$PREFIX" \
   --replicas "${NUM_GPUS}"
 exit 0
