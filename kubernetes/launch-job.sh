@@ -1,4 +1,5 @@
 #!/bin/bash -e
+# shellcheck disable=SC2215,SC2086,SC2089,SC2090,SC2016,SC2034
 
 ####################
 # Argument parsing #
@@ -107,8 +108,7 @@ fi
 GPU_LIST+=(1)
 REPLICA_LIST+=("${MIN_VICTIMPLAY_GPUS}")
 
-# shellcheck disable=SC2215,SC2086,SC2089,SC2090
-ctl job run --container \
+FOO='ctl job run --container \
     "$CPP_IMAGE" \
     "$CPP_IMAGE" \
     "$PYTHON_IMAGE" \
@@ -119,7 +119,9 @@ ctl job run --container \
     --high-priority \
     --gpu ${GPU_LIST[@]} \
     --name go-training-"$1"-essentials \
-    --replicas ${REPLICA_LIST[@]}
+    --replicas ${REPLICA_LIST[@]}'
+echo "$FOO"
+eval "$FOO"
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 # shellcheck disable=SC2086
