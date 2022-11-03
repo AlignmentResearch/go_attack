@@ -1,12 +1,15 @@
 #!/bin/bash
-# Usage: $0 OUTPUT_DIR NUM_GAMES
+# Usage: $0 OUTPUT_DIR NUM_GAMES VICTIM ADVERSARY
 #
 # If NUM_GAMES is -1, then the number of games from `match-base.cfg` will be
 # used.
 
 OUTPUT_DIR=$1
 NUM_GAMES=$2
-shift; shift
+VICTIM=$3
+ADVERSARY=$4
+
+shift 4
 if [ "${NUM_GAMES}" -ge 0 ]; then
   GAMES_OVERRIDE="-override-config numGamesTotal=${NUM_GAMES}"
 fi
@@ -20,4 +23,6 @@ mkdir --parents "${OUTPUT_DIR}"
   -config /go_attack/configs/compute/1gpu.cfg \
   -sgf-output-dir "${OUTPUT_DIR}"/sgfs \
   -log-file "${OUTPUT_DIR}"/match-"${ID}".log \
+  -override-config nnModelFile0="${VICTIM}" \
+  -override-config nnModelFile1="${ADVERSARY}" \
   $GAMES_OVERRIDE $@
