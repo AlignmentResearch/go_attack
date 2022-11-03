@@ -10,7 +10,7 @@ usage() {
   echo "Schedules a job that runs \`match\`."
   echo
   echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] [--use-weka] PREFIX"
-  echo "         [-- EXTRA_MATCH_FLAGS]"
+  echo "          [--EXTRA_MATCH_FLAGS]"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -74,21 +74,8 @@ fi
 # Launching the experiment #
 ############################
 
-GIT_ROOT=$(git rev-parse --show-toplevel)
-
-# Make sure we don't miss any changes
-if [ "$(git status --porcelain --untracked-files=no | wc -l)" -gt 0 ]; then
-    echo "Git repo is dirty, aborting" 1>&2
-    exit 1
-fi
-
-# Maybe build and push new Docker images
-python "$GIT_ROOT"/kubernetes/update_images.py --image cpp
-# Load the env variables just created by update_images.py
-# This line is weird because ShellCheck wants us to put double quotes around the
-# $() context but this changes the behavior to something we don't want
-# shellcheck disable=SC2046
-export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
+# shellcheck disable=SC1091
+source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 
 if [ -n "${USE_WEKA}" ]; then
   VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
