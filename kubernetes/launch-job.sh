@@ -7,7 +7,8 @@
 DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
-  echo "Usage: $0 [--victimplay-gpus GPUS] [--use-weka] PREFIX"
+  echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
+  echo "         [--resume TIMESTAMP] [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -20,6 +21,12 @@ usage() {
   echo "  -m GPUS, --victimplay-max-gpus GPUS"
   echo "    Maximum number of GPUs to use for victimplay."
   echo "    default: twice the minimum number of GPUs."
+  echo "  -r, --resume TIMESTAMP"
+  echo "    Resume a previous run. If this flag is given, the PREFIX argument"
+  echo "    must exactly be match the run to be resumed, and the TIMESTAMP"
+  echo "    argument should match the timestamp attached to the name of the"
+  echo "    previous run's output directory. The use of the --use-weka flag"
+  echo "    must also exactly match that of the previous run."
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
   echo "    volume."
@@ -27,21 +34,22 @@ usage() {
   echo "Optional arguments should be specified before positional arguments."
 }
 
-NUM_POSITIONAL_ARGUMENTS=1
-
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
-while [ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]; do
+while true; do
   case $1 in
     -h|--help) usage; exit 0 ;;
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
+    -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
-    *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    *) break ;;
   esac
   shift
 done
 
+NUM_POSITIONAL_ARGUMENTS=1
 if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
   usage
   exit 1
@@ -53,7 +61,7 @@ MAX_VICTIMPLAY_GPUS=${MAX_VICTIMPLAY_GPUS:-$((2*MIN_VICTIMPLAY_GPUS))}
 # Launching the experiment #
 ############################
 
-RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
+RUN_NAME="$1-${RESUME_TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
 echo "Run name: $RUN_NAME"
 
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
