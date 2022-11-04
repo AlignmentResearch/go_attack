@@ -9,7 +9,7 @@ if [ "$(git status --porcelain --untracked-files=no | wc -l)" -gt 0 ]; then
 fi
 
 # Maybe build and push new Docker images
-python "$GIT_ROOT"/kubernetes/update_images.py --image cpp
+"$GIT_ROOT"/kubernetes/update_images.py --image cpp
 # Load the env variables just created by update_images.py
 # This line is weird because ShellCheck wants us to put double quotes around the
 # $() context but this changes the behavior to something we don't want
