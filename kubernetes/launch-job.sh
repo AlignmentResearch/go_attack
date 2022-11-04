@@ -65,6 +65,7 @@ RUN_NAME="$1-${RESUME_TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
 echo "Run name: $RUN_NAME"
 
 VOLUME_NAME="shared"
+source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images "cpp python"
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
