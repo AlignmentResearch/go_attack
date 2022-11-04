@@ -42,7 +42,7 @@ while true; do
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
-    -w|--use-weka) USE_WEKA=1 ;;
+    -w|--use-weka) export USE_WEKA=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
@@ -61,29 +61,10 @@ MAX_VICTIMPLAY_GPUS=${MAX_VICTIMPLAY_GPUS:-$((2*MIN_VICTIMPLAY_GPUS))}
 # Launching the experiment #
 ############################
 
-GIT_ROOT=$(git rev-parse --show-toplevel)
 RUN_NAME="$1-${RESUME_TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
 echo "Run name: $RUN_NAME"
 
-# Make sure we don't miss any changes
-if [ "$(git status --porcelain --untracked-files=no | wc -l)" -gt 0 ]; then
-    echo "Git repo is dirty, aborting" 1>&2
-    exit 1
-fi
-
-# Maybe build and push new Docker images
-python "$GIT_ROOT"/kubernetes/update_images.py
-# Load the env variables just created by update_images.py
-# This line is weird because ShellCheck wants us to put double quotes around the
-# $() context but this changes the behavior to something we don't want
-# shellcheck disable=SC2046
-export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
-
-if [ -n "${USE_WEKA}" ]; then
-  VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
-else
-  VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
-fi
+source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 VOLUME_NAME="shared"
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
