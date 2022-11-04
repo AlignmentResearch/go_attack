@@ -98,10 +98,12 @@ ctl job run --container \
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 # shellcheck disable=SC2086
-ctl job run --container \
-    "$CPP_IMAGE" \
-    $VOLUME_FLAGS \
-    --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
-    --gpu 1 \
-    --name go-training-"$1"-victimplay \
-    --replicas "${EXTRA_VICTIMPLAY_GPUS}"
+if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
+  ctl job run --container \
+      "$CPP_IMAGE" \
+      $VOLUME_FLAGS \
+      --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
+      --gpu 1 \
+      --name go-training-"$1"-victimplay \
+      --replicas "${EXTRA_VICTIMPLAY_GPUS}"
+fi
