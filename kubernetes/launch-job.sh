@@ -8,7 +8,8 @@
 DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
-  echo "Usage: $0 [--victimplay-gpus GPUS] [--predictor] [--use-weka] PREFIX"
+  echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
+  echo "          [--predictor] [--resume TIMESTAMP] [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -23,6 +24,12 @@ usage() {
   echo "    default: twice the minimum number of GPUs."
   echo "  -p, --predictor"
   echo "    Use EMCTS with a predictor network."
+  echo "  -r, --resume TIMESTAMP"
+  echo "    Resume a previous run. If this flag is given, the PREFIX argument"
+  echo "    must exactly be match the run to be resumed, and the TIMESTAMP"
+  echo "    argument should match the timestamp attached to the name of the"
+  echo "    previous run's output directory. The use of the --use-weka flag"
+  echo "    must also exactly match that of the previous run."
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
   echo "    volume."
@@ -30,22 +37,23 @@ usage() {
   echo "Optional arguments should be specified before positional arguments."
 }
 
-NUM_POSITIONAL_ARGUMENTS=1
-
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
-while [ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]; do
+while true; do
   case $1 in
     -h|--help) usage; exit 0 ;;
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
     -p|--predictor) USE_PREDICTOR=1 ;;
-    -w|--use-weka) USE_WEKA=1 ;;
-    *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
+    -w|--use-weka) export USE_WEKA=1 ;;
+    -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    *) break ;;
   esac
   shift
 done
 
+NUM_POSITIONAL_ARGUMENTS=1
 if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
   usage
   exit 1
@@ -57,30 +65,12 @@ MAX_VICTIMPLAY_GPUS=${MAX_VICTIMPLAY_GPUS:-$((2*MIN_VICTIMPLAY_GPUS))}
 # Launching the experiment #
 ############################
 
-GIT_ROOT=$(git rev-parse --show-toplevel)
-RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
+RUN_NAME="$1-${RESUME_TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
 echo "Run name: $RUN_NAME"
 
-# Make sure we don't miss any changes
-if [ "$(git status --porcelain --untracked-files=no | wc -l)" -gt 0 ]; then
-    echo "Git repo is dirty, aborting" 1>&2
-    exit 1
-fi
-
-# Maybe build and push new Docker images
-python "$GIT_ROOT"/kubernetes/update_images.py
-# Load the env variables just created by update_images.py
-# This line is weird because ShellCheck wants us to put double quotes around the
-# $() context but this changes the behavior to something we don't want
-# shellcheck disable=SC2046
-export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
-
-if [ -n "${USE_WEKA}" ]; then
-  VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
-else
-  VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
-fi
 VOLUME_NAME="shared"
+source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
+update_images "cpp python"
 
 # Use both single and double quotes to ensure that it's still got double quotes after
 # we eval it
@@ -122,11 +112,13 @@ ctl job run --container \
     --replicas ${REPLICA_LIST[@]}
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
-# shellcheck disable=SC2086
-ctl job run --container \
-    "$CPP_IMAGE" \
-    $VOLUME_FLAGS \
-    --command ${CMDS[-1]} \
-    --gpu 1 \
-    --name go-training-"$1"-victimplay \
-    --replicas "${EXTRA_VICTIMPLAY_GPUS}"
+if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
+  # shellcheck disable=SC2086
+  ctl job run --container \
+      "$CPP_IMAGE" \
+      $VOLUME_FLAGS \
+      --command ${CMDS[-1]} \
+      --gpu 1 \
+      --name go-training-"$1"-victimplay \
+      --replicas "${EXTRA_VICTIMPLAY_GPUS}"
+fi

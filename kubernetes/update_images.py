@@ -1,17 +1,34 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+
 """Automatically build and push new images to Docker Hub if necessary."""
 
 import json
 import subprocess
+from argparse import ArgumentParser
 
 import docker
 from docker.models.images import Image
 
+IMAGE_TYPES = ("cpp", "python")
 REPO_NAME = "humancompatibleai/goattack"
 
 
 def main():
     """Main entry point."""
+    parser = ArgumentParser(
+        description="Builds and pushes new KataGo images to Docker Hub.",
+    )
+    parser.add_argument(
+        "--image",
+        type=str,
+        choices=IMAGE_TYPES,
+        default=IMAGE_TYPES,
+        help="Which images to update",
+        nargs="+",
+    )
+    args = parser.parse_args()
+    image_types = args.image
+
     client = docker.from_env()
     images = client.images.list(name=REPO_NAME)
 
@@ -36,7 +53,7 @@ def main():
 
     # There's 2 images we care about: {current_hash}-cpp and {current_hash}-python.
     # If either is missing, we need to build and push a new image.
-    for image_type in ("cpp", "python"):
+    for image_type in image_types:
         tag = f"{current_hash}-{image_type}"
         image_name = f"{REPO_NAME}:{tag}"
         if tag in available_tags:
@@ -65,8 +82,10 @@ def main():
 
     # Write the current image tags to a file so that Kubernetes can use them.
     with open(f"{rootdir}/kubernetes/active-images.env", "w") as f:
-        f.write(f"CPP_IMAGE={REPO_NAME}:{current_hash}-cpp\n")
-        f.write(f"PYTHON_IMAGE={REPO_NAME}:{current_hash}-python")
+        for image_type in image_types:
+            f.write(
+                f"{image_type.upper()}_IMAGE={REPO_NAME}:{current_hash}-{image_type}\n",
+            )
 
 
 if __name__ == "__main__":
