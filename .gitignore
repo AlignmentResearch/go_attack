@@ -11,6 +11,7 @@ core
 debug-output
 games*
 gtp_logs
+models
 selfplay-exps
 selfplay-test
 selfplay-training
