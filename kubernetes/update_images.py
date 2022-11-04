@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Automatically build and push new images to Docker Hub if necessary."""
 
 import json
