@@ -1,5 +1,6 @@
 """Automatically build and push new images to Docker Hub if necessary."""
 
+import json
 import subprocess
 
 import docker
@@ -36,15 +37,16 @@ def main():
     # If either is missing, we need to build and push a new image.
     for image_type in ("cpp", "python"):
         tag = f"{current_hash}-{image_type}"
+        image_name = f"{REPO_NAME}:{tag}"
         if tag in available_tags:
-            print(f"Using existing local copy of {REPO_NAME}:{tag}")
+            print(f"Using existing local copy of {image_name}")
             continue
 
         print(f"Building {REPO_NAME}:{tag}")
         build_result = client.images.build(
             path=rootdir,
             dockerfile=f"compose/{image_type}/Dockerfile",
-            tag=f"{REPO_NAME}:{tag}",
+            tag=image_name,
         )
         # Pylance can't quite figure out the type of build_result; see
         # https://docker-py.readthedocs.io/en/stable/images.html#image-objects for info
@@ -52,8 +54,13 @@ def main():
         img, _ = build_result
         assert isinstance(img, Image)
 
-        print(f"Pushing {REPO_NAME}:{tag}")
-        client.images.push(repository=REPO_NAME, tag=tag)
+        print(f"Pushing {image_name}")
+        push_result = client.images.push(repository=REPO_NAME, tag=tag)
+        # push_result is a string consisting of JSON messages on separate lines
+        for line in push_result.splitlines():
+            message = json.loads(line)
+            if "error" in message:
+                raise RuntimeError(f"Pushing {image_name} failed: {message['error']}")
 
     # Write the current image tags to a file so that Kubernetes can use them.
     with open(f"{rootdir}/kubernetes/active-images.env", "w") as f:
