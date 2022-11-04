@@ -97,8 +97,8 @@ ctl job run --container \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
-# shellcheck disable=SC2086
 if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
+  # shellcheck disable=SC2086
   ctl job run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
