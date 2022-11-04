@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 import docker
 from docker.models.images import Image
 
-IMAGE_TYPES = ["cpp", "python"]
+IMAGE_TYPES = ("cpp", "python")
 REPO_NAME = "humancompatibleai/goattack"
 
 

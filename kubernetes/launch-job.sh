@@ -36,7 +36,7 @@ while [ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]; do
     -h|--help) usage; exit 0 ;;
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
-    -w|--use-weka) USE_WEKA=1 ;;
+    -w|--use-weka) export USE_WEKA=1 ;;
     *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
   esac
   shift
@@ -57,12 +57,6 @@ RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
 echo "Run name: $RUN_NAME"
 
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
-
-if [ -n "${USE_WEKA}" ]; then
-  VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
-else
-  VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
-fi
 VOLUME_NAME="shared"
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090

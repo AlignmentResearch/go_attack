@@ -46,7 +46,7 @@ while true; do
     -h|--help) usage; exit 0 ;;
     -g|--gpus) NUM_GPUS=$2; shift ;;
     -n|--games) NUM_GAMES=$2; shift ;;
-    -w|--use-weka) USE_WEKA=1 ;;
+    -w|--use-weka) export USE_WEKA=1 ;;
     *) break ;;
   esac
   shift
@@ -81,17 +81,12 @@ fi
 # shellcheck disable=SC1091
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 
-if [ -n "${USE_WEKA}" ]; then
-  VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
-else
-  VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
-fi
-
 if [ -n "${NUM_GAMES}" ]; then
   GAMES_PER_REPLICA=$(((NUM_GAMES + NUM_GPUS - 1) / NUM_GPUS))
 else
   GAMES_PER_REPLICA=-1
 fi
+
 # shellcheck disable=SC2086
 ctl job run --container \
   "$CPP_IMAGE" \

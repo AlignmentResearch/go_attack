@@ -1,4 +1,5 @@
 #!/bin/bash -e
+# shellcheck disable=SC2034
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
 # Make sure we don't miss any changes
@@ -14,3 +15,9 @@ python "$GIT_ROOT"/kubernetes/update_images.py --image cpp
 # $() context but this changes the behavior to something we don't want
 # shellcheck disable=SC2046
 export $(grep -v '^#' "$GIT_ROOT"/kubernetes/active-images.env | xargs)
+
+if [ -n "${USE_WEKA}" ]; then
+  export VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
+else
+  export VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared"
+fi
