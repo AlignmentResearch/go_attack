@@ -80,6 +80,7 @@ fi
 
 # shellcheck disable=SC1091
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
+update_images cpp
 
 if [ -n "${NUM_GAMES}" ]; then
   GAMES_PER_REPLICA=$(((NUM_GAMES + NUM_GPUS - 1) / NUM_GPUS))
