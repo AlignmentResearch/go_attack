@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034,SC2068
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
 # Make sure we don't miss any changes
@@ -16,7 +16,7 @@ fi
 
 update_images () {
   # Maybe build and push new Docker images
-  "$GIT_ROOT"/kubernetes/update_images.py --image "${@}"
+  "$GIT_ROOT"/kubernetes/update_images.py --image ${@}
   # Load the env variables just created by update_images.py
   # This line is weird because ShellCheck wants us to put double quotes around the
   # $() context but this changes the behavior to something we don't want

@@ -72,32 +72,24 @@ VOLUME_NAME="shared"
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images "cpp python"
 
-# Use both single and double quotes to ensure that it's still got double quotes after
-# we eval it
-CMDS=(
-  '"/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME"'
-  '"/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME"'
-  '"/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME"'
-  '"/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME"'
-)
-GPU_LIST=(1 1 0 0)
-REPLICA_LIST=(1 1 1 1)
-
 if [ -n "${USE_PREDICTOR}" ]; then
-  CMDS+=(
-    '"/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME b20c256x2-s5303129600-d1228401921"'
-    '"/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME"'
-    '"/go_attack/kubernetes/victimplay-predictor.sh $RUN_NAME $VOLUME_NAME"'
-  )
-  GPU_LIST+=(1 0)
-  REPLICA_LIST+=(1 1)
+  VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay-predictor.sh"
+
+  # shellcheck disable=SC2215,SC2086,SC2089,SC2090
+  ctl job run --container \
+      "$PYTHON_IMAGE" \
+      "$PYTHON_IMAGE" \
+      $VOLUME_FLAGS \
+      --command "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME" \
+      "/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME" \
+      --high-priority \
+      --gpu 0 1 \
+      --name go-training-"$1"-predictor
 else
-  CMDS+=('"/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME"')
+  VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
 fi
 
-GPU_LIST+=(1)
-REPLICA_LIST+=("${MIN_VICTIMPLAY_GPUS}")
-
+# shellcheck disable=SC2215,SC2086,SC2089,SC2090
 ctl job run --container \
     "$CPP_IMAGE" \
     "$CPP_IMAGE" \
@@ -105,11 +97,15 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
-    --command ${CMDS[@]} \
+    --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
+    "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME" \
+    "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
+    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
+    "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
     --high-priority \
-    --gpu ${GPU_LIST[@]} \
+    --gpu 1 1 1 0 0 \
     --name go-training-"$1"-essentials \
-    --replicas ${REPLICA_LIST[@]}
+    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
@@ -117,7 +113,7 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
   ctl job run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
-      --command ${CMDS[-1]} \
+      --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
       --gpu 1 \
       --name go-training-"$1"-victimplay \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
