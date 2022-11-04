@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# shellcheck disable=SC2215,SC2086,SC2089,SC2090,SC2016,SC2034
+# shellcheck disable=SC2215,SC2086,SC2089,SC2090,SC2016,SC2034,SC2068
 
 ####################
 # Argument parsing #
@@ -93,7 +93,7 @@ CMDS=(
 GPU_LIST=(1 1 0 0)
 REPLICA_LIST=(1 1 1 1)
 
-if [ -n "$PREDICTOR" ]; then
+if [ -n "${USE_PREDICTOR}" ]; then
   CMDS+=(
     '"/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME b20c256x2-s5303129600-d1228401921"'
     '"/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME"'
@@ -108,7 +108,7 @@ fi
 GPU_LIST+=(1)
 REPLICA_LIST+=("${MIN_VICTIMPLAY_GPUS}")
 
-FOO='ctl job run --container \
+ctl job run --container \
     "$CPP_IMAGE" \
     "$CPP_IMAGE" \
     "$PYTHON_IMAGE" \
@@ -119,9 +119,7 @@ FOO='ctl job run --container \
     --high-priority \
     --gpu ${GPU_LIST[@]} \
     --name go-training-"$1"-essentials \
-    --replicas ${REPLICA_LIST[@]}'
-echo "$FOO"
-eval "$FOO"
+    --replicas ${REPLICA_LIST[@]}
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 # shellcheck disable=SC2086
