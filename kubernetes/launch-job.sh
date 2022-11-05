@@ -9,7 +9,8 @@ DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
-  echo "          [--predictor] [--resume TIMESTAMP] [--use-weka] PREFIX"
+  echo "          [--curriculum CURRICULUM] [--predictor] [--resume TIMESTAMP]"
+  echo "          [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -22,6 +23,8 @@ usage() {
   echo "  -m GPUS, --victimplay-max-gpus GPUS"
   echo "    Maximum number of GPUs to use for victimplay."
   echo "    default: twice the minimum number of GPUs."
+  echo "  -c CURRICULUM, --curriculum CURRICULUM"
+  echo "    Path to curriculum json file to use for victimplay."
   echo "  -p, --predictor"
   echo "    Use EMCTS with a predictor network."
   echo "  -r, --resume TIMESTAMP"
@@ -44,6 +47,7 @@ while true; do
     -h|--help) usage; exit 0 ;;
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
+    -c|--curriculum) CURRICULUM=$2; shift ;;
     -p|--predictor) USE_PREDICTOR=1 ;;
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
@@ -73,6 +77,7 @@ source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images "cpp python"
 
 if [ -n "${USE_PREDICTOR}" ]; then
+  PREDICTOR_PATH="$RUN_NAME/predictor"
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay-predictor.sh"
 
   # shellcheck disable=SC2215,SC2086,SC2089,SC2090
@@ -86,6 +91,7 @@ if [ -n "${USE_PREDICTOR}" ]; then
       --gpu 0 1 \
       --name go-training-"$1"-predictor
 else
+  PREDICTOR_PATH=""
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
 fi
 
@@ -98,10 +104,10 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
     --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
-    "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME" \
+    "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME $PREDICTOR_PATH" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
+    "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-training-"$1"-essentials \
