@@ -35,8 +35,6 @@ def main():
     # We use the Git hash to tag our images. Find the current hash.
     hash_raw = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"])
     current_hash = hash_raw.decode("ascii").strip()
-    long_hash_raw = subprocess.check_output(["git", "rev-parse", "HEAD"])
-    current_long_hash = long_hash_raw.decode("ascii").strip()
 
     # The "tag" string actually includes the repo name as well
     # (e.g. "humancompatibleai/goattack:c27e251"). These are all
@@ -67,7 +65,7 @@ def main():
             path=rootdir,
             dockerfile=f"compose/{image_type}/Dockerfile",
             tag=image_name,
-            buildargs={"ARG_GIT_COMMIT": current_long_hash},
+            buildargs={"ARG_GIT_COMMIT": current_hash},
         )
         # Pylance can't quite figure out the type of build_result; see
         # https://docker-py.readthedocs.io/en/stable/images.html#image-objects for info
