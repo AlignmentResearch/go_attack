@@ -39,23 +39,23 @@ services:
         ${VICTIMPLAY_CURRICULUM_EXTRA} &&
         sleep infinity
       "
-  # evaluate:
-  #   image: humancompatibleai/goattack:cpp
-  #   build:
-  #     context: ..
-  #     dockerfile: ./compose/cpp/Dockerfile
-  #   volumes:
-  #     - type: bind
-  #       source: ${HOST_OUTPUT_DIR}
-  #       target: /outputs
-  #   command: /engines/KataGo-custom/cpp/evaluate_loop.sh /outputs
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #           - capabilities: ["gpu"]
-  #             driver: nvidia
-  #             device_ids: ["0"]
+  evaluate:
+    image: humancompatibleai/goattack:cpp
+    build:
+      context: ..
+      dockerfile: ./compose/cpp/Dockerfile
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+    command: /engines/KataGo-custom/cpp/evaluate_loop.sh /outputs
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["0"]
 
   victimplay:
     image: humancompatibleai/goattack:cpp
