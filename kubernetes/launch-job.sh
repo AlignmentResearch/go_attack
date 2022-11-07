@@ -77,7 +77,7 @@ source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images "cpp python"
 
 if [ -n "${USE_PREDICTOR}" ]; then
-  PREDICTOR_PATH="$RUN_NAME/predictor"
+  PREDICTOR_DIR="$RUN_NAME/predictor"
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay-predictor.sh"
 
   # shellcheck disable=SC2215,SC2086,SC2089,SC2090
@@ -91,7 +91,7 @@ if [ -n "${USE_PREDICTOR}" ]; then
       --gpu 0 1 \
       --name go-training-"$1"-predictor
 else
-  PREDICTOR_PATH=""
+  PREDICTOR_DIR=""
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
 fi
 
@@ -104,7 +104,7 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
     --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
-    "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME $PREDICTOR_PATH" \
+    "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME $PREDICTOR_DIR" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
