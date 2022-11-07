@@ -83,7 +83,7 @@ ctl job run --container \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
     --high-priority \
     --gpu 1 1 1 0 0 \
-    --name go-train-"$1"-vital \
+    --name go-train-"$1"-main \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
