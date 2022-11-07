@@ -8,8 +8,10 @@ OUTPUT_DIR=$1
 NUM_GAMES=$2
 VICTIM=$3
 ADVERSARY=$4
-
 shift 4
+
+/go_attack/kubernetes/log-git-commit.sh "$OUTPUT_DIR"
+
 if [ "${NUM_GAMES}" -ge 0 ]; then
   GAMES_OVERRIDE="-override-config numGamesTotal=${NUM_GAMES}"
 fi
