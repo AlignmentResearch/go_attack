@@ -143,6 +143,10 @@ COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo
 COPY ./configs /go_attack/configs
 
 FROM runtime-deps as prod
+# Make the git commit visible to the image if provided as a --build-arg
+ARG ARG_GIT_COMMIT
+ENV GIT_COMMIT=$ARG_GIT_COMMIT
+
 COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
 COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
 

@@ -65,6 +65,7 @@ def main():
             path=rootdir,
             dockerfile=f"compose/{image_type}/Dockerfile",
             tag=image_name,
+            buildargs={"ARG_GIT_COMMIT": current_hash},
         )
         # Pylance can't quite figure out the type of build_result; see
         # https://docker-py.readthedocs.io/en/stable/images.html#image-objects for info
