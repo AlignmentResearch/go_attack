@@ -9,14 +9,12 @@ DEFAULT_NUM_GPUS=1
 usage() {
   echo "Schedules a job that runs \`match\`."
   echo
-  echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] [--use-weka] PREFIX VICTIM ADVERSARY"
+  echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] [--use-weka] PREFIX"
   echo "          [--EXTRA_MATCH_FLAGS]"
   echo
   echo "positional arguments:"
   echo "  PREFIX     Identifying label used for the name of the job and the name"
   echo "             of the output directory."
-  echo "  VICTIM     Filename of the victim checkpoint inside the container."
-  echo "  ADVERSARY  Filename of the adversary checkpoint inside the container."
   echo
   echo "optional arguments:"
   echo "  -g GPUS, --gpus GPUS"
@@ -37,7 +35,7 @@ usage() {
   echo "  $0 test-run -- -override-config nnModelFile0=/dev/null"
 }
 
-NUM_POSITIONAL_ARGUMENTS=3
+NUM_POSITIONAL_ARGUMENTS=1
 
 NUM_GPUS=${DEFAULT_NUM_GPUS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
@@ -58,11 +56,9 @@ if [ $# -lt ${NUM_POSITIONAL_ARGUMENTS} ]; then
 fi
 
 PREFIX=$1
-VICTIM=$2
-ADVERSARY=$3
 RUN_NAME="$PREFIX-$(date +%Y%m%d-%H%M%S)"
 echo "Run name: $RUN_NAME"
-shift 3
+shift 1
 
 if [ $# -gt 0 ]; then
   if [ "$1" != "--" ]; then
@@ -96,10 +92,9 @@ ctl job run --container \
   /go_attack/kubernetes/match.sh
   /shared/match/${RUN_NAME}
   ${GAMES_PER_REPLICA}
-  ${VICTIM}
-  ${ADVERSARY}
   $*" \
   --gpu 1 \
   --name go-match-"$PREFIX" \
-  --replicas "${NUM_GPUS}"
+  --replicas "${NUM_GPUS}" \
+  --high-priority
 exit 0
