@@ -1,5 +1,5 @@
 #!/bin/bash -e
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034,SC2068
 GIT_ROOT=$(git rev-parse --show-toplevel)
 
 # Make sure we don't miss any changes

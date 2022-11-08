@@ -1,0 +1,62 @@
+# Auxiliary Docker compose file which adds services necessary for EMCTS with a predictor model for the victim.
+# Should be run in combination with compose/victimplay.yml.
+#
+# Launch command (run from repo root):
+# docker-compose -f compose/victimplay.yml -f compose/victimplay-predictor.yml --env-file compose/victimplay.env up
+
+version: "3"
+
+services:
+  shuffle-and-export-predictor:
+    image: humancompatibleai/goattack:python
+    build:
+      context: ..
+      dockerfile: ./compose/python/Dockerfile
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+    command: >
+      sh -c "
+        cd /engines/KataGo-custom/python &&
+        ./selfplay/shuffle_and_export_loop.sh \
+        ${NAMEOFRUN}_victim \
+        /outputs/predictor \
+        ${SCRATCH_DIRECTORY} \
+        ${NUM_THREADS} \
+        ${BATCH_SIZE} \
+        ${USE_GATING} \
+        ${SHUFFLE_EXTRA} &&
+        sleep infinity
+      "
+    # shuffle_and_export_loop.sh disowns subprocesses and exits, which is why we
+    # sleep at the end so the docker container doesn't exit.
+
+  train-predictor:
+    image: humancompatibleai/goattack:python
+    build:
+      context: ..
+      dockerfile: ./compose/python/Dockerfile
+    volumes:
+      - type: bind
+        source: ${HOST_OUTPUT_DIR}
+        target: /outputs
+    command: >
+      sh -c "
+        cd /engines/KataGo-custom/python &&
+        ./selfplay/train.sh \
+        /outputs/predictor \
+        ${TRAININGNAME} \
+        b6c96 \
+        ${BATCH_SIZE} \
+        main \
+        -lr-scale 1.0 \
+        -max-train-bucket-per-new-data ${MAX_TRAIN_RATIO}
+      "
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+              driver: nvidia
+              device_ids: ["1"]

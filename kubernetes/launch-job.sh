@@ -1,4 +1,5 @@
 #!/bin/bash -e
+# shellcheck disable=SC2215,SC2086,SC2089,SC2090,SC2016,SC2034,SC2068
 
 ####################
 # Argument parsing #
@@ -8,7 +9,8 @@ DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
-  echo "         [--resume TIMESTAMP] [--use-weka] PREFIX"
+  echo "          [--curriculum CURRICULUM] [--predictor] [--predictor-warmstart-ckpt]"
+  echo "          [--resume TIMESTAMP] [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -21,6 +23,12 @@ usage() {
   echo "  -m GPUS, --victimplay-max-gpus GPUS"
   echo "    Maximum number of GPUs to use for victimplay."
   echo "    default: twice the minimum number of GPUs."
+  echo "  -c CURRICULUM, --curriculum CURRICULUM"
+  echo "    Path to curriculum json file to use for victimplay."
+  echo "  -p, --predictor"
+  echo "    Use EMCTS with a predictor network."
+  echo "  --predictor-warmstart-ckpt"
+  echo "    Path to checkpoint to use for predictor warmstart."
   echo "  -r, --resume TIMESTAMP"
   echo "    Resume a previous run. If this flag is given, the PREFIX argument"
   echo "    must exactly be match the run to be resumed, and the TIMESTAMP"
@@ -41,6 +49,9 @@ while true; do
     -h|--help) usage; exit 0 ;;
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
+    -c|--curriculum) CURRICULUM=$2; shift ;;
+    -p|--predictor) USE_PREDICTOR=1 ;;
+    --predictor-warmstart-ckpt) PREDICTOR_WARMSTART_CKPT=$2; shift ;;
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
@@ -68,6 +79,25 @@ VOLUME_NAME="shared"
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images "cpp python"
 
+if [ -n "${USE_PREDICTOR}" ]; then
+  PREDICTOR_DIR="$RUN_NAME/predictor"
+  VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay-predictor.sh"
+
+  # shellcheck disable=SC2215,SC2086,SC2089,SC2090
+  ctl job run --container \
+      "$PYTHON_IMAGE" \
+      "$PYTHON_IMAGE" \
+      $VOLUME_FLAGS \
+      --command "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME" \
+      "/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME $PREDICTOR_WARMSTART_CKPT" \
+      --high-priority \
+      --gpu 0 1 \
+      --name go-training-"$1"-predictor
+else
+  PREDICTOR_DIR=""
+  VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
+fi
+
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
 ctl job run --container \
     "$CPP_IMAGE" \
@@ -76,11 +106,11 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
-    --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
-    "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME" \
+    --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
+    "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME $PREDICTOR_DIR" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME" \
+    "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-training-"$1"-essentials \
@@ -92,7 +122,7 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
   ctl job run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
-      --command "/go_attack/kubernetes/victimplay.sh $RUN_NAME $VOLUME_NAME" \
+      --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
       --gpu 1 \
       --name go-training-"$1"-victimplay \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
