@@ -6,9 +6,7 @@
 
 OUTPUT_DIR=$1
 NUM_GAMES=$2
-VICTIM=$3
-ADVERSARY=$4
-shift 4
+shift 2
 
 /go_attack/kubernetes/log-git-commit.sh "$OUTPUT_DIR"
 
@@ -25,6 +23,4 @@ mkdir --parents "${OUTPUT_DIR}"
   -config /go_attack/configs/compute/1gpu.cfg \
   -sgf-output-dir "${OUTPUT_DIR}"/sgfs \
   -log-file "${OUTPUT_DIR}"/match-"${ID}".log \
-  -override-config nnModelFile0="${VICTIM}" \
-  -override-config nnModelFile1="${ADVERSARY}" \
   $GAMES_OVERRIDE $@
