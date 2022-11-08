@@ -9,8 +9,8 @@ DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
-  echo "          [--curriculum CURRICULUM] [--predictor] [--resume TIMESTAMP]"
-  echo "          [--use-weka] PREFIX"
+  echo "          [--curriculum CURRICULUM] [--predictor] [--predictor-warmstart-ckpt]"
+  echo "          [--resume TIMESTAMP] [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -27,6 +27,8 @@ usage() {
   echo "    Path to curriculum json file to use for victimplay."
   echo "  -p, --predictor"
   echo "    Use EMCTS with a predictor network."
+  echo "  --predictor-warmstart-ckpt"
+  echo "    Path to checkpoint to use for predictor warmstart."
   echo "  -r, --resume TIMESTAMP"
   echo "    Resume a previous run. If this flag is given, the PREFIX argument"
   echo "    must exactly be match the run to be resumed, and the TIMESTAMP"
@@ -49,6 +51,7 @@ while true; do
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
     -c|--curriculum) CURRICULUM=$2; shift ;;
     -p|--predictor) USE_PREDICTOR=1 ;;
+    --predictor-warmstart-ckpt) PREDICTOR_WARMSTART_CKPT=$2; shift ;;
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
@@ -86,7 +89,7 @@ if [ -n "${USE_PREDICTOR}" ]; then
       "$PYTHON_IMAGE" \
       $VOLUME_FLAGS \
       --command "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME" \
-      "/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME" \
+      "/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME $PREDICTOR_WARMSTART_CKPT" \
       --high-priority \
       --gpu 0 1 \
       --name go-training-"$1"-predictor
