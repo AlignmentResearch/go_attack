@@ -23,7 +23,7 @@ If you are on MacOS, you can install using Homebrew with the command
   ![bot-config-screenshot](bot-config-screenshot.png)
   The first line is the bot name,
   the second line is the path to the executable,
-  the third line are the flags passed to the executable,
+  the third line is the flags passed to the executable,
   and the fourth line is the initial commands passed to gtp
   (in this case giving the bot infinite time to make moves).
 
