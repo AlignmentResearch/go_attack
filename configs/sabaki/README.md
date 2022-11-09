@@ -6,7 +6,12 @@ If you are on MacOS, you can install using homebrew with the command
 
 ## Bot setup
 0. First build the C++ katago executable.
-   To do this, navigate to the engines/KataGo-custom directory and run the commands
+   To do this, 
+   you'll want to run the following commands in both the
+   `engines/KataGo-custom/cpp`
+   and
+   `engines/KataGo-raw/cpp`
+   directories.
    ```
    cmake . -DUSE_BACKEND=OPENCL -DUSE_TCMALLOC=1
    make -j
