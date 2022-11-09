@@ -1,7 +1,7 @@
 # How to set up Sabaki
 
 You can install Sabaki from https://sabaki.yichuanshen.de/.
-If you are on MacOS, you can install using homebrew with the command
+If you are on MacOS, you can install using Homebrew with the command
 `brew install sabaki`.
 
 ## Bot setup
