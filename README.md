@@ -66,7 +66,7 @@ parameters of the run (
         - `docker run --gpus all -v ~/go_attack:/go_attack -it humancompatibleai/goattack:cpp`
     - Setup the controller
         - `cd /go_attack/controllers/gogui`
-        - `./ubuntu_setup.sh`
+        - `apt update && ./ubuntu_setup.sh`
     - Download model weights
         - `cd /go_attack/configs/katago && wget -i model_list.txt -P /go_attack/victim-models`
     - Test if the installation is successful
