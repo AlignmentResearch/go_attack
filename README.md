@@ -2,9 +2,13 @@
 
 This repository contains code for studying the adversarial robustness of KataGo.
 
+Links:
+* [Paper on arXiv](https://arxiv.org/abs/2211.00241)
+* [Website](https://goattack.alignmentfund.org/)
+
 ## Git submodule: KataGo-custom
 
-Modifications to KataGo *are not* tracked in this repository. Rather they should be made to the [HumanCompatibleAI/KataGo-custom](https://github.com/HumanCompatibleAI/KataGo-custom) repository. We use code from KataGo-custom in this repository via git submodules.
+Modifications to KataGo *are not* tracked in this repository and should instead be made to the [HumanCompatibleAI/KataGo-custom](https://github.com/HumanCompatibleAI/KataGo-custom) repository. We use code from KataGo-custom in this repository via Git submodules.
 
 KataGo-custom has the following significant branches:
 
@@ -20,7 +24,7 @@ You may also want to run `pre-commit install` from `engines/KataGo-custom` to in
 
 ## Individual containers
 
-We run KataGo within docker containers.
+We run KataGo within Docker containers.
 More specifically:
 1. The C++ portion of KataGo runs in the container defined by [compose/cpp/Dockerfile](compose/cpp/Dockerfile).
 2. The Python training portion of KataGo runs in the container defined at [compose/python/Dockerfile](compose/python/Dockerfile).
@@ -46,28 +50,24 @@ parameters of the run (
 
 # Prerequisite & Dependencies
 
-- **Summary**: For this project, we use **Docker** and **GitHub** repo to set up the dependencies and environment.
+- **Summary**: For this project, we use **Docker** and **Git** to set up the dependencies and environment.
 - **Docker image**: HumanCompatibleAI/go_attack:latest
 - **GitHub repo**:
     - Project code: https://github.com/HumanCompatibleAI/go_attack
     - Agent code: https://github.com/HumanCompatibleAI/KataGo-custom
-    - Controller code: https://github.com/Remi-Coulom/gogui/tree/v1.5.1
+    - Controller code: https://github.com/HumanCompatibleAI/gogui
 - **Setting up**
     - Download the repo
         - `git clone --recurse-submodules https://github.com/HumanCompatibleAI/go_attack.git`
-        - `cd go_attack && mkdir games`
-    - Build C++ and Python docker containers, and run the C++ container. A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory inside the container.
+        - `cd go_attack`
+    - Build C++ and Python Docker containers, and run the C++ container. A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory inside the container.
         - `docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp`
         - `docker build . -f compose/python/Dockerfile -t humancompatibleai/goattack:python`
         - `docker run --gpus all -v ~/go_attack:/go_attack -it humancompatibleai/goattack:cpp`
-    - Setup the controller
-        - `cd /go_attack/controllers/gogui`
-        - `git checkout tags/v1.5.1`
-        - `./ubuntu_setup.sh`
     - Download model weights
         - `cd /go_attack/configs/katago && wget -i model_list.txt -P /go_attack/victim-models`
     - Test if the installation is successful
-        - `cd /engines/KataGo-custom/cpp/ && CUDA_VISIBLE_DEVICES=2 ./katago benchmark -model /go_attack/victim-models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /go_attack/configs/katago/baseline_attack.cfg`
+        - `cd /engines/KataGo-custom/cpp/ && ./katago benchmark -model /go_attack/victim-models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /go_attack/configs/katago/baseline_attack.cfg`
 
 # Baseline attacks
 
