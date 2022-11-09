@@ -24,7 +24,7 @@ If you are on MacOS, you can install using Homebrew with the command
   The first line is the bot name,
   the second line is the path to the executable,
   the third line are the flags passed to the executable,
-  are initial commands passed to gtp
+  and the fourth line is the initial commands passed to gtp
   (in this case giving the bot infinite time to make moves).
 
 ## List of bot configs
