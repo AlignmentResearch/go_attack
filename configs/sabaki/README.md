@@ -5,7 +5,7 @@ If you are on MacOS, you can install using Homebrew with the command
 `brew install sabaki`.
 
 ## Bot setup
-0. First build the C++ katago executable.
+0. First build the C++ KataGo executable.
    To do this, 
    you'll want to run the following commands in both the
    `engines/KataGo-custom/cpp`
