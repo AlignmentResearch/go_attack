@@ -1,4 +1,4 @@
-# How to set up sabaki
+# How to set up Sabaki
 
 You can install Sabaki from https://sabaki.yichuanshen.de/.
 If you are on MacOS, you can install using homebrew with the command
