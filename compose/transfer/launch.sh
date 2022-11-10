@@ -60,7 +60,7 @@ function usage() {
   echo "positional arguments:"
   echo "  EXPERIMENT  Which experiment to run."
   echo "              values: {baseline-attack-vs-elf, baseline-attack-vs-leela,"
-  echo "                       katago-vs-elf, katago-vs-leela}"
+  echo "                       katago-vs-elf, katago-vs-leela, katago-vs-katago-raw}"
   echo "  COMMAND     docker-compose command to run."
   echo "              values: {build, up}"
   echo
