@@ -88,7 +88,7 @@ services:
         2>&1 | tee --append /outputs/attack.log
       "
 
-  katago:
+  katago: &katago
     profiles:
       - katago
     image: humancompatibleai/goattack:cpp
@@ -136,28 +136,9 @@ services:
               device_ids: ["${GPU:-0}"]
 
   katago-raw:
+    <<: *katago
     profiles:
       - katago-raw
-    image: humancompatibleai/goattack:cpp
-    build:
-      context: ${HOST_REPO_ROOT}
-      dockerfile: ${HOST_REPO_ROOT}/compose/cpp/Dockerfile
-      target: prod
-    volumes:
-      - type: bind
-        source: ${HOST_OUTPUT_DIR}
-        target: /outputs
-      - type: bind
-        source: ${HOST_REPO_ROOT}/configs
-        target: ${HOST_REPO_ROOT}/configs
-        read_only: true
-      # We prefix the target of KATAGO_MODEL and KATAGO_VICTIM_MODEL differently
-      # so that Docker doesn't complain about duplicate volumes when
-      # KATAGO_MODEL == KATAGO_VICTIM_MODEL
-      - type: bind
-        source: ${KATAGO_VICTIM_MODEL}
-        target: /victim-model/${KATAGO_VICTIM_MODEL}
-        read_only: true
     command: >
       sh -c "
         socat TCP4-LISTEN:80,reuseaddr \
@@ -168,13 +149,6 @@ services:
           \" \
         2>&1 | tee --append /outputs/katago-raw.log
       "
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - capabilities: ["gpu"]
-              driver: nvidia
-              device_ids: ["${GPU:-0}"]
 
   twogtp:
     profiles:
