@@ -8,7 +8,7 @@
 export HOST_REPO_ROOT=$(git rev-parse --show-toplevel)
 
 DEFAULT_GPUS_STR="all"
-DEFAULT_KATAGO_CONFIG="${HOST_REPO_ROOT}/configs/gtp.cfg"
+DEFAULT_KATAGO_CONFIG="${HOST_REPO_ROOT}/configs/gtp-emcts.cfg"
 DEFAULT_NUM_GAMES_TOTAL=64
 DEFAULT_NUM_THREADS=16
 
