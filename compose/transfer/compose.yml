@@ -88,7 +88,7 @@ services:
         2>&1 | tee --append /outputs/attack.log
       "
 
-  katago:
+  katago: &katago
     profiles:
       - katago
     image: humancompatibleai/goattack:cpp
@@ -134,6 +134,22 @@ services:
             - capabilities: ["gpu"]
               driver: nvidia
               device_ids: ["${GPU:-0}"]
+
+  katago-raw:
+    <<: *katago
+    profiles:
+      - katago-raw
+    command: >
+      sh -c "
+        socat TCP4-LISTEN:80,reuseaddr \
+        EXEC:\"/engines/KataGo-raw/cpp/katago gtp \
+          -config ${HOST_REPO_ROOT}/configs/raw-gtp.cfg \
+          -model /victim-model/${KATAGO_VICTIM_MODEL} \
+          -override-config multiStoneSuicideLegal=false \
+          \" \
+        2>&1 | tee --append /outputs/katago-raw.log
+      "
+
   twogtp:
     profiles:
       - katago
