@@ -156,4 +156,4 @@ COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custo
 COPY ./configs /go_attack/configs
 
 RUN mkdir /go_attack/adversary_models
-RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate $URL -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1nl4hX_EqRHNYmak5DvTAXvNRJTEjyYm1" -O /go_attack/adversary_models/adversary_model.bin.gz && rm -rf /tmp/cookies.txt
+RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate $URL -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1Qktfjfr6YwplF50T-LMXkFK_qG1UXeiy" -O /go_attack/adversary_models/adversary_model.bin.gz && rm -rf /tmp/cookies.txt
