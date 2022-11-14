@@ -151,3 +151,4 @@ COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/kat
 COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
 
 COPY ./configs /go_attack/configs
+RUN ln -s /engines /go_attack/engines
