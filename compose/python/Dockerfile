@@ -47,7 +47,6 @@ ENV GIT_COMMIT=$ARG_GIT_COMMIT
 # Copy over KataGo python files
 COPY ./engines/KataGo-raw/python /engines/KataGo-raw/python
 COPY ./engines/KataGo-custom/python /engines/KataGo-custom/python
-RUN ln -s /engines /go_attack/engines
 
 COPY ./configs/ /go_attack/configs
 COPY ./kubernetes/ /go_attack/kubernetes
