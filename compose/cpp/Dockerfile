@@ -137,7 +137,7 @@ COPY README.md /go_attack/README.md
 RUN pip install -e /go_attack --root-user-action=ignore
 
 COPY ./engines/KataGo-custom/cpp/evaluate_loop.sh /engines/KataGo-custom/cpp/evaluate_loop.sh
-COPY /engines/KataGo-raw/cpp/configs /engines/KataGo-raw/cpp/configs
+COPY ./engines/KataGo-raw/cpp/configs /engines/KataGo-raw/cpp/configs
 
 FROM runtime-deps as debug
 COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago

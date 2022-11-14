@@ -51,7 +51,6 @@ engines/KataGo*/cpp/main
 engines/KataGo*/cpp/maincuda
 engines/KataGo*/cpp/mainopencl
 engines/KataGo*/cpp/katago
-engines/KataGo*/cpp/configs
 engines/KataGo*/cpp/evalsgf
 engines/KataGo*/cpp/runmatch.sh
 engines/KataGo*/cpp/runmatchauto.sh
