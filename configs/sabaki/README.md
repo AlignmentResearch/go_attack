@@ -35,19 +35,19 @@ Base KataGo models can be downloaded from
 https://katagotraining.org/networks/.
 
 ```
-adv505h-s219953408-v600-vm-cp505-v1
+adv505h-s349284096-v600-vm-cp505-v1-s
 /Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
-gtp -model /Users/ttw/code/go_attack/models/adv/cp505h-adv219953408.bin.gz -victim-model /Users/ttw/code/go_attack/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-victim1.cfg
+gtp -model /Users/ttw/code/go_attack/models/adv/adv505h-s349284096-d87808728.bin.gz -victim-model /Users/ttw/code/go_attack/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg
 time_settings 0 1 0
 
-adv505-s34090496-v600-vs-cp505-v1
+adv505-s34090496-v600-vs-cp505-v1-spp
 /Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
-gtp -model /Users/ttw/code/go_attack/models/adv/cp505-adv34090496.bin.gz -victim-model /Users/ttw/code/go_attack/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-victim1.cfg
+gtp -model /Users/ttw/code/go_attack/models/adv/adv505-34090496.bin.gz -victim-model /Users/ttw/code/go_attack/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-spp.cfg
 time_settings 0 1 0
 
-adv505-s34090496-v600-vs-cp505-v1-norsym
+adv505-s34090496-v600-vs-cp505-v1-s
 /Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
-gtp -model /Users/ttw/code/go_attack/models/adv/cp505-adv34090496.bin.gz -victim-model /Users/ttw/code/go_attack/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-victim1-norsym.cfg 
+gtp -model /Users/ttw/code/go_attack/models/adv/adv505-34090496.bin.gz -victim-model /Users/ttw/code/go_attack/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg 
 time_settings 0 1 0
 
 cp505-v500
