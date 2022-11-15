@@ -6,4 +6,4 @@
 	url = git@github.com:HumanCompatibleAI/KataGo-custom.git
 [submodule "engines/KataGo-raw"]
 	path = engines/KataGo-raw
-	url = git@github.com:HumanCompatibleAI/KataGo-custom.git
+	url = git@github.com:lightvector/KataGo.git
