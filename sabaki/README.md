@@ -34,8 +34,8 @@ https://drive.google.com/drive/folders/1-bGX-NQOh6MuRPoXJgYHb9-jWRJvviSg?usp=sha
 Base KataGo models can be downloaded from
 https://katagotraining.org/networks/.
 
-Run `download-models.sh` to automatically download the strongest adversaries and KataGo models.
-
+Run `scripts/download-models.sh`
+to automatically download the strongest adversaries and KataGo models.
 
 ```
 # Stronger Dragonslayer
@@ -68,13 +68,15 @@ cp505-v1
 gtp -model /Users/ttw/code/go_attack/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/gtp/gtp-v1.cfg
 time_settings 0 1 0
 
-katago-cp127-v1
-/Users/ttw/code/go_attack/engines/KataGo-raw/cpp/katago
-gtp -model /Users/ttw/code/go_attack/models/victims/kata1-b20c256x2-s5303129600-d1228401921.bin.gz -config /Users/ttw/code/go_attack/configs/gtp/gtp-v1.cfg
+# Stronger dragonslayer over ssh
+ssh-adv505h-s497721856-v600-vm-cp505-v1-s
+/Users/ttw/code/go_attack/sabaki/scripts/ssh-katago-custom.sh
+gtp -model /models/adv/adv505h-s497721856-d125043118.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/gtp/gtp-adv600-vm1-s.cfg
 time_settings 0 1 0
 
-katago-cp37-v1
-/Users/ttw/code/go_attack/engines/KataGo-raw/cpp/katago
-gtp -model /Users/ttw/code/go_attack/models/victims/kata1-b6c96-s41312768-d6061202.txt.gz -config /Users/ttw/code/go_attack/configs/gtp/gtp-v1.cfg
+# Dragonslayer over ssh
+ssh-adv505h-s349284096-v600-vm-cp505-v1-s
+/Users/ttw/code/go_attack/sabaki/scripts/ssh-katago-custom.sh
+gtp -model /models/adv/adv505h-s349284096-d87808728.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/gtp/gtp-adv600-vm1-s.cfg
 time_settings 0 1 0
 ```

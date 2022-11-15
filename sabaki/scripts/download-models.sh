@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GIT_ROOT=$(git rev-parse --show-toplevel)/tmp
+GIT_ROOT=$(git rev-parse --show-toplevel)
 mkdir -p $GIT_ROOT/models/adv
 mkdir -p $GIT_ROOT/models/victims
 
