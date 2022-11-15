@@ -71,12 +71,12 @@ time_settings 0 1 0
 # Stronger dragonslayer over ssh
 ssh-adv505h-s497721856-v600-vm-cp505-v1-s
 ssh
-rnn -t 'bash -l -c "/nas/ucb/tony/go-attack/gtp-host/go_attack/sabaki/scripts/docker-katago-custom.sh gtp -model /models/adv/adv505h-s497721856-d125043118.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/gtp/gtp-adv600-vm1-s.cfg"'
+rnn -tt 'bash -l -c "/nas/ucb/tony/go-attack/gtp-host/go_attack/sabaki/scripts/docker-katago-custom.sh gtp -model /models/adv/adv505h-s497721856-d125043118.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/gtp/gtp-adv600-vm1-s.cfg"'
 time_settings 0 1 0
 
 # Dragonslayer over ssh
 ssh-adv505h-s349284096-v600-vm-cp505-v1-s
 ssh
-rnn -t 'bash -l -c "/nas/ucb/tony/go-attack/gtp-host/go_attack/sabaki/scripts/docker-katago-custom.sh gtp -model /models/adv/adv505h-s349284096-d87808728.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/gtp/gtp-adv600-vm1-s.cfg"'
+rnn -tt 'bash -l -c "/nas/ucb/tony/go-attack/gtp-host/go_attack/sabaki/scripts/docker-katago-custom.sh gtp -model /models/adv/adv505h-s349284096-d87808728.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/gtp/gtp-adv600-vm1-s.cfg"'
 time_settings 0 1 0
 ```
