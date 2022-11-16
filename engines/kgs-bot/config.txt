@@ -2,5 +2,4 @@ mode=custom
 rules=chinese
 rules.boardSize=19
 rules.time=5:00+5x0:30
-opponent=corners
 engine=/engines/KataGo-custom/cpp/katago gtp -model /go_attack/adversary_models/adversary_model.bin.gz -config /go_attack/configs/kgs-bot/adversary_bot.cfg -victim-model /go_attack/victim_models/victim_model.bin.gz
