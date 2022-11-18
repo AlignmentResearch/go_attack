@@ -66,7 +66,7 @@ def main():
         "-o",
         "--output",
         type=Path,
-        help="Path to file to contain output SGFs",
+        help="Path to file to write output SGFs",
         default=os.devnull,
     )
     args = parser.parse_args()
