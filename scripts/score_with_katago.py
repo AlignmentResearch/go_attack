@@ -121,9 +121,12 @@ def main():
             num_flipped_games += 1
 
         print(f"KataGo score: {katago_score}, original score: {original_score}")
-    os.remove(tmp_sgf_path)
-    print(f"Flipped games: {num_flipped_games}/{num_games}")
-    print(f"Mean squared error: {squared_error_sum / num_games}")
+    if num_games > 0:
+        tmp_sgf_path.unlink()
+        print(f"Flipped games: {num_flipped_games}/{num_games}")
+        print(f"Mean squared error: {squared_error_sum / num_games}")
+    else:
+        print("No games found.")
 
 
 if __name__ == "__main__":
