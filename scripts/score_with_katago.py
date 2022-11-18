@@ -1,8 +1,15 @@
+"""Rescores SGFs using KataGo's Tromp-Taylor scoring.
+
+KataGo scoring clears out opposite-color stones within pass-alive groups. For
+consistency throughout experiments, we should use KataGo scoring everywhere
+(including in experiments where otherwise KataGo isn't involved at all like
+baseline attacks vs. ELF).
+"""
 import argparse
 import getpass
 import os
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
 import sgfmill.sgf
 
@@ -45,8 +52,9 @@ def get_white_score(game: sgfmill.sgf.Sgf_game) -> float:
 
 
 def main():
+    """Entrypoint for script."""
     parser = argparse.ArgumentParser(
-        description="Rescores SGFs using KataGo's Tromp-Taylor scoring."
+        description="Rescores SGFs using KataGo's Tromp-Taylor scoring.",
     )
     parser.add_argument(
         "sgf_path",
@@ -71,6 +79,7 @@ def main():
         "-config /engines/KataGo-raw/cpp/configs/gtp_example.cfg "
         "-model /dev/null"
     )
+    print("COMMAND", katago_command)
     proc = subprocess.Popen(
         katago_command,
         bufsize=0,
@@ -81,9 +90,10 @@ def main():
     )
     to_engine = proc.stdin
     from_engine = proc.stdout
+    assert to_engine is not None
 
-    def write_to_engine(message):
-        to_engine.write(message.encode("ascii"))
+    def send_command(message, assert_success=True):
+        to_engine.write(f"{message}\n".encode("ascii"))
         output = ""
         found_output_start = False
         for i, line in enumerate(from_engine):
@@ -98,31 +108,40 @@ def main():
                 output += line[1:]
             else:
                 output += line
-        return output.lstrip().strip(), found_output_start
+        if assert_success:
+            assert found_output_start
+        return output.lstrip().strip()
 
     num_games = 0
     num_flipped_games = 0
     squared_error_sum = 0
     tmp_sgf_path = tmp_dir / "game.sgf"
     for sgf in get_sgfs_in_path(args.sgf_path):
+        try:
+            original_score = get_white_score(sgf)
+        except KeyError:
+            print("Skipping game due to no result")
+            continue
+
         with open(tmp_sgf_path, "wb") as f:
             f.write(sgf.serialise())
-        _, success = write_to_engine(f"loadsgf {tmp_sgf_path}\n")
-        assert success
-        _, success = write_to_engine("kata-set-rules Tromp-Taylor\n")
-        assert success
-        katago_score_str, success = write_to_engine("final_score\n")
+        send_command(f"loadsgf {tmp_sgf_path}")
+        send_command("kata-set-rules Tromp-Taylor")
+        # We need to make sure KataGo thinks the game has ended or else it may
+        # estimate the score using its model.
+        send_command("play b pass")
+        send_command("play w pass")
+        katago_score_str = send_command("final_score")
 
         katago_score = score_str_to_white_score(katago_score_str)
-        original_score = get_white_score(sgf)
         squared_error_sum += (katago_score - original_score) ** 2
         num_games += 1
         if katago_score * original_score < 0:
             num_flipped_games += 1
 
         print(f"KataGo score: {katago_score}, original score: {original_score}")
+    tmp_sgf_path.unlink(missing_ok=True)
     if num_games > 0:
-        tmp_sgf_path.unlink()
         print(f"Flipped games: {num_flipped_games}/{num_games}")
         print(f"Mean squared error: {squared_error_sum / num_games}")
     else:
