@@ -158,7 +158,7 @@ def main():
             sgf.get_root().set("RE", katago_score_str)
             output_file.write(sgf.serialise(wrap=None))
     if num_games > 0:
-        print(f"Flipped games: {num_flipped_games}/{num_games}")
+        print(f"Games that changed winners: {num_flipped_games}/{num_games}")
         print(f"Mean squared error: {squared_error_sum / num_games}")
     else:
         print("No games found.")
