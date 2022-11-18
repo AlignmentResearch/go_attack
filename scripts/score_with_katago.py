@@ -60,10 +60,7 @@ def main():
     parser.add_argument(
         "sgf_path",
         type=Path,
-        help=(
-            "Path to directory (to be searched recursively) containing input "
-            "SGFs. The SGF files are expected to contain one SGF per file."
-        ),
+        help="Path to directory (to be searched recursively) with input SGFs",
     )
     parser.add_argument(
         "-o",
