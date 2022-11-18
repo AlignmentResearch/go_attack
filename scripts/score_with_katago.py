@@ -66,8 +66,11 @@ def main():
         ),
     )
     parser.add_argument(
-        "-o", "--output", type=Path, help="Path to file to contain output SGFs",
-        default=os.devnull
+        "-o",
+        "--output",
+        type=Path,
+        help="Path to file to contain output SGFs",
+        default=os.devnull,
     )
     args = parser.parse_args()
     if args.output.is_file():
@@ -160,6 +163,7 @@ def main():
     else:
         print("No games found.")
     shutil.rmtree(tmp_dir)
+
 
 if __name__ == "__main__":
     main()
