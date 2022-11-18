@@ -66,11 +66,8 @@ def main():
         ),
     )
     parser.add_argument(
-        "-o",
-        "--output",
-        type=Path,
-        help="Path to file to contain output SGFs",
-        default=os.devnull,
+        "-o", "--output", type=Path, help="Path to file to contain output SGFs",
+        default=os.devnull
     )
     args = parser.parse_args()
     if args.output.is_file():
@@ -102,20 +99,27 @@ def main():
         to_engine.write(f"{message}\n".encode("ascii"))
         output = ""
         found_output_start = False
+        success = False
         for i, line in enumerate(from_engine):
             line = line.decode("ascii")
 
             if found_output_start and line.strip() == "":
-                # Blank line signals the end of a response
+                # Blank line signals the end of a response.
                 break
 
-            if not found_output_start and line[0] == "=":
-                found_output_start = True
-                output += line[1:]
+            if not found_output_start:
+                if line[0] == "?":
+                    # Error response, no success.
+                    found_output_start = True
+                    output += line[1:]
+                elif line[0] == "=":
+                    success = True
+                    found_output_start = True
+                    output += line[1:]
             else:
                 output += line
         if assert_success:
-            assert found_output_start
+            assert success
         return output.lstrip().strip()
 
     num_games = 0
@@ -156,7 +160,6 @@ def main():
     else:
         print("No games found.")
     shutil.rmtree(tmp_dir)
-
 
 if __name__ == "__main__":
     main()
