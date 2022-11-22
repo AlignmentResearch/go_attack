@@ -33,6 +33,7 @@ def main():  # noqa: D103
         default="katago",
         help="The type of engine that the victim is running on",
     )
+    parser.add_argument("--komi", type=float, default=6.5, help="Komi")
     # Because ELF OpenGo disallows suicide moves and we want to launch
     # consistent attacks across all engines, we default to disallowing suicide
     # moves.
@@ -166,6 +167,7 @@ def main():  # noqa: D103
         config_path=config_path,
         engine_type=args.engine,
         executable_path=executable_path,
+        komi=args.komi,
         log_analysis=args.log_analysis,
         log_root=args.log_dir,
         moves_before_pass=args.moves_before_pass,

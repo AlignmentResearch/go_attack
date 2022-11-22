@@ -29,7 +29,6 @@ function usage() {
   echo "  -k KOMI, --komi KOMI"
   echo "              The komi of the games."
   echo "              ELF only accepts a komi of 7.5."
-  echo "              Only used by katago-vs-* experiments."
   echo "              default: 6.5 vs. Leela, 7.5 vs. ELF"
   echo "  --katago-config CONFIG"
   echo "              Config for KataGo to use."
@@ -130,7 +129,7 @@ if [[ -z "${KOMI}" ]]; then
   KOMI=6.5
   [[ "${VICTIM}" == "elf" ]] && KOMI=7.5
 fi
-if [[ "${EXPERIMENT_NAME}" = katago-vs-elf ]] && [[ $KOMI != "7.5" ]]; then
+if [[ "${VICTIM}" = "elf" ]] && [[ $KOMI != "7.5" ]]; then
   echo "Warning: ELF only allows KOMI=7.5. Setting KOMI=7.5."
   KOMI=7.5
 fi

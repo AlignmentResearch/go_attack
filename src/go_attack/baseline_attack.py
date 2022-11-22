@@ -256,6 +256,7 @@ def run_baseline_attack(
     config_path: Path,
     engine_type: str,
     executable_path: Path,
+    komi: float = 6.5,
     log_analysis: bool = False,
     log_root: Optional[Path] = None,
     moves_before_pass: int = 211,
@@ -311,6 +312,7 @@ def run_baseline_attack(
         return PassingWrapper(policy, moves_before_pass)
 
     send_msg(to_engine, f"boardsize {board_size}")
+    send_msg(to_engine, f"komi {komi}")
 
     random.seed(seed)
     policy_cls = POLICIES[adversarial_policy]
@@ -325,7 +327,7 @@ def run_baseline_attack(
         if verbose:
             print(f"\n--- Game {i + 1} of {num_games} ---")
 
-        game = Game(board_size=board_size)
+        game = Game(board_size=board_size, komi=komi)
         policy = make_policy()
         game, analyses = rollout_policy(
             game,
