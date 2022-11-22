@@ -357,6 +357,7 @@ def run_baseline_attack(
             analysis_log_dir.mkdir(exist_ok=True, parents=True)
             with open(analysis_log_dir / f"game_{i}.txt", "w") as f:
                 f.write("\n\n".join(analyses))
+    send_msg(to_engine, "quit")
 
     scores = [game.score() for game in games]
     margins = [black - white for black, white in scores]
