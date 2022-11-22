@@ -109,8 +109,8 @@ def main():  # noqa: D103
     )
     args = parser.parse_args()
     if args.engine == "katago":
-        if args.num_playouts is None:
-            args.num_playouts = [512]
+        if args.num_visits is None:
+            args.num_visits = [512]
         if args.passing_behavior is None:
             args.passing_behavior = ["standard"]
 
