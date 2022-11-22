@@ -82,6 +82,7 @@ services:
         && python3 -u /go_attack/scripts/baseline_attack.py
         --engine ${VICTIM}
         --executable /connect-to-victim.sh
+        --komi ${KOMI}
         --log-dir /outputs/sgfs
         --num-games ${NUM_GAMES}
         --verbose
