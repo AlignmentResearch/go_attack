@@ -17,6 +17,8 @@ KataGo-custom has the following significant branches:
 
 # Development / testing
 
+> **Tip:** Set `DOCKER_BUILDKIT=1` in your environment to enable [Docker BuildKit](https://docs.docker.com/build/), which can massively speed up builds by skipping unused steps.
+
 You can run `pip install -e .[dev]` inside the project root directory to install all necessary dependencies.
 
 To run a pre-commit script before each commit, run `pre-commit install` (`pre-commit` should already have been installed in the previous step).
@@ -30,6 +32,20 @@ More specifically:
 2. The Python training portion of KataGo runs in the container defined at [compose/python/Dockerfile](compose/python/Dockerfile).
 
 The Dockerfiles contain instructions for how to build them individually. This is useful if you want to test just one of the docker containers.
+
+## VSCode
+
+A good option for development is to use the [VS Code Dev Containers](https://code.visualstudio.com/docs/remote/containers) extension with the [Remote - SSH](https://code.visualstudio.com/docs/remote/ssh) extension to connect to a container running on a CHAI server. This allows you to edit and rebuild `katago` easily, without rebuilding the image or editing in the command line.
+
+1. Click on the `><` button in the bottom left of the screen.
+2. Choose `Connect to Host...`
+3. Connect to `vae.ist.berkeley.edu` or another host.
+4. When the new window opens click `><` again and choose `Open Folder in Container...`
+5. Open `go_attack`
+
+Adjust the config in `.devcontainer/` to mount to a specific directory.
+
+With this setup you can build KataGo-Custom by opening the command palette (Ctrl+Shift+P) and running `CMake: Build`. You can also use the task and launch configurations in `.vscode/` to run the debugger or launch `evaluate_loop.sh` (command palette -> `Tasks: Run Task`).
 
 ## Docker compose
 

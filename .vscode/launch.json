@@ -9,7 +9,7 @@
             "name": "victimplay_attach",
             "type": "cppdbg",
             "request": "attach",
-            "program": "/engines/KataGo-custom/cpp/katago-debug",
+            "program": "/engines/KataGo-custom/cpp/katago",
             "processId": "${command:pickRemoteProcess}",
             "pipeTransport": {
                 "pipeCwd": "${workspaceFolder}/engines/KataGo-custom",
@@ -32,47 +32,81 @@
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
                     "ignoreFailures": true
+                },
+                {
+                    "description":  "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
                 }
             ]
         },
         {
-            // See https://github.com/andyneff/hello-world-gdb/blob/master/.vscode/launch.json
             "name": "victimplay_launch",
             "type": "cppdbg",
             "request": "launch",
-            "cwd": "/cpp",
-            "program": "katago",
+            "program": "${workspaceFolder}/build/katago",
+            "cwd": "${workspaceFolder}",
             "args": [
                 "victimplay",
                 "-output-dir",
                 "/outputs/selfplay",
                 "-models-dir",
                 "/outputs/models",
-                "-nn-victim-file",
+                "-nn-victim-path",
                 "/models/kata1-b6c96-s1248000-d550347.txt.gz",
                 "-config",
-                "/configs/svm/victimplay1_debug.cfg"
+                "./configs/match-1gpu.cfg"
             ],
-            "pipeTransport": {
-                "pipeCwd": "${workspaceFolder}/engines/KataGo-custom/cpp",
-                "pipeProgram": "docker",
-                "pipeArgs": [
-                    "exec",
-                    "-i",
-                    "compose_cpp_1",
-                    "sh",
-                    "-c"
-                ],
-                "debuggerPath": "/usr/bin/gdb"
-            },
-            "sourceFileMap": {
-                "/cpp": "${workspaceFolder}/engines/KataGo-custom/cpp"
-            },
             "MIMode": "gdb",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description":  "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "katago match",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/katago",
+            "args": [
+                "match",
+                "-config",
+                "/workspace/configs/match-1gpu.cfg",
+                "-config",
+                "/shared/victims/victim.cfg",
+                "-override-config",
+                "numGamesTotal=10",
+                "-override-config",
+                "numGameThreads=1",
+                "-override-config",
+                "nnModelFile0=/shared/victims/kata1-b40c256-s5867950848-d1413392747.bin.gz",
+                "-override-config",
+                "nnModelFile1=/shared/models/t0-s1825536-d294815/model.bin.gz",
+                "-sgf-output-dir",
+                "/tmp/sgfs/"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description":  "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
                 }
             ]

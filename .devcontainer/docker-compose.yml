@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  cpp:
+    image: humancompatibleai/goattack:cpp
+    build:
+      context: .. # Repo root
+      dockerfile: ./compose/cpp/Dockerfile
+      target: build-deps
+    volumes:
+      - type: bind
+        source: /nas/ucb/josephmiller/test-evaluate-loop/test3
+        target: /output
+      - type: bind
+        source: /nas/ucb/k8/go-attack/victimplay/test-20221103-225153
+        target: /shared
+      - ..:/workspace:cached
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [ "gpu" ]
+              driver: nvidia
+              device_ids: [ "2" ]
+    cap_add:
+      - SYS_PTRACE # to enable gdb debugging
+    security_opt:
+      - seccomp:unconfined
+    tty: true
+    stop_grace_period: 60s
+    command: /bin/sh -c "while sleep 1000; do :; done"

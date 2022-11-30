@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "evaluate_loop.sh",
+            "type": "shell",
+            "command": "${workspaceFolder}/engines/KataGo-custom/cpp/evaluate_loop.sh",
+            "args": [
+                "/shared",
+                "/tmp/output",
+                "${workspaceFolder}/build/katago",
+                "/workspace"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
