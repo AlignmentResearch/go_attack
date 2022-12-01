@@ -95,7 +95,9 @@ def create_devbox():
         print("Waiting for devbox to start...")
         while True:
             output = subprocess.run(
-                ["ctl", "job", "list"], capture_output=True, check=True
+                ["ctl", "job", "list"],
+                capture_output=True,
+                check=True,
             ).stdout.decode("ascii")
             if any(
                 devbox_name in line and "Running" in line for line in output.split("\n")
@@ -176,14 +178,16 @@ nnModelFile{bot_index} = {bot_path}
 botName{bot_index} = {bot_name}
 maxVisits{bot_index} = {num_visits}
 searchAlgorithm{bot_index} = {bot_algorithm}
-"""
+""",
     )
     for param in extra_parameters:
         f.write(f"{param['key']}{bot_index} = {param['value']}\n")
 
 
 def write_victims(
-    f: TextIO, victims: Iterable[Dict[str, Any]], bot_index_offset: int = 0
+    f: TextIO,
+    victims: Iterable[Dict[str, Any]],
+    bot_index_offset: int = 0,
 ):
     for i, victim in enumerate(victims):
         if i > 0:
@@ -236,7 +240,9 @@ def generate_main_adversary_evaluation(
             f=f,
             bot_index=len(victims),
             bot_path=adversary_path,
-            bot_name=f"adv-s{get_adversary_steps(adversary_path)}-v{num_adversary_visits}",
+            bot_name=(
+                f"adv-s{get_adversary_steps(adversary_path)}-v{num_adversary_visits}"
+            ),
             num_visits=num_adversary_visits,
             bot_algorithm="AMCTS-S",
         )
@@ -269,10 +275,12 @@ def generate_training_checkpoint_sweep_evaluation(
         num_checkpoints = int(devbox.run(f"ls {checkpoints_path} | wc -l"))
         indices_to_evaluate = np.unique(
             np.linspace(
-                0, num_checkpoints - 1, parameters["num_checkpoints_to_evaluate"]
+                0,
+                num_checkpoints - 1,
+                parameters["num_checkpoints_to_evaluate"],
             )
             .round()
-            .astype(int)
+            .astype(int),
         )
         checkpoints = devbox.run(f"ls -v {checkpoints_path}").split("\n")
         checkpoints_to_evaluate = [checkpoints[i] for i in indices_to_evaluate]
@@ -299,7 +307,8 @@ def generate_training_checkpoint_sweep_evaluation(
     for i in range(num_jobs):
         checkpoints_start = i * checkpoints_per_job
         checkpoints_end = min(
-            (i + 1) * checkpoints_per_job, len(checkpoints_to_evaluate)
+            (i + 1) * checkpoints_per_job,
+            len(checkpoints_to_evaluate),
         )
         job_name = f"checkpoints-{checkpoints_start}-to-{checkpoints_end}"
         job_config = evaluation_config_dir / f"{job_name}.cfg"
@@ -325,7 +334,7 @@ def generate_training_checkpoint_sweep_evaluation(
             f.write(f"numGamesTotal = {num_games}\n")
             f.write(f"numBots = {len(victims) + len(job_checkpoints)}\n")
             secondary_bots_2 = ",".join(
-                map(lambda x: str(x + len(victims)), range(len(job_checkpoints)))
+                map(lambda x: str(x + len(victims)), range(len(job_checkpoints))),
             )
             f.write(f"secondaryBots2 = {secondary_bots_2}\n")
 
@@ -337,7 +346,10 @@ def generate_training_checkpoint_sweep_evaluation(
                     bot_path=Path(parameters["checkpoints_path"])
                     / checkpoint
                     / "model.bin.gz",
-                    bot_name=f"adv-s{get_adversary_steps(checkpoint)}-v{num_adversary_visits}",
+                    bot_name=(
+                        f"adv-s{get_adversary_steps(checkpoint)}"
+                        f"-v{num_adversary_visits}"
+                    ),
                     num_visits=num_adversary_visits,
                     bot_algorithm=parameters["adversary_algorithm"],
                 )
@@ -375,7 +387,9 @@ def generate_victim_visit_sweep_evaluation(
         job_name = re.sub("[^0-9a-zA-Z.-]", "x", f"victim-v-sweep-{algorithm}").lower()
         usage_string = get_usage_string(
             repo_root=repo_root,
-            description=f"evaluate {algorithm} adversary vs. victim with varying victim visits",
+            description=(
+                f"evaluate {algorithm} adversary vs. victim with varying victim visits"
+            ),
             job_name=job_name,
             default_num_gpus=4,
             num_games=num_games,
@@ -398,7 +412,10 @@ def generate_victim_visit_sweep_evaluation(
                 f=f,
                 bot_index=len(victims),
                 bot_path=adversary_path,
-                bot_name=f"adv-s{get_adversary_steps(adversary_path)}-v{num_adversary_visits}-{algorithm}",
+                bot_name=(
+                    f"adv-s{get_adversary_steps(adversary_path)}"
+                    f"-v{num_adversary_visits}-{algorithm}"
+                ),
                 num_visits=num_adversary_visits,
                 bot_algorithm=algorithm,
             )
@@ -412,7 +429,7 @@ def generate_adversary_visit_sweep_evaluation(
 ):
     common_parameters = parameters
     parameters = parameters["adversary_visit_sweep"]
-    output_config = config_dir / f"adversary-visit-sweep.cfg"
+    output_config = config_dir / "adversary-visit-sweep.cfg"
 
     max_adversary_visits = parameters["max_adversary_visits"]
     adversary_visits = [2**i for i in range(int(math.log2(max_adversary_visits)))]
@@ -420,7 +437,7 @@ def generate_adversary_visit_sweep_evaluation(
     num_games = len(adversary_visits) * parameters["num_games_per_matchup"]
     usage_string = get_usage_string(
         repo_root=repo_root,
-        description=f"evaluate adversary with varying visits vs. victim",
+        description="evaluate adversary with varying visits vs. victim",
         job_name="adv-v-sweep",
         default_num_gpus=3,
         num_games=num_games,
