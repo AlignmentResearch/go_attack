@@ -12,8 +12,8 @@ import itertools
 import math
 import os
 import re
-import time
 import subprocess
+import time
 from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
@@ -23,28 +23,41 @@ import numpy as np
 import yaml
 
 UsageString = namedtuple("UsageString", ["usage_string", "command"])
+UsageString.__doc__ = """\
+A usage string.
+
+Attributes:
+    usage_string: The full usage string.
+    command: The command contained in the usage string.\
+"""
 
 
 class Devbox:
+    """Allows executing commands on a running devbox."""
+
     def __init__(
         self,
         to_devbox: subprocess.PIPE,
         from_devbox: subprocess.PIPE,
     ):
+        """Initializes the class with the I/O pipes to the devbox."""
         self.to_devbox = to_devbox
         self.from_devbox = from_devbox
+        # Clear any unread output from the devbox, (e.g., output from devbox
+        # initialization).
+        self.__read_output()
 
     def run(self, command: str) -> str:
+        """Executes a command on the devbox and returns the output."""
         self.__write(command)
         return self.__read_output()
 
-    def clear_output(self):
-        self.__read_output()
-
     def __write(self, command: str):
+        """Writes a command to the devbox."""
         self.to_devbox.write(f"{command}\n".encode("ascii"))
 
     def __read_output(self):
+        """Reads output from the devbox."""
         # Output a token to know when to stop reading.
         end_token = "__done"
         self.__write(f"echo '{end_token}'")
@@ -97,9 +110,6 @@ def create_devbox():
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
-        devbox = Devbox(to_devbox=proc.stdin, from_devbox=proc.stdout)
-        # Clear any initialization output.
-        devbox.clear_output()
         yield Devbox(to_devbox=proc.stdin, from_devbox=proc.stdout)
         proc.terminate()
     finally:
@@ -203,7 +213,7 @@ def generate_main_adversary_evaluation(
     usage_string = get_usage_string(
         repo_root=repo_root,
         description="evaluate the main adversary against several victims",
-        job_name="eval",
+        job_name="eval-main-adv",
         default_num_gpus=2,
         num_games=num_games,
         configs=[output_config],
