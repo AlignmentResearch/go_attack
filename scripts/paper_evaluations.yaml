@@ -42,7 +42,8 @@ training_checkpoint_sweep:
     /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models"
   adversary_algorithm: AMCTS-S
   num_adversary_visits: 600
-  # Approximate maximum number of checkpoints to evaluate.
+  # Maximum number of checkpoints to evaluate (not including the main
+  # adversary).
   num_checkpoints_to_evaluate: 50
   # How many games to run between a adversary checkpoint and a victim.
   num_games_per_matchup: 50
