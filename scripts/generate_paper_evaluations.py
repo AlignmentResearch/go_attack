@@ -479,9 +479,6 @@ def main():
         repo_root=repo_root,
     )
 
-    # minor todos:
-    #  - find a YAML linter
-
 
 if __name__ == "__main__":
     main()
