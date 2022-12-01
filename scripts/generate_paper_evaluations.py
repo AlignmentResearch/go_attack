@@ -360,10 +360,13 @@ def generate_victim_visit_sweep_evaluation(
             for visits in victim_visits
         ]
         num_games = len(victims) * parameters["num_games_per_matchup"]
+        # The job name must be lower case and cannot include special characters
+        # like "+" in "AMCTS-S++".
+        job_name = re.sub("[^0-9a-zA-Z.-]", "x", f"victim-v-sweep-{algorithm}").lower()
         usage_string = get_usage_string(
             repo_root=repo_root,
             description=f"evaluate {algorithm} adversary vs. victim with varying victim visits",
-            job_name=f"victim-v-sweep-{algorithm}",
+            job_name=job_name,
             default_num_gpus=4,
             num_games=num_games,
             configs=[output_config],
