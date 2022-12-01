@@ -4,8 +4,11 @@
 # All victims listed should be available at /nas/ucb/k8/victims.
 
 # The main adversary we want to evaluate.
+---
 main_adversary:
-  path: /shared/victimplay/ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models/t0-s497721856-d125043118/model.bin.gz
+  path: "/shared/victimplay\
+    /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models\
+    /t0-s497721856-d125043118/model.bin.gz"
 
 # Experiment: Evaluate `main_adversary` against several victims.
 main_adversary_evaluation:
@@ -35,7 +38,8 @@ main_adversary_evaluation:
 training_checkpoint_sweep:
   # Path to all models from the training run. This must be available on
   # /nas/ucb/k8/go-attack (written as /shared below).
-  checkpoints_path: /shared/victimplay/ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models
+  checkpoints_path: "/shared/victimplay\
+    /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models"
   adversary_algorithm: AMCTS-S
   num_adversary_visits: 600
   # Approximate maximum number of checkpoints to evaluate.
@@ -91,9 +95,9 @@ adversary_visit_sweep:
   num_games_per_matchup: 150
   max_adversary_visits: 8192
   victim:
-      name: cp505h
-      filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
-      visits: 2048
-      extra_parameters:
-        - key: passingBehavior
-          value: avoid-pass-alive-territory
+    name: cp505h
+    filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
+    visits: 2048
+    extra_parameters:
+      - key: passingBehavior
+        value: avoid-pass-alive-territory

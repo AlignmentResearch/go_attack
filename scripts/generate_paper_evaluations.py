@@ -377,6 +377,7 @@ def generate_victim_visit_sweep_evaluation(
             secondary_bots = ",".join(map(str, range(len(victims))))
             f.write(f"secondaryBots = {secondary_bots}\n\n")
             write_victims(f=f, victims=victims)
+            f.write("\n")
 
             adversary_path = common_parameters["main_adversary"]["path"]
             num_adversary_visits = parameters["num_adversary_visits"]
@@ -462,11 +463,11 @@ def main():
         config_dir=config_dir,
         repo_root=repo_root,
     )
-    # generate_training_checkpoint_sweep_evaluation(
-    #     evaluation_parameters,
-    #     config_dir=config_dir,
-    #     repo_root=repo_root,
-    # )
+    generate_training_checkpoint_sweep_evaluation(
+        evaluation_parameters,
+        config_dir=config_dir,
+        repo_root=repo_root,
+    )
     generate_victim_visit_sweep_evaluation(
         evaluation_parameters,
         config_dir=config_dir,
