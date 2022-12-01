@@ -12,6 +12,7 @@ import itertools
 import math
 import os
 import re
+import time
 import subprocess
 from collections import namedtuple
 from contextlib import contextmanager
@@ -87,6 +88,7 @@ def create_devbox():
                 devbox_name in line and "Running" in line for line in output.split("\n")
             ):
                 break
+            time.sleep(1)
 
         proc = subprocess.Popen(
             ["ctl", "devbox", "ssh", "--name", devbox_name],
@@ -175,7 +177,7 @@ def write_victims(
 ):
     for i, victim in enumerate(victims):
         if i > 0:
-            f.write('\n')
+            f.write("\n")
         write_bot(
             f=f,
             bot_index=bot_index_offset + i,
@@ -197,13 +199,13 @@ def generate_main_adversary_evaluation(
     output_config = config_dir / "main_adversary_evaluation.cfg"
 
     victims = parameters["victims"]
-    num_games_total = len(victims) * parameters["num_games_per_matchup"]
+    num_games = len(victims) * parameters["num_games_per_matchup"]
     usage_string = get_usage_string(
         repo_root=repo_root,
         description="evaluate the main adversary against several victims",
         job_name="eval",
         default_num_gpus=2,
-        num_games=num_games_total,
+        num_games=num_games,
         configs=[output_config],
     ).usage_string
 
@@ -211,22 +213,23 @@ def generate_main_adversary_evaluation(
         f.write(str_to_comment(usage_string))
 
         f.write("logSearchInfo = false\n")
-        f.write(f"numGamesTotal = {num_games_total}\n\n")
+        f.write(f"numGamesTotal = {num_games}\n\n")
         f.write(f"numBots = {len(victims) + 1}\n")
-        secondary_bots = ",".join(map(str, range(1, len(victims) + 1)))
+        secondary_bots = ",".join(map(str, range(len(victims))))
         f.write(f"secondaryBots = {secondary_bots}\n\n")
+        write_victims(f=f, victims=parameters["victims"])
+        f.write("\n")
 
         adversary_path = common_parameters["main_adversary"]["path"]
         num_adversary_visits = parameters["num_adversary_visits"]
         write_bot(
             f=f,
-            bot_index=0,
+            bot_index=len(victims),
             bot_path=adversary_path,
             bot_name=f"adv-s{get_adversary_steps(adversary_path)}-v{num_adversary_visits}",
             num_visits=num_adversary_visits,
             bot_algorithm="AMCTS-S",
         )
-        write_victims(f=f, victims=parameters["victims"], bot_index_offset=1)
 
     print(f"\n{usage_string}\n")
 
@@ -309,8 +312,8 @@ def generate_training_checkpoint_sweep_evaluation(
             f.write(str_to_comment(usage_string.usage_string))
             job_commands.append(usage_string.command)
 
-            f.write(f"numGamesTotal = {num_games}")
-            f.write(f"numBots = {len(victims) + len(job_checkpoints)}")
+            f.write(f"numGamesTotal = {num_games}\n")
+            f.write(f"numBots = {len(victims) + len(job_checkpoints)}\n")
             secondary_bots_2 = ",".join(
                 map(lambda x: str(x + len(victims)), range(len(job_checkpoints)))
             )
@@ -331,6 +334,108 @@ def generate_training_checkpoint_sweep_evaluation(
 
     command = "\n".join(job_commands)
     print(f"\nExperiment: {job_description}\nCommand:\n{command}\n")
+
+
+def generate_victim_visit_sweep_evaluation(
+    parameters: Dict[str, Any],
+    config_dir: Path,
+    repo_root: Path,
+):
+    common_parameters = parameters
+    parameters = parameters["victim_visit_sweep"]
+    for algorithm_parameters in parameters["adversary_algorithms"]:
+        algorithm = algorithm_parameters["algorithm"]
+        output_config = config_dir / f"victim-visit-sweep-{algorithm}.cfg"
+        max_victim_visits = algorithm_parameters["max_victim_visits"]
+
+        victim_visits = [2**i for i in range(int(math.log2(max_victim_visits)))]
+        victim_visits.append(max_victim_visits)
+        base_victim = parameters["victim"]
+        victims = [
+            {
+                **base_victim,
+                "name": f"{base_victim['name']}-v{visits}",
+                "visits": visits,
+            }
+            for visits in victim_visits
+        ]
+        num_games = len(victims) * parameters["num_games_per_matchup"]
+        usage_string = get_usage_string(
+            repo_root=repo_root,
+            description=f"evaluate {algorithm} adversary vs. victim with varying victim visits",
+            job_name="victim-v-sweep-{algorithm}",
+            default_num_gpus=4,
+            num_games=num_games,
+            configs=[output_config],
+        ).usage_string
+        with open(output_config, "w") as f:
+            f.write(str_to_comment(usage_string))
+
+            f.write("logSearchInfo = false\n")
+            f.write(f"numGamesTotal = {num_games}\n\n")
+            f.write(f"numBots = {len(victims) + 1}\n")
+            secondary_bots = ",".join(map(str, range(len(victims))))
+            f.write(f"secondaryBots = {secondary_bots}\n\n")
+            write_victims(f=f, victims=victims)
+
+            adversary_path = common_parameters["main_adversary"]["path"]
+            num_adversary_visits = parameters["num_adversary_visits"]
+            write_bot(
+                f=f,
+                bot_index=len(victims),
+                bot_path=adversary_path,
+                bot_name=f"adv-s{get_adversary_steps(adversary_path)}-v{num_adversary_visits}-{algorithm}",
+                num_visits=num_adversary_visits,
+                bot_algorithm=algorithm,
+            )
+        print(f"\n{usage_string}\n")
+
+
+def generate_adversary_visit_sweep_evaluation(
+    parameters: Dict[str, Any],
+    config_dir: Path,
+    repo_root: Path,
+):
+    common_parameters = parameters
+    parameters = parameters["adversary_visit_sweep"]
+    output_config = config_dir / f"adversary-visit-sweep.cfg"
+
+    max_adversary_visits = parameters["max_adversary_visits"]
+    adversary_visits = [2**i for i in range(int(math.log2(max_adversary_visits)))]
+    adversary_visits.append(max_adversary_visits)
+    num_games = len(adversary_visits) * parameters["num_games_per_matchup"]
+    usage_string = get_usage_string(
+        repo_root=repo_root,
+        description=f"evaluate adversary with varying visits vs. victim",
+        job_name="adv-v-sweep",
+        default_num_gpus=3,
+        num_games=num_games,
+        configs=[output_config],
+    ).usage_string
+    with open(output_config, "w") as f:
+        f.write(str_to_comment(usage_string))
+
+        f.write("logSearchInfo = false\n")
+        f.write(f"numGamesTotal = {num_games}\n\n")
+        f.write(f"numBots = {len(adversary_visits) + 1}\n\n")
+        write_victims(f=f, victims=[parameters["victim"]])
+
+        secondary_bots = ",".join(map(str, range(1, len(adversary_visits) + 1)))
+        f.write(f"\nsecondaryBots = {secondary_bots}\n")
+
+        adversary_path = common_parameters["main_adversary"]["path"]
+        adversary_steps = get_adversary_steps(adversary_path)
+        for i, visits in enumerate(adversary_visits):
+            f.write("\n")
+            write_bot(
+                f=f,
+                bot_index=i + 1,
+                bot_path=adversary_path,
+                bot_name=f"adv-s{adversary_steps}-v{visits}",
+                num_visits=visits,
+                bot_algorithm=parameters["adversary_algorithm"],
+            )
+    print(f"\n{usage_string}\n")
 
 
 def main():
@@ -357,29 +462,24 @@ def main():
         config_dir=config_dir,
         repo_root=repo_root,
     )
-    generate_training_checkpoint_sweep_evaluation(
+    # generate_training_checkpoint_sweep_evaluation(
+    #     evaluation_parameters,
+    #     config_dir=config_dir,
+    #     repo_root=repo_root,
+    # )
+    generate_victim_visit_sweep_evaluation(
+        evaluation_parameters,
+        config_dir=config_dir,
+        repo_root=repo_root,
+    )
+    generate_adversary_visit_sweep_evaluation(
         evaluation_parameters,
         config_dir=config_dir,
         repo_root=repo_root,
     )
 
-    # notes:
-    #  - we'll need to replace /nas/ucb/k8 with /shared in the configs
-    #  - print warning to user if path note found at either /nas/ucb/k8 nor
-    #  /shared --- they need to run this inside a devbox or on a CHAI machine
-    #  - at the top of the generating config files, should add a comment saying
-    #  how to launch. also print the launch instructions once this script is
-    #  done generating instructinos
-    #
-    # be helpful and print out the total num of games that each experiment will
-    # take --- will help with determining GPU allocation?
-
     # minor todos:
     #  - find a YAML linter
-    #  - add a crude integration test so that we can't completely break this
-    #  script? actually idk if that's very feasible --- parsing the YAML isn't
-    #  hard, it's checking to make sure that when u type ./launch-match or
-    #  whatever that everything works
 
 
 if __name__ == "__main__":
