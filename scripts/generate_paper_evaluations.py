@@ -17,7 +17,7 @@ import time
 from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, IO, Iterable, Union
+from typing import IO, Any, Dict, Iterable, Union
 
 import numpy as np
 import yaml
@@ -28,8 +28,7 @@ A usage string.
 
 Attributes:
     usage_string: The full usage string.
-    command: The command contained in the usage string.\
-"""
+    command: The command contained in the usage string."""
 
 
 class Devbox:
@@ -70,6 +69,7 @@ class Devbox:
 
 @contextmanager
 def create_devbox():
+    """Yields a Devbox and handles its setup and teardown."""
     devbox_name = f"{get_user()}-devbox-gen-evals"
     subprocess.run(
         [
@@ -124,6 +124,7 @@ def create_devbox():
 
 
 def get_user() -> str:
+    """Gets the name of the user."""
     return getpass.getuser()
 
 
@@ -134,12 +135,13 @@ def str_to_comment(s: str) -> str:
 
 def get_usage_string(
     repo_root: Path,
-    description: str,
+    job_description: str,
     job_name: str,
     default_num_gpus: int,
     num_games: int,
     configs: Iterable[Path],
 ) -> UsageString:
+    """Generates a usage string for a job."""
     configs = [
         re.sub(r".*go_attack/configs", r"/go_attack/configs", str(config))
         for config in configs
@@ -149,13 +151,14 @@ def get_usage_string(
     {repo_root}/kubernetes/launch-match.sh --gpus {default_num_gpus} \\
     --games {num_games} {get_user()}-{job_name} -- {config_flags}"""
     usage_string = f"""\
-Experiment: {description}
+Experiment: {job_description}
 Command:
 {command}"""
     return UsageString(usage_string=usage_string, command=command)
 
 
 def get_adversary_steps(adversary_path: str) -> str:
+    """Fetches the adversary steps from the adversary path."""
     match = re.search("t0-s([0-9]+)-", adversary_path)
     if match:
         return match.group(1)
@@ -172,6 +175,7 @@ def write_bot(
     bot_algorithm: str,
     extra_parameters: Iterable[Dict[str, str]] = {},
 ):
+    """Writes bot config parameters to file `f`."""
     f.write(
         f"""\
 nnModelFile{bot_index} = {bot_path}
@@ -189,6 +193,7 @@ def write_victims(
     victims: Iterable[Dict[str, Any]],
     bot_index_offset: int = 0,
 ):
+    """Writes victim config parameters to file `f`."""
     for i, victim in enumerate(victims):
         if i > 0:
             f.write("\n")
@@ -208,6 +213,7 @@ def generate_main_adversary_evaluation(
     config_dir: Path,
     repo_root: Path,
 ):
+    """Generates experiment config for main evaluation of adversary."""
     common_parameters = parameters
     parameters = parameters["main_adversary_evaluation"]
     output_config = config_dir / "main_adversary_evaluation.cfg"
@@ -216,7 +222,7 @@ def generate_main_adversary_evaluation(
     num_games = len(victims) * parameters["num_games_per_matchup"]
     usage_string = get_usage_string(
         repo_root=repo_root,
-        description="evaluate the main adversary against several victims",
+        job_description="evaluate the main adversary against several victims",
         job_name="eval-main-adv",
         default_num_gpus=2,
         num_games=num_games,
@@ -255,6 +261,7 @@ def generate_training_checkpoint_sweep_evaluation(
     config_dir: Path,
     repo_root: Path,
 ):
+    """Generates experiment config for training checkpoint sweep."""
     common_parameters = parameters
     parameters = parameters["training_checkpoint_sweep"]
 
@@ -322,7 +329,7 @@ def generate_training_checkpoint_sweep_evaluation(
             )
             usage_string = get_usage_string(
                 repo_root=repo_root,
-                description=job_description,
+                job_description=job_description,
                 job_name=job_name,
                 default_num_gpus=2,
                 num_games=num_games,
@@ -363,6 +370,7 @@ def generate_victim_visit_sweep_evaluation(
     config_dir: Path,
     repo_root: Path,
 ):
+    """Generates experiment config for sweeping over victim visits."""
     common_parameters = parameters
     parameters = parameters["victim_visit_sweep"]
     for algorithm_parameters in parameters["adversary_algorithms"]:
@@ -387,7 +395,7 @@ def generate_victim_visit_sweep_evaluation(
         job_name = re.sub("[^0-9a-zA-Z.-]", "x", f"victim-v-sweep-{algorithm}").lower()
         usage_string = get_usage_string(
             repo_root=repo_root,
-            description=(
+            job_description=(
                 f"evaluate {algorithm} adversary vs. victim with varying victim visits"
             ),
             job_name=job_name,
@@ -427,6 +435,7 @@ def generate_adversary_visit_sweep_evaluation(
     config_dir: Path,
     repo_root: Path,
 ):
+    """Generates experiment config for sweeping over adversary visits."""
     common_parameters = parameters
     parameters = parameters["adversary_visit_sweep"]
     output_config = config_dir / "adversary-visit-sweep.cfg"
@@ -437,7 +446,7 @@ def generate_adversary_visit_sweep_evaluation(
     num_games = len(adversary_visits) * parameters["num_games_per_matchup"]
     usage_string = get_usage_string(
         repo_root=repo_root,
-        description="evaluate adversary with varying visits vs. victim",
+        job_description="evaluate adversary with varying visits vs. victim",
         job_name="adv-v-sweep",
         default_num_gpus=3,
         num_games=num_games,
