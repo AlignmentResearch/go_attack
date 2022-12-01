@@ -12,7 +12,7 @@ main_adversary:
 
 # Experiment: Evaluate `main_adversary` against several victims.
 main_adversary_evaluation:
-  num_adversary_visits: 600
+  adversary_visits: 600
   num_games_per_matchup: 1000
   victims:
     - name: cp505h-v2048
@@ -41,7 +41,7 @@ training_checkpoint_sweep:
   checkpoints_path: "/shared/victimplay\
     /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models"
   adversary_algorithm: AMCTS-S
-  num_adversary_visits: 600
+  adversary_visits: 600
   # Maximum number of checkpoints to evaluate (not including the main
   # adversary).
   num_checkpoints_to_evaluate: 50
@@ -75,7 +75,7 @@ training_checkpoint_sweep:
 
 # Experiment: evaluate adversary vs. victim with varying victim visits.
 victim_visit_sweep:
-  num_adversary_visits: 200
+  adversary_visits: 200
   num_games_per_matchup: 150
   victim:
     name: cp505h

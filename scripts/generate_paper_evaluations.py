@@ -194,9 +194,12 @@ def write_victims(
     bot_index_offset: int = 0,
 ):
     """Writes victim config parameters to file `f`."""
+    secondary_bots = ",".join(
+        map(lambda x: str(x + bot_index_offset), range(len(victims)))
+    )
+    f.write(f"secondaryBots = {secondary_bots}\n")
     for i, victim in enumerate(victims):
-        if i > 0:
-            f.write("\n")
+        f.write("\n")
         write_bot(
             f=f,
             bot_index=bot_index_offset + i,
@@ -205,6 +208,31 @@ def write_victims(
             num_visits=victim["visits"],
             bot_algorithm="MCTS",
             extra_parameters=victim.get("extra_parameters", []),
+        )
+
+
+def write_adversaries(
+    f: IO[str],
+    adversaries: Iterable[Dict[str, Any]],
+    bot_index_offset: int = 0,
+):
+    """Writes adversary config parameters to file `f`."""
+    secondary_bots_2 = ",".join(
+        map(lambda x: str(x + bot_index_offset), range(len(adversaries)))
+    )
+    f.write(f"secondaryBots2 = {secondary_bots_2}\n")
+    for i, adversary in enumerate(adversaries):
+        f.write("\n")
+        algorithm = adversary["algorithm"]
+        path = str(adversary["path"])
+        visits = adversary["visits"]
+        write_bot(
+            f=f,
+            bot_index=bot_index_offset + i,
+            bot_path=path,
+            bot_name=f"adv-s{get_adversary_steps(path)}-v{visits}-{algorithm}",
+            num_visits=visits,
+            bot_algorithm=algorithm,
         )
 
 
@@ -235,22 +263,19 @@ def generate_main_adversary_evaluation(
         f.write("logSearchInfo = false\n")
         f.write(f"numGamesTotal = {num_games}\n\n")
         f.write(f"numBots = {len(victims) + 1}\n")
-        secondary_bots = ",".join(map(str, range(len(victims))))
-        f.write(f"secondaryBots = {secondary_bots}\n\n")
         write_victims(f=f, victims=parameters["victims"])
         f.write("\n")
 
-        adversary_path = common_parameters["main_adversary"]["path"]
-        num_adversary_visits = parameters["num_adversary_visits"]
-        write_bot(
+        write_adversaries(
             f=f,
-            bot_index=len(victims),
-            bot_path=adversary_path,
-            bot_name=(
-                f"adv-s{get_adversary_steps(adversary_path)}-v{num_adversary_visits}"
-            ),
-            num_visits=num_adversary_visits,
-            bot_algorithm="AMCTS-S",
+            adversaries=[
+                {
+                    "algorithm": "AMCTS-S",
+                    "path": common_parameters["main_adversary"]["path"],
+                    "visits": parameters["adversary_visits"],
+                }
+            ],
+            bot_index_offset=len(victims),
         )
 
     print(f"\n{usage_string}\n")
@@ -271,8 +296,6 @@ def generate_training_checkpoint_sweep_evaluation(
     victims = parameters["victims"]
     with open(victim_config, "w") as f:
         f.write("logSearchInfo = false\n")
-        secondary_bots = ",".join(map(str, range(len(victims))))
-        f.write(f"secondaryBots = {secondary_bots}\n\n")
         write_victims(f, victims)
 
     main_checkpoint_path = Path(common_parameters["main_adversary"]["path"])
@@ -308,7 +331,6 @@ def generate_training_checkpoint_sweep_evaluation(
     #   estimate.
     checkpoints_per_job = math.floor((16384 * 0.8 - 5942) / 815)
     num_jobs = math.ceil(len(checkpoints_to_evaluate) / checkpoints_per_job)
-    num_adversary_visits = parameters["num_adversary_visits"]
     job_commands = []
     job_description = "evaluate several adversary checkpoints throughout training"
     for i in range(num_jobs):
@@ -340,26 +362,20 @@ def generate_training_checkpoint_sweep_evaluation(
 
             f.write(f"numGamesTotal = {num_games}\n")
             f.write(f"numBots = {len(victims) + len(job_checkpoints)}\n")
-            secondary_bots_2 = ",".join(
-                map(lambda x: str(x + len(victims)), range(len(job_checkpoints))),
+            write_adversaries(
+                f=f,
+                adversaries=[
+                    {
+                        "algorithm": parameters["adversary_algorithm"],
+                        "path": Path(parameters["checkpoints_path"])
+                        / checkpoint
+                        / "model.bin.gz",
+                        "visits": parameters["adversary_visits"],
+                    }
+                    for checkpoint in job_checkpoints
+                ],
+                bot_index_offset=len(victims),
             )
-            f.write(f"secondaryBots2 = {secondary_bots_2}\n")
-
-            for j, checkpoint in enumerate(job_checkpoints):
-                f.write("\n")
-                write_bot(
-                    f=f,
-                    bot_index=len(victims) + j,
-                    bot_path=Path(parameters["checkpoints_path"])
-                    / checkpoint
-                    / "model.bin.gz",
-                    bot_name=(
-                        f"adv-s{get_adversary_steps(checkpoint)}"
-                        f"-v{num_adversary_visits}"
-                    ),
-                    num_visits=num_adversary_visits,
-                    bot_algorithm=parameters["adversary_algorithm"],
-                )
 
     command = "\n".join(job_commands)
     print(f"\nExperiment: {job_description}\nCommand:\n{command}\n")
@@ -409,23 +425,19 @@ def generate_victim_visit_sweep_evaluation(
             f.write("logSearchInfo = false\n")
             f.write(f"numGamesTotal = {num_games}\n\n")
             f.write(f"numBots = {len(victims) + 1}\n")
-            secondary_bots = ",".join(map(str, range(len(victims))))
-            f.write(f"secondaryBots = {secondary_bots}\n\n")
             write_victims(f=f, victims=victims)
             f.write("\n")
 
-            adversary_path = common_parameters["main_adversary"]["path"]
-            num_adversary_visits = parameters["num_adversary_visits"]
-            write_bot(
+            write_adversaries(
                 f=f,
-                bot_index=len(victims),
-                bot_path=adversary_path,
-                bot_name=(
-                    f"adv-s{get_adversary_steps(adversary_path)}"
-                    f"-v{num_adversary_visits}-{algorithm}"
-                ),
-                num_visits=num_adversary_visits,
-                bot_algorithm=algorithm,
+                adversaries=[
+                    {
+                        "algorithm": algorithm,
+                        "path": common_parameters["main_adversary"]["path"],
+                        "visits": parameters["adversary_visits"],
+                    }
+                ],
+                bot_index_offset=len(victims),
             )
         print(f"\n{usage_string}\n")
 
@@ -459,22 +471,19 @@ def generate_adversary_visit_sweep_evaluation(
         f.write(f"numGamesTotal = {num_games}\n\n")
         f.write(f"numBots = {len(adversary_visits) + 1}\n\n")
         write_victims(f=f, victims=[parameters["victim"]])
-
-        secondary_bots = ",".join(map(str, range(1, len(adversary_visits) + 1)))
-        f.write(f"\nsecondaryBots = {secondary_bots}\n")
-
-        adversary_path = common_parameters["main_adversary"]["path"]
-        adversary_steps = get_adversary_steps(adversary_path)
-        for i, visits in enumerate(adversary_visits):
-            f.write("\n")
-            write_bot(
-                f=f,
-                bot_index=i + 1,
-                bot_path=adversary_path,
-                bot_name=f"adv-s{adversary_steps}-v{visits}",
-                num_visits=visits,
-                bot_algorithm=parameters["adversary_algorithm"],
-            )
+        f.write("\n")
+        write_adversaries(
+            f=f,
+            adversaries=[
+                {
+                    "algorithm": parameters["adversary_algorithm"],
+                    "path": common_parameters["main_adversary"]["path"],
+                    "visits": visits,
+                }
+                for visits in adversary_visits
+            ],
+            bot_index_offset=1,
+        )
     print(f"\n{usage_string}\n")
 
 
