@@ -363,7 +363,7 @@ def generate_victim_visit_sweep_evaluation(
         usage_string = get_usage_string(
             repo_root=repo_root,
             description=f"evaluate {algorithm} adversary vs. victim with varying victim visits",
-            job_name="victim-v-sweep-{algorithm}",
+            job_name=f"victim-v-sweep-{algorithm}",
             default_num_gpus=4,
             num_games=num_games,
             configs=[output_config],
