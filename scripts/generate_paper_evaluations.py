@@ -17,7 +17,7 @@ import time
 from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, Iterable, TextIO
+from typing import Any, Dict, IO, Iterable, Union
 
 import numpy as np
 import yaml
@@ -37,8 +37,8 @@ class Devbox:
 
     def __init__(
         self,
-        to_devbox: subprocess.PIPE,
-        from_devbox: subprocess.PIPE,
+        to_devbox: IO[bytes],
+        from_devbox: IO[bytes],
     ):
         """Initializes the class with the I/O pipes to the devbox."""
         self.to_devbox = to_devbox
@@ -155,7 +155,7 @@ Command:
     return UsageString(usage_string=usage_string, command=command)
 
 
-def get_adversary_steps(adversary_path: Path) -> str:
+def get_adversary_steps(adversary_path: str) -> str:
     match = re.search("t0-s([0-9]+)-", adversary_path)
     if match:
         return match.group(1)
@@ -164,9 +164,9 @@ def get_adversary_steps(adversary_path: Path) -> str:
 
 
 def write_bot(
-    f: TextIO,
+    f: IO[str],
     bot_index: int,
-    bot_path: str,
+    bot_path: Union[str, Path],
     bot_name: str,
     num_visits: int,
     bot_algorithm: str,
@@ -185,7 +185,7 @@ searchAlgorithm{bot_index} = {bot_algorithm}
 
 
 def write_victims(
-    f: TextIO,
+    f: IO[str],
     victims: Iterable[Dict[str, Any]],
     bot_index_offset: int = 0,
 ):
