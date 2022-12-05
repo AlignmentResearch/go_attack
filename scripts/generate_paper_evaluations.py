@@ -304,6 +304,8 @@ def generate_training_checkpoint_sweep_evaluation(
         f.write("logSearchInfo = false\n")
         write_victims(f, victims)
 
+    # Fetch `num_checkpoints_to_evaluate` evenly spaced checkpoints from
+    # `checkpoints_path`.
     main_checkpoint_path = Path(common_parameters["main_adversary"]["path"])
     checkpoints_path = Path(parameters["checkpoints_path"])
     assert checkpoints_path in main_checkpoint_path.parents
@@ -525,11 +527,11 @@ def main():
         config_dir=config_dir,
         repo_root=repo_root,
     )
-    # generate_training_checkpoint_sweep_evaluation(
-    #     evaluation_parameters,
-    #     config_dir=config_dir,
-    #     repo_root=repo_root,
-    # )
+    generate_training_checkpoint_sweep_evaluation(
+        evaluation_parameters,
+        config_dir=config_dir,
+        repo_root=repo_root,
+    )
     generate_victim_visit_sweep_evaluation(
         evaluation_parameters,
         config_dir=config_dir,
