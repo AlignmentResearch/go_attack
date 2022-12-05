@@ -242,12 +242,15 @@ def generate_main_adversary_evaluation(
     repo_root: Path,
 ):
     """Generates experiment config for main evaluation of adversary."""
+    parameters_key = "main_adversary_evaluation"
+    if parameters_key not in parameters:
+        return
     common_parameters = parameters
-    parameters = parameters["main_adversary_evaluation"]
-    output_config = config_dir / "main_adversary_evaluation.cfg"
+    parameters = parameters[key]
 
     victims = parameters["victims"]
     num_games = len(victims) * parameters["num_games_per_matchup"]
+    output_config = config_dir / "main_adversary_evaluation.cfg"
     usage_string = get_usage_string(
         repo_root=repo_root,
         job_description="evaluate the main adversary against several victims",
@@ -287,8 +290,11 @@ def generate_training_checkpoint_sweep_evaluation(
     repo_root: Path,
 ):
     """Generates experiment config for training checkpoint sweep."""
+    parameters_key "training_checkpoint_sweep"
+    if parameters_key not in parameters:
+        return
     common_parameters = parameters
-    parameters = parameters["training_checkpoint_sweep"]
+    parameters = parameters[key]
 
     evaluation_config_dir = config_dir / "training_checkpoint_sweep_evaluation"
     evaluation_config_dir.mkdir(parents=True, exist_ok=True)
@@ -387,8 +393,12 @@ def generate_victim_visit_sweep_evaluation(
     repo_root: Path,
 ):
     """Generates experiment config for sweeping over victim visits."""
+    parameters_key = "victim_visit_sweep"
+    if parameters_key not in parameters:
+        return
     common_parameters = parameters
-    parameters = parameters["victim_visit_sweep"]
+    parameters = parameters[key]
+
     for algorithm_parameters in parameters["adversary_algorithms"]:
         algorithm = algorithm_parameters["algorithm"]
         output_config = config_dir / f"victim-visit-sweep-{algorithm}.cfg"
@@ -448,14 +458,17 @@ def generate_adversary_visit_sweep_evaluation(
     repo_root: Path,
 ):
     """Generates experiment config for sweeping over adversary visits."""
+    parameters_key = "adversary_visit_sweep"
+    if parameters_key not in parameters:
+        return
     common_parameters = parameters
-    parameters = parameters["adversary_visit_sweep"]
-    output_config = config_dir / "adversary-visit-sweep.cfg"
+    parameters = parameters[key]
 
     max_adversary_visits = parameters["max_adversary_visits"]
     adversary_visits = [2**i for i in range(int(math.log2(max_adversary_visits)))]
     adversary_visits.append(max_adversary_visits)
     num_games = len(adversary_visits) * parameters["num_games_per_matchup"]
+    output_config = config_dir / "adversary-visit-sweep.cfg"
     usage_string = get_usage_string(
         repo_root=repo_root,
         job_description="evaluate adversary with varying visits vs. victim",
