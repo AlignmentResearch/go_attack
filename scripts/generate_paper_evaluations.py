@@ -246,7 +246,7 @@ def generate_main_adversary_evaluation(
     if parameters_key not in parameters:
         return
     common_parameters = parameters
-    parameters = parameters[key]
+    parameters = parameters[parameters_key]
 
     victims = parameters["victims"]
     num_games = len(victims) * parameters["num_games_per_matchup"]
@@ -290,11 +290,11 @@ def generate_training_checkpoint_sweep_evaluation(
     repo_root: Path,
 ):
     """Generates experiment config for training checkpoint sweep."""
-    parameters_key "training_checkpoint_sweep"
+    parameters_key = "training_checkpoint_sweep"
     if parameters_key not in parameters:
         return
     common_parameters = parameters
-    parameters = parameters[key]
+    parameters = parameters[parameters_key]
 
     evaluation_config_dir = config_dir / "training_checkpoint_sweep_evaluation"
     evaluation_config_dir.mkdir(parents=True, exist_ok=True)
@@ -397,7 +397,7 @@ def generate_victim_visit_sweep_evaluation(
     if parameters_key not in parameters:
         return
     common_parameters = parameters
-    parameters = parameters[key]
+    parameters = parameters[parameters_key]
 
     for algorithm_parameters in parameters["adversary_algorithms"]:
         algorithm = algorithm_parameters["algorithm"]
@@ -406,14 +406,14 @@ def generate_victim_visit_sweep_evaluation(
 
         victim_visits = [2**i for i in range(int(math.log2(max_victim_visits)))]
         victim_visits.append(max_victim_visits)
-        base_victim = parameters["victim"]
         victims = [
             {
-                **base_victim,
-                "name": f"{base_victim['name']}-v{visits}",
+                **victim,
+                "name": f"{victim['name']}-v{visits}",
                 "visits": visits,
             }
             for visits in victim_visits
+            for victim in parameters["victims"]
         ]
         num_games = len(victims) * parameters["num_games_per_matchup"]
         # The job name must be lower case and cannot include special characters
@@ -462,12 +462,13 @@ def generate_adversary_visit_sweep_evaluation(
     if parameters_key not in parameters:
         return
     common_parameters = parameters
-    parameters = parameters[key]
+    parameters = parameters[parameters_key]
 
+    victims = parameters["victims"]
     max_adversary_visits = parameters["max_adversary_visits"]
     adversary_visits = [2**i for i in range(int(math.log2(max_adversary_visits)))]
     adversary_visits.append(max_adversary_visits)
-    num_games = len(adversary_visits) * parameters["num_games_per_matchup"]
+    num_games = len(victims) * len(adversary_visits) * parameters["num_games_per_matchup"]
     output_config = config_dir / "adversary-visit-sweep.cfg"
     usage_string = get_usage_string(
         repo_root=repo_root,
@@ -483,7 +484,7 @@ def generate_adversary_visit_sweep_evaluation(
         f.write("logSearchInfo = false\n")
         f.write(f"numGamesTotal = {num_games}\n\n")
         f.write(f"numBots = {len(adversary_visits) + 1}\n\n")
-        write_victims(f=f, victims=[parameters["victim"]])
+        write_victims(f=f, victims=victims)
         f.write("\n")
         write_adversaries(
             f=f,
@@ -495,7 +496,7 @@ def generate_adversary_visit_sweep_evaluation(
                 }
                 for visits in adversary_visits
             ],
-            bot_index_offset=1,
+            bot_index_offset=len(victims),
         )
     print(f"\n{usage_string}\n")
 
@@ -524,11 +525,11 @@ def main():
         config_dir=config_dir,
         repo_root=repo_root,
     )
-    generate_training_checkpoint_sweep_evaluation(
-        evaluation_parameters,
-        config_dir=config_dir,
-        repo_root=repo_root,
-    )
+    # generate_training_checkpoint_sweep_evaluation(
+    #     evaluation_parameters,
+    #     config_dir=config_dir,
+    #     repo_root=repo_root,
+    # )
     generate_victim_visit_sweep_evaluation(
         evaluation_parameters,
         config_dir=config_dir,

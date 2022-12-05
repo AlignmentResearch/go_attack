@@ -77,12 +77,12 @@ training_checkpoint_sweep:
 victim_visit_sweep:
   adversary_visits: 200
   num_games_per_matchup: 150
-  victim:
-    name: cp505h
-    filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
-    extra_parameters:
-      - key: passingBehavior
-        value: avoid-pass-alive-territory
+  victims:
+    - name: cp505h
+      filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
+      extra_parameters:
+        - key: passingBehavior
+          value: avoid-pass-alive-territory
   # Specify which adversary algorithms to evaluate.
   adversary_algorithms:
     - algorithm: AMCTS-S++
@@ -95,10 +95,10 @@ adversary_visit_sweep:
   adversary_algorithm: AMCTS-S
   num_games_per_matchup: 150
   max_adversary_visits: 8192
-  victim:
-    name: cp505h-v2048
-    filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
-    visits: 2048
-    extra_parameters:
-      - key: passingBehavior
-        value: avoid-pass-alive-territory
+  victims:
+    - name: cp505h-v2048
+      filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
+      visits: 2048
+      extra_parameters:
+        - key: passingBehavior
+          value: avoid-pass-alive-territory
