@@ -507,6 +507,8 @@ def generate_adversary_visit_sweep_evaluation(
 
 def main():
     """Entrypoint for the script."""
+    repo_root = Path(os.path.dirname(os.path.realpath(__file__))).parents[0]
+
     parser = argparse.ArgumentParser(
         description="Generates config files for the main experiments in paper",
     )
@@ -515,11 +517,16 @@ def main():
         type=Path,
         help="Path to YAML file providing parameters for the experiments.",
     )
+    parser.add_argument(
+        "-o", "--output-dir",
+        type=Path,
+        help="The directory at which to output config files.",
+        default=repo_root / "configs" / "generated_evaluations"
+    )
     args = parser.parse_args()
 
-    repo_root = Path(os.path.dirname(os.path.realpath(__file__))).parents[0]
-    config_dir = repo_root / "configs"
-    assert os.path.isdir(config_dir)
+    config_dir = args.output_dir
+    config_dir.mkdir(parents=True, exist_ok=True)
 
     with open(args.parameter_file) as f:
         evaluation_parameters = yaml.safe_load(f)
