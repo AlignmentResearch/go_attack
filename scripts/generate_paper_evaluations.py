@@ -17,7 +17,7 @@ import time
 from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, Dict, Iterable, Union
+from typing import IO, Any, Dict, List, Iterable, Union
 
 import numpy as np
 import yaml
@@ -190,12 +190,12 @@ searchAlgorithm{bot_index} = {bot_algorithm}
 
 def write_victims(
     f: IO[str],
-    victims: Iterable[Dict[str, Any]],
+    victims: List[Dict[str, Any]],
     bot_index_offset: int = 0,
 ):
     """Writes victim config parameters to file `f`."""
     secondary_bots = ",".join(
-        map(lambda x: str(x + bot_index_offset), range(len(victims)))
+        map(lambda x: str(x + bot_index_offset), range(len(victims))),
     )
     f.write(f"secondaryBots = {secondary_bots}\n")
     for i, victim in enumerate(victims):
@@ -213,12 +213,12 @@ def write_victims(
 
 def write_adversaries(
     f: IO[str],
-    adversaries: Iterable[Dict[str, Any]],
+    adversaries: List[Dict[str, Any]],
     bot_index_offset: int = 0,
 ):
     """Writes adversary config parameters to file `f`."""
     secondary_bots_2 = ",".join(
-        map(lambda x: str(x + bot_index_offset), range(len(adversaries)))
+        map(lambda x: str(x + bot_index_offset), range(len(adversaries))),
     )
     f.write(f"secondaryBots2 = {secondary_bots_2}\n")
     for i, adversary in enumerate(adversaries):
@@ -276,7 +276,7 @@ def generate_main_adversary_evaluation(
                     "algorithm": "AMCTS-S",
                     "path": common_parameters["main_adversary"]["path"],
                     "visits": parameters["adversary_visits"],
-                }
+                },
             ],
             bot_index_offset=len(victims),
         )
@@ -447,7 +447,7 @@ def generate_victim_visit_sweep_evaluation(
                         "algorithm": algorithm,
                         "path": common_parameters["main_adversary"]["path"],
                         "visits": parameters["adversary_visits"],
-                    }
+                    },
                 ],
                 bot_index_offset=len(victims),
             )
@@ -470,7 +470,9 @@ def generate_adversary_visit_sweep_evaluation(
     max_adversary_visits = parameters["max_adversary_visits"]
     adversary_visits = [2**i for i in range(int(math.log2(max_adversary_visits)))]
     adversary_visits.append(max_adversary_visits)
-    num_games = len(victims) * len(adversary_visits) * parameters["num_games_per_matchup"]
+    num_games = (
+        len(victims) * len(adversary_visits) * parameters["num_games_per_matchup"]
+    )
     output_config = config_dir / "adversary-visit-sweep.cfg"
     usage_string = get_usage_string(
         repo_root=repo_root,
