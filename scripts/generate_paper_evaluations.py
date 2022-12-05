@@ -17,7 +17,7 @@ import time
 from collections import namedtuple
 from contextlib import contextmanager
 from pathlib import Path
-from typing import IO, Any, Dict, List, Iterable, Union
+from typing import IO, Any, Dict, Iterable, List, Union
 
 import numpy as np
 import yaml
@@ -518,10 +518,11 @@ def main():
         help="Path to YAML file providing parameters for the experiments.",
     )
     parser.add_argument(
-        "-o", "--output-dir",
+        "-o",
+        "--output-dir",
         type=Path,
         help="The directory at which to output config files.",
-        default=repo_root / "configs" / "generated_evaluations"
+        default=repo_root / "configs" / "generated_evaluations",
     )
     args = parser.parse_args()
 
