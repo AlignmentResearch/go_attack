@@ -96,7 +96,7 @@ adversary_visit_sweep:
   num_games_per_matchup: 150
   max_adversary_visits: 8192
   victim:
-    name: cp505h
+    name: cp505h-v2048
     filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
     visits: 2048
     extra_parameters:
