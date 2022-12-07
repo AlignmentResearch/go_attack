@@ -8,7 +8,7 @@
 export HOST_REPO_ROOT=$(git rev-parse --show-toplevel)
 
 DEFAULT_GPUS_STR="all"
-DEFAULT_KATAGO_CONFIG="${HOST_REPO_ROOT}/configs/gtp-emcts.cfg"
+DEFAULT_KATAGO_CONFIG="${HOST_REPO_ROOT}/configs/gtp-amcts.cfg"
 DEFAULT_NUM_GAMES_TOTAL=64
 DEFAULT_NUM_THREADS=16
 
@@ -38,7 +38,7 @@ function usage() {
   echo "              Model for KataGo to use."
   echo "              Only used by katago-vs-* experiments."
   echo "  --katago-victim-model MODEL"
-  echo "              Victim model for KataGo to use in EMCTS."
+  echo "              Victim model for KataGo to use in A-MCTS."
   echo "              Only used by katago-vs-* experiments."
   echo "  -l LABEL, --label LABEL"
   echo "              Label attached to the output directory and docker-compose"
