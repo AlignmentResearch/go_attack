@@ -1,5 +1,5 @@
 mode=custom
-rules=chinese
+rules=newzealand
 rules.boardSize=19
 rules.time=5:00+5x0:30
 opponent=corners
