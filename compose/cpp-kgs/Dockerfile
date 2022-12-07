@@ -154,6 +154,11 @@ COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custo
 
 COPY ./configs /go_attack/configs
 
+# Download KGS bot client
+RUN wget http://files.gokgs.com/javaBin/kgsGtp-3.5.23.zip
+RUN unzip kgsGtp-3.5.23.zip
+RUN mv ./kgsGtp-3.5.23/kgsGtp.jar /go_attack/engines/kgs-bot/kgsGtp.jar
+
 # Adversary model: adv505h-s349284096-d87808728.bin.gz
 # From https://drive.google.com/drive/folders/1-bGX-NQOh6MuRPoXJgYHb9-jWRJvviSg
 RUN mkdir /go_attack/adversary_models
