@@ -154,7 +154,10 @@ COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custo
 
 COPY ./configs /go_attack/configs
 
+# Adversary model: adv505h-s349284096-d87808728.bin.gz
+# From https://drive.google.com/drive/folders/1-bGX-NQOh6MuRPoXJgYHb9-jWRJvviSg
 RUN mkdir /go_attack/adversary_models
-RUN mkdir /go_attack/victim_models
 RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate $URL -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1Qktfjfr6YwplF50T-LMXkFK_qG1UXeiy" -O /go_attack/adversary_models/adversary_model.bin.gz && rm -rf /tmp/cookies.txt
+
+RUN mkdir /go_attack/victim_models
 RUN wget https://media.katagotraining.org/uploaded/networks/models/kata1/kata1-b40c256-s11840935168-d2898845681.bin.gz -O /go_attack/victim_models/victim_model.bin.gz
