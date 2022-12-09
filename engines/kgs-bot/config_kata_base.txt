@@ -2,4 +2,4 @@ mode=custom
 rules=newzealand
 rules.boardSize=19
 rules.time=5:00+5x0:30
-engine=/engines/KataGo-custom/cpp/katago gtp -model /go_attack/victim_models/victim_model.bin.gz -config /go_attack/configs/kgs-bot/base_bot.cfg
+engine=/engines/KataGo-raw/cpp/katago gtp -model /go_attack/victim_models/victim_model.bin.gz -config /go_attack/configs/kgs-bot/base_bot.cfg
