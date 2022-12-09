@@ -14,6 +14,7 @@ RUN apt-get update -q \
 RUN wget http://files.gokgs.com/javaBin/kgsGtp-3.5.23.zip
 RUN unzip kgsGtp-3.5.23.zip
 COPY ./engines/kgs-bot/ /go_attack/engines/kgs-bot
+COPY ./configs/kgs-bot/ /go_attack/configs/kgs-bot
 RUN mv ./kgsGtp-3.5.23/kgsGtp.jar /go_attack/engines/kgs-bot/kgsGtp.jar
 
 # Adversary model: adv505h-s349284096-d87808728.bin.gz
