@@ -94,7 +94,8 @@ ctl job run --container \
   ${GAMES_PER_REPLICA}
   $*" \
   --high-priority \
-  --gpu 1 \
+  --cpu 255 \
+  --gpu 8 \
   --name go-match-"$PREFIX" \
   --replicas "${NUM_GPUS}"
 exit 0

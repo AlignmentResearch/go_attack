@@ -20,7 +20,7 @@ mkdir --parents "${OUTPUT_DIR}"
 # shellcheck disable=SC2068,SC2086
 /engines/KataGo-custom/cpp/katago match \
   -config /go_attack/configs/match.cfg \
-  -config /go_attack/configs/compute/1gpu.cfg \
+  -config /go_attack/configs/compute/8gpu.cfg \
   -sgf-output-dir "${OUTPUT_DIR}"/sgfs \
   -log-file "${OUTPUT_DIR}"/match-"${ID}".log \
   $GAMES_OVERRIDE $@
