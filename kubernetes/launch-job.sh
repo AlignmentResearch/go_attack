@@ -26,7 +26,7 @@ usage() {
   echo "  -c CURRICULUM, --curriculum CURRICULUM"
   echo "    Path to curriculum json file to use for victimplay."
   echo "  -p, --predictor"
-  echo "    Use EMCTS with a predictor network."
+  echo "    Use AMCTS with a predictor network. (A-MCTS-VM)"
   echo "  --predictor-warmstart-ckpt"
   echo "    Path to checkpoint to use for predictor warmstart."
   echo "  -r, --resume TIMESTAMP"
