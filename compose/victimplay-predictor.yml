@@ -1,4 +1,4 @@
-# Auxiliary Docker compose file which adds services necessary for EMCTS with a predictor model for the victim.
+# Auxiliary Docker compose file which adds services necessary for A-MCTS with a predictor model for the victim.
 # Should be run in combination with compose/victimplay.yml.
 #
 # Launch command (run from repo root):
