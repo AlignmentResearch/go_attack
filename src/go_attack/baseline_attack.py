@@ -343,9 +343,16 @@ def run_baseline_attack(
 
         # Save the game to disk if necessary
         if log_dir:
-            strat_title = adversarial_policy.capitalize()
-            victim_name = "Black" if victim == "B" else "White"
-            sgf = game.to_sgf(f"{strat_title} attack; {victim_name} victim")
+            adv_name = f"adv-baseline-{adversarial_policy}"
+            victim_name = "victim"
+            sgf = game.to_sgf(
+                comment=(
+                    f"{adversarial_policy.capitalize()} attack; "
+                    f"{'Black' if victim == 'B' else 'White'} victim"
+                ),
+                black_name=(victim_name if victim == "B" else adv_name),
+                white_name=(adv_name if victim == "B" else victim_name),
+            )
 
             with open(log_dir / f"game_{i}.sgf", "w") as f:
                 f.write(sgf)
