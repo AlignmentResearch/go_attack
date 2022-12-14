@@ -8,7 +8,10 @@ FROM humancompatibleai/goattack:cpp
 # Install Java
 RUN apt-get update -q \
   && apt-get install -y \
-  openjdk-11-jre-headless 
+  openjdk-11-jre-headless \
+    # Clean up
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # Download and set up KGS bot client
 RUN wget http://files.gokgs.com/javaBin/kgsGtp-3.5.23.zip
