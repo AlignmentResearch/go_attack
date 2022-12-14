@@ -14,21 +14,26 @@ import os
 import re
 import subprocess
 import time
-from collections import namedtuple
 from contextlib import contextmanager
+from dataclasses import dataclass
 from pathlib import Path
-from typing import IO, Any, Dict, Iterable, List, Union
+from typing import IO, Any, Iterable, Mapping, Sequence, Union
 
 import numpy as np
 import yaml
 
-UsageString = namedtuple("UsageString", ["usage_string", "command"])
-UsageString.__doc__ = """\
-A usage string.
 
-Attributes:
-    usage_string: The full usage string.
-    command: The command contained in the usage string."""
+@dataclass
+class UsageString:
+    """A usage string.
+
+    Attributes:
+        usage_string: The full usage string.
+        command: The command contained in the usage string.
+    """
+
+    usage_string: str
+    command: str
 
 
 class Devbox:
@@ -123,6 +128,20 @@ def create_devbox():
         )
 
 
+@contextmanager
+def create_dummy_devbox():
+    """Yields a dummy "Devbox" that just uses the local filesystem."""
+    proc = subprocess.Popen(
+        ["bash"],
+        bufsize=0,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+    )
+    yield Devbox(to_devbox=proc.stdin, from_devbox=proc.stdout)
+    proc.terminate()
+
+
 def get_user() -> str:
     """Gets the name of the user."""
     return getpass.getuser()
@@ -173,8 +192,8 @@ def write_bot(
     bot_name: str,
     num_visits: int,
     bot_algorithm: str,
-    extra_parameters: Iterable[Dict[str, str]] = {},
-):
+    extra_parameters: Iterable[Mapping[str, str]] = {},
+) -> None:
     """Writes bot config parameters to file `f`."""
     f.write(
         f"""\
@@ -190,9 +209,9 @@ searchAlgorithm{bot_index} = {bot_algorithm}
 
 def write_victims(
     f: IO[str],
-    victims: List[Dict[str, Any]],
+    victims: Sequence[Mapping[str, Any]],
     bot_index_offset: int = 0,
-):
+) -> None:
     """Writes victim config parameters to file `f`."""
     secondary_bots = ",".join(
         map(lambda x: str(x + bot_index_offset), range(len(victims))),
@@ -213,9 +232,9 @@ def write_victims(
 
 def write_adversaries(
     f: IO[str],
-    adversaries: List[Dict[str, Any]],
+    adversaries: Sequence[Mapping[str, Any]],
     bot_index_offset: int = 0,
-):
+) -> None:
     """Writes adversary config parameters to file `f`."""
     secondary_bots_2 = ",".join(
         map(lambda x: str(x + bot_index_offset), range(len(adversaries))),
@@ -237,10 +256,10 @@ def write_adversaries(
 
 
 def generate_main_adversary_evaluation(
-    parameters: Dict[str, Any],
+    parameters: Mapping[str, Any],
     config_dir: Path,
     repo_root: Path,
-):
+) -> None:
     """Generates experiment config for main evaluation of adversary."""
     parameters_key = "main_adversary_evaluation"
     if parameters_key not in parameters:
@@ -285,10 +304,11 @@ def generate_main_adversary_evaluation(
 
 
 def generate_training_checkpoint_sweep_evaluation(
-    parameters: Dict[str, Any],
+    parameters: Mapping[str, Any],
     config_dir: Path,
     repo_root: Path,
-):
+    use_local_checkpoints: bool,
+) -> None:
     """Generates experiment config for training checkpoint sweep."""
     parameters_key = "training_checkpoint_sweep"
     if parameters_key not in parameters:
@@ -309,7 +329,8 @@ def generate_training_checkpoint_sweep_evaluation(
     main_checkpoint_path = Path(common_parameters["main_adversary"]["path"])
     checkpoints_path = Path(parameters["checkpoints_path"])
     assert checkpoints_path in main_checkpoint_path.parents
-    with create_devbox() as devbox:
+    create_devbox_fn = create_dummy_devbox if use_local_checkpoints else create_devbox
+    with create_devbox_fn() as devbox:
         num_checkpoints = int(devbox.run(f"ls {checkpoints_path} | wc -l"))
         indices_to_evaluate = np.unique(
             np.linspace(
@@ -338,13 +359,15 @@ def generate_training_checkpoint_sweep_evaluation(
     #   leaving the 20% remaining memory as buffer to account for error in this
     #   estimate.
     checkpoints_per_job = math.floor((16384 * 0.8 - 5942) / 815)
-    num_jobs = math.ceil(len(checkpoints_to_evaluate) / checkpoints_per_job)
     job_commands = []
     job_description = "evaluate several adversary checkpoints throughout training"
-    for i in range(num_jobs):
-        checkpoints_start = i * checkpoints_per_job
+    for checkpoints_start in range(
+        0,
+        len(checkpoints_to_evaluate),
+        checkpoints_per_job,
+    ):
         checkpoints_end = min(
-            (i + 1) * checkpoints_per_job,
+            checkpoints_start + checkpoints_per_job,
             len(checkpoints_to_evaluate),
         )
         job_name = f"checkpoints-{checkpoints_start}-to-{checkpoints_end}"
@@ -375,9 +398,11 @@ def generate_training_checkpoint_sweep_evaluation(
                 adversaries=[
                     {
                         "algorithm": parameters["adversary_algorithm"],
-                        "path": Path(parameters["checkpoints_path"])
-                        / checkpoint
-                        / "model.bin.gz",
+                        "path": (
+                            Path(parameters["checkpoints_path"])
+                            / checkpoint
+                            / "model.bin.gz"
+                        ),
                         "visits": parameters["adversary_visits"],
                     }
                     for checkpoint in job_checkpoints
@@ -390,10 +415,10 @@ def generate_training_checkpoint_sweep_evaluation(
 
 
 def generate_victim_visit_sweep_evaluation(
-    parameters: Dict[str, Any],
+    parameters: Mapping[str, Any],
     config_dir: Path,
     repo_root: Path,
-):
+) -> None:
     """Generates experiment config for sweeping over victim visits."""
     parameters_key = "victim_visit_sweep"
     if parameters_key not in parameters:
@@ -455,10 +480,10 @@ def generate_victim_visit_sweep_evaluation(
 
 
 def generate_adversary_visit_sweep_evaluation(
-    parameters: Dict[str, Any],
+    parameters: Mapping[str, Any],
     config_dir: Path,
     repo_root: Path,
-):
+) -> None:
     """Generates experiment config for sweeping over adversary visits."""
     parameters_key = "adversary_visit_sweep"
     if parameters_key not in parameters:
@@ -524,6 +549,11 @@ def main():
         help="The directory at which to output config files.",
         default=repo_root / "configs" / "generated_evaluations",
     )
+    parser.add_argument(
+        "--use-local-training-checkpoints",
+        action="store_true",
+        help="Fetch training checkpoints via local filesystem, not Hofvarpnir devbox",
+    )
     args = parser.parse_args()
 
     config_dir = args.output_dir
@@ -541,6 +571,7 @@ def main():
         evaluation_parameters,
         config_dir=config_dir,
         repo_root=repo_root,
+        use_local_checkpoints=args.use_local_training_checkpoints,
     )
     generate_victim_visit_sweep_evaluation(
         evaluation_parameters,
