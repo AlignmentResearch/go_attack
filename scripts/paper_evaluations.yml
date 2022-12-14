@@ -1,0 +1,104 @@
+# This file specifies parameters for the evaluation of a trained adversary and
+# is intended to be the input to generate_paper_evaluations.py.
+#
+# All victims listed should be available at /nas/ucb/k8/victims.
+
+# The main adversary we want to evaluate.
+---
+main_adversary:
+  path: "/shared/victimplay\
+    /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models\
+    /t0-s497721856-d125043118/model.bin.gz"
+
+# Experiment: Evaluate `main_adversary` against several victims.
+main_adversary_evaluation:
+  adversary_visits: 600
+  num_games_per_matchup: 1000
+  victims:
+    - name: cp505h-v2048
+      filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
+      visits: 2048
+      extra_parameters:
+        - key: passingBehavior
+          value: avoid-pass-alive-territory
+    - name: cp505h-v1
+      filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
+      visits: 1
+      extra_parameters:
+        - key: passingBehavior
+          value: avoid-pass-alive-territory
+    - name: cp505-v2048
+      filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
+      visits: 2048
+    - name: cp505-v1
+      filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
+      visits: 1
+
+# Experiment: evaluate several adversary checkpoints throughout training.
+training_checkpoint_sweep:
+  # Path to all models from the training run. This must be available on
+  # /nas/ucb/k8/go-attack (written as /shared below).
+  checkpoints_path: "/shared/victimplay\
+    /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models"
+  adversary_algorithm: AMCTS-S
+  adversary_visits: 600
+  # Maximum number of checkpoints to evaluate (not including the main
+  # adversary).
+  num_checkpoints_to_evaluate: 50
+  # How many games to run between a adversary checkpoint and a victim.
+  num_games_per_matchup: 50
+  victims:
+    - name: cp505h-v2048
+      filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
+      visits: 2048
+      extra_parameters:
+        - key: passingBehavior
+          value: avoid-pass-alive-territory
+    - name: cp505h-v1
+      filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
+      visits: 1
+      extra_parameters:
+        - key: passingBehavior
+          value: avoid-pass-alive-territory
+    - name: cp127h-v1
+      filename: kata1-b20c256x2-s5303129600-d1228401921.bin.gz
+      visits: 1
+      extra_parameters:
+        - key: passingBehavior
+          value: avoid-pass-alive-territory
+    - name: cp39h-v1
+      filename: kata1-b6c96-s45189632-d6589032.txt.gz
+      visits: 1
+      extra_parameters:
+        - key: passingBehavior
+          value: avoid-pass-alive-territory
+
+# Experiment: evaluate adversary vs. victim with varying victim visits.
+victim_visit_sweep:
+  adversary_visits: 200
+  num_games_per_matchup: 150
+  victims:
+    - name: cp505h
+      filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
+      extra_parameters:
+        - key: passingBehavior
+          value: avoid-pass-alive-territory
+  # Specify which adversary algorithms to evaluate.
+  adversary_algorithms:
+    - algorithm: AMCTS-S++
+      max_victim_visits: 16384
+    - algorithm: AMCTS-R
+      max_victim_visits: 128
+
+# Experiment: evaluate adversary vs. victim with varying adversary visits.
+adversary_visit_sweep:
+  adversary_algorithm: AMCTS-S
+  num_games_per_matchup: 150
+  max_adversary_visits: 8192
+  victims:
+    - name: cp505h-v2048
+      filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
+      visits: 2048
+      extra_parameters:
+        - key: passingBehavior
+          value: avoid-pass-alive-territory
