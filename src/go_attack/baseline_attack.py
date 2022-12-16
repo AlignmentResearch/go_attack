@@ -351,7 +351,7 @@ def run_baseline_attack(
                     f"{'Black' if victim == 'B' else 'White'} victim"
                 ),
                 black_name=(victim_name if victim == "B" else adv_name),
-                white_name=(adv_name if victim == "B" else victim_name),
+                white_name=(victim_name if victim == "W" else adv_name),
             )
 
             with open(log_dir / f"game_{i}.sgf", "w") as f:
