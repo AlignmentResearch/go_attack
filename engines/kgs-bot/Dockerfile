@@ -21,7 +21,7 @@ RUN wget http://files.gokgs.com/javaBin/kgsGtp-3.5.23.zip \
 # Adversary model: adv505h-s349284096-d87808728.bin.gz
 # From https://drive.google.com/drive/folders/1-bGX-NQOh6MuRPoXJgYHb9-jWRJvviSg
 RUN mkdir /go_attack/adversary_models
-RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate $URL -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1Qktfjfr6YwplF50T-LMXkFK_qG1UXeiy" -O /go_attack/adversary_models/adversary_model.bin.gz && rm -rf /tmp/cookies.txt
+RUN wget "https://docs.google.com/uc?export=download&id=1Qktfjfr6YwplF50T-LMXkFK_qG1UXeiy" -O /go_attack/adversary_models/adversary_model.bin.gz
 
 # Victim model
 RUN mkdir /go_attack/victim_models
