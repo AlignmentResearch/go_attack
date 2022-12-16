@@ -21,6 +21,9 @@ RUN wget http://files.gokgs.com/javaBin/kgsGtp-3.5.23.zip \
 # Adversary model: adv505h-s349284096-d87808728.bin.gz
 # From https://drive.google.com/drive/folders/1-bGX-NQOh6MuRPoXJgYHb9-jWRJvviSg
 RUN mkdir /go_attack/adversary_models
+# Downloading the file directly is working for now, but sometimes Google requires
+# interaction to confirm a download. If this starts breaking, try using workaround at
+# https://stackoverflow.com/a/50573452/14507224
 RUN wget "https://docs.google.com/uc?export=download&id=1Qktfjfr6YwplF50T-LMXkFK_qG1UXeiy" -O /go_attack/adversary_models/adversary_model.bin.gz
 
 # Victim model
