@@ -1,7 +1,7 @@
 # To build, navigate to the *root* of this repo and first run:
 # docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp
 # And then:
-# docker build . -f compose/cpp-kgs/Dockerfile -t humancompatibleai/goattack:cpp-kgs
+# docker build . -f engines/kgs-bot/Dockerfile -t humancompatibleai/goattack:cpp-kgs
 
 FROM humancompatibleai/goattack:cpp
 
@@ -27,3 +27,6 @@ RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=down
 # Victim model
 RUN mkdir /go_attack/victim_models
 RUN wget https://media.katagotraining.org/uploaded/networks/models/kata1/kata1-b40c256-s11840935168-d2898845681.bin.gz -O /go_attack/victim_models/victim_model.bin.gz
+
+WORKDIR /go_attack/engines/kgs-bot/
+ENTRYPOINT ["/usr/bin/java", "-jar", "kgsGtp.jar", "config.txt"]
