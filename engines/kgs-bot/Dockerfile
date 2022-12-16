@@ -6,18 +6,17 @@
 FROM humancompatibleai/goattack:cpp
 
 # Install Java
-RUN apt-get update -q \
-  && apt-get install -y \
-  openjdk-11-jre-headless \
-    # Clean up
+RUN  apt-get update -q \
+  && apt-get install -y openjdk-11-jre-headless \
+  # Clean up \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
 # Download and set up KGS bot client
-RUN wget http://files.gokgs.com/javaBin/kgsGtp-3.5.23.zip
-RUN unzip kgsGtp-3.5.23.zip
-COPY ./engines/kgs-bot/ /go_attack/engines/kgs-bot
-RUN mv ./kgsGtp-3.5.23/kgsGtp.jar /go_attack/engines/kgs-bot/kgsGtp.jar
+RUN wget http://files.gokgs.com/javaBin/kgsGtp-3.5.23.zip \
+ && mkdir -p /go_attack/engines/kgs-bot/ \
+ && unzip -j kgsGtp-3.5.23.zip kgsGtp-3.5.23/kgsGtp.jar -d /go_attack/engines/kgs-bot/ \
+ && rm kgsGtp-3.5.23.zip
 
 # Adversary model: adv505h-s349284096-d87808728.bin.gz
 # From https://drive.google.com/drive/folders/1-bGX-NQOh6MuRPoXJgYHb9-jWRJvviSg
@@ -27,6 +26,9 @@ RUN wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=down
 # Victim model
 RUN mkdir /go_attack/victim_models
 RUN wget https://media.katagotraining.org/uploaded/networks/models/kata1/kata1-b40c256-s11840935168-d2898845681.bin.gz -O /go_attack/victim_models/victim_model.bin.gz
+
+# Run this last so we can update configs and other settings without invalidating cache
+COPY ./engines/kgs-bot/ /go_attack/engines/kgs-bot
 
 WORKDIR /go_attack/engines/kgs-bot/
 ENTRYPOINT ["/usr/bin/java", "-jar", "kgsGtp.jar", "config.txt"]
