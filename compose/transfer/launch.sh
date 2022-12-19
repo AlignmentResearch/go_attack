@@ -194,9 +194,6 @@ if [[ "${VICTIM}" == "leela" ]]; then
   touch -a "${HOST_LEELA_TUNING_FILE}"
 fi
 
-echo "Pruning Docker networks because this script will use a lot of networks:"
-docker network prune
-
 # shellcheck disable=SC2154
 trap 'exit_code=$?; free_resources; exit $exit_code' INT TERM
 
