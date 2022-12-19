@@ -66,8 +66,6 @@ function usage() {
   echo "Optional arguments should be specified before positional arguments."
 }
 
-NUM_POSITIONAL_ARGUMENTS=2
-
 GPUS_STR=${DEFAULT_GPUS_STR}
 export KATAGO_CONFIG=${DEFAULT_KATAGO_CONFIG}
 export KATAGO_MODEL=
@@ -76,7 +74,7 @@ export KOMI=
 NUM_GAMES_TOTAL=${DEFAULT_NUM_GAMES_TOTAL}
 NUM_THREADS=${DEFAULT_NUM_THREADS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
-while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
+while true; do
   case $1 in
     -g|--gpus) GPUS_STR=$2; shift ;;
     -k|--komi) KOMI=$2; shift ;;
@@ -88,12 +86,14 @@ while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
     -n|--num-games) NUM_GAMES_TOTAL=$2; shift ;;
     -t|--num-threads) NUM_THREADS=$2; shift ;;
     -h|--help) usage; exit 0 ;;
-    *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    *) break ;;
   esac
   shift
 done
 
-if [ $# -ne 2 ]; then
+NUM_POSITIONAL_ARGUMENTS=2
+if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
   usage; exit 1
 fi
 
@@ -164,6 +164,9 @@ fi
 # Launching the experiment #
 ############################
 
+docker-compose --file ${SCRIPT_DIR}/compose.yml \
+  --profile ${ATTACKER} --profile ${VICTIM} build
+
 if [[ -z "${HOST_BASE_OUTPUT_DIR}" ]]; then
   HOST_BASE_OUTPUT_DIR=${HOST_REPO_ROOT}/transfer-logs/${EXPERIMENT_NAME}/
   [[ -n "${LABEL}" ]] && HOST_BASE_OUTPUT_DIR+="${LABEL}-"
@@ -175,6 +178,9 @@ if [[ "${VICTIM}" == "leela" ]]; then
   # Make sure $HOST_LEELA_TUNING_FILE exists.
   touch -a ${HOST_LEELA_TUNING_FILE}
 fi
+
+echo "Pruning Docker networks because this script will use a lot of networks:"
+docker network prune
 
 PROJECT_NAME_PREFIX=${EXPERIMENT_NAME}-${LABEL}-thread
 for (( thread_idx = 0; thread_idx < NUM_THREADS; thread_idx++)) ; do
