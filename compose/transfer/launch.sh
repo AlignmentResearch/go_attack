@@ -168,6 +168,18 @@ fi
 # Launching the experiment #
 ############################
 
+function free_resources() {
+  # Wait for games to terminate.
+  # shellcheck disable=SC2046
+  wait $(jobs -p)
+
+  # We need to clean up the networks created by all the many docker-compose calls
+  # or else Docker might later run out of addresses, giving an error:
+  #   ERROR: could not find an available, non-overlapping IPv4 address pool among
+  #   the defaults to assign to the network
+  docker network rm "$(docker network ls | grep "${PROJECT_NAME_PREFIX}" | awk '{print $1;}')"
+}
+
 build_images
 
 if [[ -z "${HOST_BASE_OUTPUT_DIR}" ]]; then
@@ -184,6 +196,9 @@ fi
 
 echo "Pruning Docker networks because this script will use a lot of networks:"
 docker network prune
+
+# shellcheck disable=SC2154
+trap 'exit_code=$?; free_resources; exit $exit_code' INT TERM
 
 PROJECT_NAME_PREFIX=${EXPERIMENT_NAME}-${LABEL}-thread
 for (( thread_idx = 0; thread_idx < NUM_THREADS; thread_idx++)) ; do
@@ -202,11 +217,4 @@ for (( thread_idx = 0; thread_idx < NUM_THREADS; thread_idx++)) ; do
     "${DOCKER_COMPOSE_COMMAND}" --abort-on-container-exit &
 done
 
-# shellcheck disable=SC2046
-wait $(jobs -p)
-
-# We need to clean up the networks created by all the many docker-compose calls
-# or else Docker might later run out of addresses, giving an error:
-#   ERROR: could not find an available, non-overlapping IPv4 address pool among
-#   the defaults to assign to the network
-docker network rm "$(docker network ls | grep "${PROJECT_NAME_PREFIX}" | awk '{print $1;}')"
+free_resources
