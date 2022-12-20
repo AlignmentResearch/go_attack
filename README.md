@@ -35,11 +35,11 @@ The Dockerfiles contain instructions for how to build them individually. This is
 
 ## VSCode
 
-A good option for development is to use the [VS Code Dev Containers](https://code.visualstudio.com/docs/remote/containers) extension with the [Remote - SSH](https://code.visualstudio.com/docs/remote/ssh) extension to connect to a container running on a CHAI server. This allows you to edit and rebuild `katago` easily, without rebuilding the image or editing in the command line.
+A good option for development is to use the [VS Code Dev Containers](https://code.visualstudio.com/docs/remote/containers) extension with the [Remote - SSH](https://code.visualstudio.com/docs/remote/ssh) extension to connect to a container running on a remote server. This allows you to edit and rebuild `katago` easily, without rebuilding the image or editing in the command line.
 
 1. Click on the `><` button in the bottom left of the screen.
 2. Choose `Connect to Host...`
-3. Connect to `vae.ist.berkeley.edu` or another host.
+3. Connect to a host (eg. `vae.ist.berkeley.edu` if you have access to the CHAI cluster).
 4. When the new window opens click `><` again and choose `Open Folder in Container...`
 5. Open `go_attack`
 

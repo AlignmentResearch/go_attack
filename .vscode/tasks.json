@@ -6,10 +6,14 @@
             "type": "shell",
             "command": "${workspaceFolder}/engines/KataGo-custom/cpp/evaluate_loop.sh",
             "args": [
+                "-k",
+                "${workspaceFolder}/build/katago",
+                "--go-attack-root",
+                "/workspace",
+                "--victim-list",
+                "kata1-b20c256x2-s5303129600-d1228401921.bin.gz,kata1-b40c256-s5867950848-d1413392747.bin.gz",
                 "/shared",
                 "/tmp/output",
-                "${workspaceFolder}/build/katago",
-                "/workspace"
             ],
             "problemMatcher": []
         }

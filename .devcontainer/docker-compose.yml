@@ -21,7 +21,6 @@ services:
           devices:
             - capabilities: [ "gpu" ]
               driver: nvidia
-              device_ids: [ "2" ]
     cap_add:
       - SYS_PTRACE # to enable gdb debugging
     security_opt:
