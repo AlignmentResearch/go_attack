@@ -115,11 +115,6 @@ def main():  # noqa: D103
         if args.passing_behavior is None:
             args.passing_behavior = ["standard"]
 
-    # The mirror policy only makes sense when we're attacking black because we need
-    # the victim to play first in order to know where to play next
-    if args.policy == "mirror" and args.victim != "B":
-        raise ValueError("Mirror policy only works when victim == black")
-
     config_path = args.config
     if args.engine == "katago":
         # Try to find the config file automatically
