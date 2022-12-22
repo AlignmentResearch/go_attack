@@ -5,7 +5,8 @@
 ####################
 
 # Exported variables like these are used inside the docker-compose yml file.
-export HOST_REPO_ROOT=$(git rev-parse --show-toplevel)
+HOST_REPO_ROOT=$(git rev-parse --show-toplevel)
+export HOST_REPO_ROOT
 
 DEFAULT_GPUS_STR="all"
 DEFAULT_KATAGO_CONFIG="${HOST_REPO_ROOT}/configs/gtp-amcts.cfg"
@@ -66,7 +67,10 @@ function usage() {
   echo "Optional arguments should be specified before positional arguments."
 }
 
-NUM_POSITIONAL_ARGUMENTS=2
+function build_images() {
+  docker-compose --file "${SCRIPT_DIR}/compose.yml" \
+    --profile "${ATTACKER}" --profile "${VICTIM}" build
+}
 
 GPUS_STR=${DEFAULT_GPUS_STR}
 export KATAGO_CONFIG=${DEFAULT_KATAGO_CONFIG}
@@ -76,7 +80,7 @@ export KOMI=
 NUM_GAMES_TOTAL=${DEFAULT_NUM_GAMES_TOTAL}
 NUM_THREADS=${DEFAULT_NUM_THREADS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
-while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
+while true; do
   case $1 in
     -g|--gpus) GPUS_STR=$2; shift ;;
     -k|--komi) KOMI=$2; shift ;;
@@ -88,12 +92,14 @@ while [[ "$#" -gt ${NUM_POSITIONAL_ARGUMENTS} ]]; do
     -n|--num-games) NUM_GAMES_TOTAL=$2; shift ;;
     -t|--num-threads) NUM_THREADS=$2; shift ;;
     -h|--help) usage; exit 0 ;;
-    *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    *) break ;;
   esac
   shift
 done
 
-if [ $# -ne 2 ]; then
+NUM_POSITIONAL_ARGUMENTS=2
+if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
   usage; exit 1
 fi
 
@@ -106,9 +112,7 @@ export VICTIM=${EXPERIMENT_NAME##*-vs-}
 SCRIPT_DIR=$(dirname -- "$( readlink -f -- "$0"; )";)
 
 if [[ "${DOCKER_COMPOSE_COMMAND}" == "build" ]]; then
-  docker-compose --file ${SCRIPT_DIR}/compose.yml \
-    --profile ${ATTACKER} --profile ${VICTIM} \
-    ${DOCKER_COMPOSE_COMMAND}
+  build_images
   exit 0
 fi
 
@@ -117,11 +121,11 @@ if [[ "${GPUS_STR}" == "all" ]]; then
   NUM_GPUS=$(nvidia-smi --list-gpus | wc -l)
   echo "Number of GPUs detected: ${NUM_GPUS}"
   for (( i = 0; i < NUM_GPUS; i++)) ; do
-    GPUS+=($i)
+    GPUS+=("$i")
   done
 else
   for i in ${GPUS_STR//,/ }; do  # parse comma-separated string
-    GPUS+=($i)
+    GPUS+=("$i")
   done
 fi
 
@@ -151,7 +155,7 @@ if [[ "${ATTACKER}" == "katago" ]]; then
   # Each thread gets an even number of games so that the number of games of
   # KataGo being black and being white are balanced.
   NUM_GAMES_DIVISOR=$((2 * NUM_THREADS))
-  NUM_GAMES_ROUNDED=$((($NUM_GAMES_TOTAL + $NUM_GAMES_DIVISOR - 1) / $NUM_GAMES_DIVISOR * $NUM_GAMES_DIVISOR))
+  NUM_GAMES_ROUNDED=$(((NUM_GAMES_TOTAL + NUM_GAMES_DIVISOR - 1) / NUM_GAMES_DIVISOR * NUM_GAMES_DIVISOR))
   if [[ $NUM_GAMES_TOTAL -ne $NUM_GAMES_ROUNDED  ]]; then
     echo "Warning: To get an equal number of games of KataGo being black and"
     echo "  being white, NUM_GAMES=${NUM_GAMES_TOTAL} is rounded up to the"
@@ -164,8 +168,22 @@ fi
 # Launching the experiment #
 ############################
 
+function free_resources() {
+  # Wait for games to terminate.
+  # shellcheck disable=SC2046
+  wait $(jobs -p)
+
+  # We need to clean up the networks created by all the many docker-compose calls
+  # or else Docker might later run out of addresses, giving an error:
+  #   ERROR: could not find an available, non-overlapping IPv4 address pool among
+  #   the defaults to assign to the network
+  docker network rm "$(docker network ls | grep "${PROJECT_NAME_PREFIX}" | awk '{print $1;}')"
+}
+
+build_images
+
 if [[ -z "${HOST_BASE_OUTPUT_DIR}" ]]; then
-  HOST_BASE_OUTPUT_DIR=${HOST_REPO_ROOT}/transfer-logs/${EXPERIMENT_NAME}/
+  HOST_BASE_OUTPUT_DIR="${HOST_REPO_ROOT}/transfer-logs/${EXPERIMENT_NAME}/"
   [[ -n "${LABEL}" ]] && HOST_BASE_OUTPUT_DIR+="${LABEL}-"
   HOST_BASE_OUTPUT_DIR+=$(date +%Y%m%d-%H%M%S)
 fi
@@ -173,29 +191,27 @@ fi
 if [[ "${VICTIM}" == "leela" ]]; then
   export HOST_LEELA_TUNING_FILE=${HOST_REPO_ROOT}/engines/leela/leelaz_opencl_tuning
   # Make sure $HOST_LEELA_TUNING_FILE exists.
-  touch -a ${HOST_LEELA_TUNING_FILE}
+  touch -a "${HOST_LEELA_TUNING_FILE}"
 fi
+
+# shellcheck disable=SC2154
+trap 'exit_code=$?; free_resources; exit $exit_code' INT TERM
 
 PROJECT_NAME_PREFIX=${EXPERIMENT_NAME}-${LABEL}-thread
 for (( thread_idx = 0; thread_idx < NUM_THREADS; thread_idx++)) ; do
   export HOST_OUTPUT_DIR=${HOST_BASE_OUTPUT_DIR}/thread${thread_idx}
-  mkdir --parents ${HOST_OUTPUT_DIR}
-  export NUM_GAMES=$(($NUM_GAMES_TOTAL / $NUM_THREADS + ($thread_idx < ($NUM_GAMES_TOTAL % $NUM_THREADS))))
+  mkdir --parents "${HOST_OUTPUT_DIR}"
+  export NUM_GAMES=$((NUM_GAMES_TOTAL / NUM_THREADS + (thread_idx < (NUM_GAMES_TOTAL % NUM_THREADS))))
   GPU_LEN=${#GPUS[@]}
   export GPU=${GPUS[(($thread_idx % $GPU_LEN))]}
   # We don't want multiple threads racing to write to shared files.
-  export ARE_SHARED_FILES_READ_ONLY=$([[ $thread_idx -eq "0" ]] && echo "false" || echo "true")
+  ARE_SHARED_FILES_READ_ONLY=$([[ $thread_idx -eq "0" ]] && echo "false" || echo "true")
+  export ARE_SHARED_FILES_READ_ONLY
 
-  docker-compose --file ${SCRIPT_DIR}/compose.yml \
-    --profile ${ATTACKER} --profile ${VICTIM} \
-    --project-name ${PROJECT_NAME_PREFIX}${thread_idx} \
-    ${DOCKER_COMPOSE_COMMAND} --abort-on-container-exit &
+  docker-compose --file "${SCRIPT_DIR}"/compose.yml \
+    --profile "${ATTACKER}" --profile "${VICTIM}" \
+    --project-name "${PROJECT_NAME_PREFIX}${thread_idx}" \
+    "${DOCKER_COMPOSE_COMMAND}" --abort-on-container-exit &
 done
 
-wait $(jobs -p)
-
-# We need to clean up the networks created by all the many docker-compose calls
-# or else Docker might later run out of addresses, giving an error:
-#   ERROR: could not find an available, non-overlapping IPv4 address pool among
-#   the defaults to assign to the network
-docker network rm $(docker network ls | grep "${PROJECT_NAME_PREFIX}" | awk '{print $1;}')
+free_resources
