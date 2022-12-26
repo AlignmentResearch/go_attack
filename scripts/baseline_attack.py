@@ -109,6 +109,12 @@ def main():  # noqa: D103
         help="The color the victim plays as (black or white)",
         nargs="+",
     )
+    parser.add_argument(
+        "--parallel-runs-per-gpu",
+        type=int,
+        default=5,
+        help="The number of parallel jobs expected to be scheduled per GPU.",
+    )
     args = parser.parse_args()
     if args.engine == "katago":
         if args.num_visits is None:
@@ -200,7 +206,7 @@ def main():  # noqa: D103
         num_devices = min(len(configs), nvmlDeviceGetCount())
         print(f"Using {num_devices} GPU devices")
 
-        with Pool(60) as p:
+        with Pool(args.parallel_runs_per_gpu * num_devices) as p:
             baseline_fn = partial(baseline_fn, progress_bar=False)
             configs = [(*config, i % num_devices) for i, config in enumerate(configs)]
             p.starmap(baseline_fn, configs)
