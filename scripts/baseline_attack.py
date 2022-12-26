@@ -113,7 +113,7 @@ def main():  # noqa: D103
         "--parallel-runs-per-gpu",
         type=int,
         default=5,
-        help="The number of parallel jobs expected to be scheduled per GPU.",
+        help="Number of parallel jobs to run per GPU",
     )
     args = parser.parse_args()
     if args.engine == "katago":
