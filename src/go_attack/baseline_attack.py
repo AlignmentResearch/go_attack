@@ -78,7 +78,7 @@ def start_engine(
             "-model",
             str(model_path),
             "-override-config",
-            f"passingBehavior={passing_behavior},maxVisits={num_visits}",
+            f"passingBehavior={passing_behavior},maxVisits0={num_visits}",
             "-config",
             str(config_path),
         ]
@@ -115,6 +115,7 @@ def make_log_dir(
     model_path: Optional[Path],
     num_visits: Optional[int],
     passing_behavior: Optional[str],
+    victim_color: Literal["B", "W"],
 ) -> Path:
     """Make a log directory and return the Path to it."""
     desc_list = []
@@ -125,6 +126,7 @@ def make_log_dir(
         desc_list.append(f"visits={num_visits}")
     if passing_behavior is not None:
         desc_list.append(f"pass={passing_behavior}")
+    desc_list.append(f"victim={victim_color}")
     desc = "_".join(desc_list)
 
     log_dir = log_root / desc
@@ -249,6 +251,7 @@ def run_baseline_attack(
     model_path: Optional[Path] = None,
     num_visits: Optional[int] = None,
     passing_behavior: Optional[str] = None,
+    victim: Literal["B", "W"] = "B",
     gpu: Optional[int] = None,
     *,
     allow_suicide: bool = False,
@@ -264,7 +267,6 @@ def run_baseline_attack(
     progress_bar: bool = True,
     seed: int = 42,
     verbose: bool = False,
-    victim: Literal["B", "W"] = "B",
 ) -> Sequence[Game]:
     """Run a baseline attack."""
     if adversarial_policy not in POLICIES:
@@ -292,6 +294,7 @@ def run_baseline_attack(
             model_path,
             num_visits,
             passing_behavior,
+            victim,
         )
 
     def make_policy() -> AdversarialPolicy:

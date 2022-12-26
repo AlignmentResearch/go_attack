@@ -102,11 +102,12 @@ def main():  # noqa: D103
         help="Output every move",
     )
     parser.add_argument(
-        "--victim",
+        "--victim-color",
         type=str,
         choices=("B", "W"),
-        default="B",
+        default=["B"],
         help="The color the victim plays as (black or white)",
+        nargs="+",
     )
     args = parser.parse_args()
     if args.engine == "katago":
@@ -169,11 +170,16 @@ def main():  # noqa: D103
         num_games=args.num_games,
         seed=args.seed,
         verbose=args.verbose,
-        victim=args.victim,
     )
 
     configs = list(
-        product(args.policy, model_paths, args.num_visits, args.passing_behavior)
+        product(
+            args.policy,
+            model_paths,
+            args.num_visits,
+            args.passing_behavior,
+            args.victim_color,
+        )
         if args.engine == "katago"
         else product(args.policy),
     )
@@ -194,7 +200,7 @@ def main():  # noqa: D103
         num_devices = min(len(configs), nvmlDeviceGetCount())
         print(f"Using {num_devices} GPU devices")
 
-        with Pool(2 * num_devices) as p:
+        with Pool(60) as p:
             baseline_fn = partial(baseline_fn, progress_bar=False)
             configs = [(*config, i % num_devices) for i, config in enumerate(configs)]
             p.starmap(baseline_fn, configs)
