@@ -108,7 +108,7 @@ class MirrorPolicy(BasicPolicy):
 
         past_moves = self.game.moves
         if past_moves:
-            % mirror opponent move
+            # Mirror the opponent's move.
             assert self.game.current_player() == self.color
             opponent = past_moves[-1]
             if opponent is None:  # opponent passed, play randomly
@@ -118,9 +118,9 @@ class MirrorPolicy(BasicPolicy):
             tgt = mirror_move(opponent, self.game.board_size)
             return min(legal_moves, key=lambda m: l1_distance(m, tgt))
         else:
-            % no past moves so mirror is playing first move as black. Play in the center
+            # Mirror is playing first move as black. Play in the center.
             size = self.game.board_size
-            center = np.array([size // 2, size // 2])
+            center = Move(size // 2, size // 2)
             return center
 
 
