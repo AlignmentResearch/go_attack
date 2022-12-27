@@ -25,6 +25,8 @@ usage() {
   echo "    default: twice the minimum number of GPUs."
   echo "  -c CURRICULUM, --curriculum CURRICULUM"
   echo "    Path to curriculum json file to use for victimplay."
+  echo "  --gatekeeper"
+  echo "    Enable gatekeeping."
   echo "  -p, --predictor"
   echo "    Use AMCTS with a predictor network. (A-MCTS-VM)"
   echo "  --predictor-warmstart-ckpt"
@@ -51,6 +53,7 @@ while true; do
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
     -c|--curriculum) CURRICULUM=$2; shift ;;
     -p|--predictor) USE_PREDICTOR=1 ;;
+    --gatekeeper) USE_GATEKEEPER=1 ;;
     --predictor-warmstart-ckpt) PREDICTOR_WARMSTART_CKPT=$2; shift ;;
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
@@ -109,12 +112,23 @@ ctl job run --container \
     --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME $PREDICTOR_DIR" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
+    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME ${USE_GATEKEEPER:-0}" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
+
+if [ -n "$USE_GATEKEEPER" ]; then
+  ctl job run --container \
+      "$CPP_IMAGE" \
+      $VOLUME_FLAGS \
+      --command "/go_attack/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
+      --high-priority \
+      --gpu 1 \
+      --name go-train-"$1"-gate \
+      --replicas 1
+fi
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
