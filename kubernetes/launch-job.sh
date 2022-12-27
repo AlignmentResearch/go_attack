@@ -5,6 +5,7 @@
 # Argument parsing #
 ####################
 
+DEFAULT_CURRICULUM="/go_attack/configs/curriculum.json"
 DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
@@ -25,6 +26,7 @@ usage() {
   echo "    default: twice the minimum number of GPUs."
   echo "  -c CURRICULUM, --curriculum CURRICULUM"
   echo "    Path to curriculum json file to use for victimplay."
+  echo "    default: ${DEFAULT_CURRICULUM}"
   echo "  -p, --predictor"
   echo "    Use AMCTS with a predictor network. (A-MCTS-VM)"
   echo "  --predictor-warmstart-ckpt"
@@ -42,6 +44,7 @@ usage() {
   echo "Optional arguments should be specified before positional arguments."
 }
 
+CURRICULUM=${DEFAULT_CURRICULUM}
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while [ -n "${1-}" ]; do
@@ -79,7 +82,7 @@ VOLUME_NAME="shared"
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images "cpp python"
 
-if [ -n "${USE_PREDICTOR}" ]; then
+if [ -n "${USE_PREDICTOR:-}" ]; then
   PREDICTOR_FLAG="-p $RUN_NAME/predictor"
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay-predictor.sh"
 
