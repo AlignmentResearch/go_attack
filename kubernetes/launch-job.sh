@@ -99,7 +99,7 @@ else
 fi
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
-ctl job run --container \
+~/sleipnir/ctl/ctl/ctl.py job run --container \
     "$CPP_IMAGE" \
     "$CPP_IMAGE" \
     "$PYTHON_IMAGE" \
@@ -111,6 +111,7 @@ ctl job run --container \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
+    --shared-host-dir-slow-tolerant \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
