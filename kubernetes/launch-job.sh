@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090,SC2016,SC2034,SC2068
 
 ####################
@@ -44,7 +44,7 @@ usage() {
 
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
-while true; do
+while [ -n "${1-}" ]; do
   case $1 in
     -h|--help) usage; exit 0 ;;
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
@@ -94,6 +94,7 @@ if [ -n "${USE_PREDICTOR}" ]; then
       --gpu 0 1 \
       --name go-training-"$1"-predictor
 else
+  PREDICTOR_FLAG=""
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
 fi
 
