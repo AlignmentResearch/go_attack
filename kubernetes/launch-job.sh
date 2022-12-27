@@ -9,7 +9,7 @@ DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
-  echo "          [--curriculum CURRICULUM] [--predictor] [--predictor-warmstart-ckpt]"
+  echo "          [--curriculum CURRICULUM] [--gating] [--predictor] [--predictor-warmstart-ckpt]"
   echo "          [--resume TIMESTAMP] [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
@@ -25,7 +25,7 @@ usage() {
   echo "    default: twice the minimum number of GPUs."
   echo "  -c CURRICULUM, --curriculum CURRICULUM"
   echo "    Path to curriculum json file to use for victimplay."
-  echo "  --gatekeeper"
+  echo "  --gating"
   echo "    Enable gatekeeping."
   echo "  -p, --predictor"
   echo "    Use AMCTS with a predictor network. (A-MCTS-VM)"
@@ -45,6 +45,7 @@ usage() {
 }
 
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
+USE_GATING=0
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while true; do
   case $1 in
@@ -53,7 +54,7 @@ while true; do
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
     -c|--curriculum) CURRICULUM=$2; shift ;;
     -p|--predictor) USE_PREDICTOR=1 ;;
-    --gatekeeper) USE_GATEKEEPER=1 ;;
+    --gating) USE_GATING=1 ;;
     --predictor-warmstart-ckpt) PREDICTOR_WARMSTART_CKPT=$2; shift ;;
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
@@ -112,14 +113,14 @@ ctl job run --container \
     --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME $PREDICTOR_DIR" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME ${USE_GATEKEEPER:-0}" \
+    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME ${USE_GATING}" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
-if [ -n "$USE_GATEKEEPER" ]; then
+if [ -n "$USE_GATING" ]; then
   ctl job run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
