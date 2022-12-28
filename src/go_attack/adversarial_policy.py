@@ -107,15 +107,21 @@ class MirrorPolicy(BasicPolicy):
             return None
 
         past_moves = self.game.moves
-        assert past_moves, "MirrorPolicy cannot play first move"
-        assert self.game.current_player() == self.color
-        opponent = past_moves[-1]
-        if opponent is None:  # opponent passed, play randomly
-            return random.choice(legal_moves)
+        if past_moves:
+            # Mirror the opponent's move.
+            assert self.game.current_player() == self.color
+            opponent = past_moves[-1]
+            if opponent is None:  # opponent passed, play randomly
+                return random.choice(legal_moves)
 
-        # Return the closest legal move to the mirror position
-        tgt = mirror_move(opponent, self.game.board_size)
-        return min(legal_moves, key=lambda m: l1_distance(m, tgt))
+            # Return the closest legal move to the mirror position
+            tgt = mirror_move(opponent, self.game.board_size)
+            return min(legal_moves, key=lambda m: l1_distance(m, tgt))
+        else:
+            # Mirror is playing first move as black. Play in the center.
+            size = self.game.board_size
+            center = Move(size // 2, size // 2)
+            return center
 
 
 class PassingPolicy(BasicPolicy):
