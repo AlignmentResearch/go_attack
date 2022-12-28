@@ -9,8 +9,8 @@ mkdir -p "$TRAINING_DIR"
   -config /go_attack/configs/amcts/gatekeeper.cfg \
   -config /go_attack/configs/compute/1gpu.cfg \
   -accepted-models-dir "$TRAINING_DIR/models"  \
-  -rejected-models-dir "$TRAINING_DIR/rejected-models" \
+  -rejected-models-dir "$TRAINING_DIR/models_rejected" \
   -test-models-dir "$TRAINING_DIR/modelstobetested" \
   -victim-models-dir "$TRAINING_DIR/victims" \
-  -sgf-output-dir "$TRAINING_DIR/gatekeeper-sgfs"  \
+  -sgf-output-dir "$TRAINING_DIR/gatekeeper_sgfs"  \
   -selfplay-dir "$TRAINING_DIR/selfplay"
