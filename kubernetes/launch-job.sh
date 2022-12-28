@@ -116,7 +116,7 @@ fi
     --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME ${USE_GATING}" \
+    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME $USE_GATING" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --shared-host-dir-slow-tolerant \
     --high-priority \
@@ -124,7 +124,7 @@ fi
     --name go-train-"$1"-vital \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
-if [ -n "$USE_GATING" ]; then
+if [ "$USE_GATING" -eq 1 ]; then
   ~/sleipnir/ctl/ctl/ctl.py job run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
