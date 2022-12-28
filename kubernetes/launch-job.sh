@@ -1,10 +1,11 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090,SC2016,SC2034,SC2068
 
 ####################
 # Argument parsing #
 ####################
 
+DEFAULT_CURRICULUM="/go_attack/configs/curriculum.json"
 DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
@@ -25,6 +26,7 @@ usage() {
   echo "    default: twice the minimum number of GPUs."
   echo "  -c CURRICULUM, --curriculum CURRICULUM"
   echo "    Path to curriculum json file to use for victimplay."
+  echo "    default: ${DEFAULT_CURRICULUM}"
   echo "  --gating"
   echo "    Enable gatekeeping."
   echo "  -p, --predictor"
@@ -44,10 +46,11 @@ usage() {
   echo "Optional arguments should be specified before positional arguments."
 }
 
+CURRICULUM=${DEFAULT_CURRICULUM}
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
 USE_GATING=0
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
-while true; do
+while [ -n "${1-}" ]; do
   case $1 in
     -h|--help) usage; exit 0 ;;
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
@@ -83,8 +86,8 @@ VOLUME_NAME="shared"
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images "cpp python"
 
-if [ -n "${USE_PREDICTOR}" ]; then
-  PREDICTOR_DIR="$RUN_NAME/predictor"
+if [ -n "${USE_PREDICTOR:-}" ]; then
+  PREDICTOR_FLAG="-p $RUN_NAME/predictor"
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay-predictor.sh"
 
   # shellcheck disable=SC2215,SC2086,SC2089,SC2090
@@ -98,7 +101,7 @@ if [ -n "${USE_PREDICTOR}" ]; then
       --gpu 0 1 \
       --name go-training-"$1"-predictor
 else
-  PREDICTOR_DIR=""
+  PREDICTOR_FLAG=""
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
 fi
 
@@ -111,7 +114,7 @@ fi
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
     --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
-    "/engines/KataGo-custom/cpp/evaluate_loop.sh /$VOLUME_NAME/victimplay/$RUN_NAME $PREDICTOR_DIR" \
+    "/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME ${USE_GATING}" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
