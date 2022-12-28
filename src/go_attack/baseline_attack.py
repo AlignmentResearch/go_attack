@@ -115,7 +115,7 @@ def make_log_dir(
     model_path: Optional[Path],
     num_visits: Optional[int],
     passing_behavior: Optional[str],
-    victim_color: Literal["B", "W"],
+    victim_color_str: Literal["B", "W"],
 ) -> Path:
     """Make a log directory and return the Path to it."""
     desc_list = []
@@ -126,7 +126,7 @@ def make_log_dir(
         desc_list.append(f"visits={num_visits}")
     if passing_behavior is not None:
         desc_list.append(f"pass={passing_behavior}")
-    desc_list.append(f"victim={victim_color}")
+    desc_list.append(f"victim={victim_color_str}")
     desc = "_".join(desc_list)
 
     log_dir = log_root / desc
@@ -251,7 +251,7 @@ def run_baseline_attack(
     model_path: Optional[Path] = None,
     num_visits: Optional[int] = None,
     passing_behavior: Optional[str] = None,
-    victim: Literal["B", "W"] = "B",
+    victim_color_str: Literal["B", "W"] = "B",
     gpu: Optional[int] = None,
     *,
     allow_suicide: bool = False,
@@ -294,7 +294,7 @@ def run_baseline_attack(
             model_path,
             num_visits,
             passing_behavior,
-            victim,
+            victim_color_str,
         )
 
     def make_policy() -> AdversarialPolicy:
@@ -319,7 +319,7 @@ def run_baseline_attack(
 
     random.seed(seed)
     policy_cls = POLICIES[adversarial_policy]
-    victim_color = Color.from_str(victim)
+    victim_color = Color.from_str(victim_color_str)
 
     game_iter = range(num_games)
     if not verbose and progress_bar:
@@ -351,10 +351,10 @@ def run_baseline_attack(
             sgf = game.to_sgf(
                 comment=(
                     f"{adversarial_policy.capitalize()} attack; "
-                    f"{'Black' if victim == 'B' else 'White'} victim"
+                    f"{'Black' if victim_color_str == 'B' else 'White'} victim"
                 ),
-                black_name=(victim_name if victim == "B" else adv_name),
-                white_name=(victim_name if victim == "W" else adv_name),
+                black_name=(victim_name if victim_color_str == "B" else adv_name),
+                white_name=(victim_name if victim_color_str == "W" else adv_name),
             )
 
             with open(log_dir / f"game_{i}.sgf", "w") as f:
