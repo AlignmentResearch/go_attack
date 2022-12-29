@@ -8,7 +8,9 @@ Developer notes on parsing match log:
 * The numbers '1', '2', '3' are displayed to the right of the most recent 3
   moves, with '3' being next to the most recent move assuming there have been at
   least three moves. If MoveNum < 3, then MoveNum is displayed to the right of
-  the most recent move. If a number is missing, then that move was a pass.
+  the most recent move. If a number is missing, then either that move was a
+  pass, or the move was played several times in the last 3 moves (lower number
+  takes priority).
 
 Assumptions:
 * Games are all on 19x19 boards.
@@ -47,6 +49,9 @@ class BoardInfo:
     # Which move it is.
     move_num: int
     # The past <= 3 moves, with move_history[-1] being the most recent.
+    # Due to how move_history is parsed from a board state string, an entry of
+    # None in move_history is ambiguous. It may either indicate a pass, or it
+    # may indicate a duplicate of an earlier move in move_history.
     move_history: List[Optional[go.Move]]
     # The next move, to be played on move `move_num + 1`.
     proposed_move: Optional[go.Move]
@@ -85,6 +90,13 @@ def split_iterator(
         chunk.append(x)
     if len(chunk) > 0:
         yield chunk
+
+
+def get_first_match(pattern: str, string: str) -> str:
+    """Returns first match in the string matching the pattern."""
+    result = re.search(pattern, string)
+    assert result is not None
+    return result.group(1)
 
 
 def parse_board_info(board_str: Sequence[str]) -> BoardInfo:
@@ -130,8 +142,8 @@ C1  : T  47.38c W  58.69c S  -2.83c (+35.7 L -144.8) LCB   -0.53c P  8.21% WF  1
 A4  : T  44.52c W  52.68c S  -5.04c (+20.2 L -147.8) LCB  -10.80c P  3.29% WF  12.5 PSV       3 N      36  --  A4 T14 C4 T16 T13 T15 C1 G6
 B1  : T  13.72c W  28.48c S  -9.66c ( -8.4 L -149.1) LCB -3356.75c P  7.87% WF   1.8 PSV       2 N       6  --  B1 T14 C1 C4
     """
-    move_num = int(re.search(r"MoveNum: (\d+)", board_str[0]).groups(1)[0])
-    visits = int(re.search(r"Root visits: (\d+)", board_str[24]).groups(1)[0])
+    move_num = int(get_first_match(r"MoveNum: (\d+)", board_str[0]))
+    visits = int(get_first_match(r"Root visits: (\d+)", board_str[24]))
     black_player = (
         "adv"
         if (move_num % 2 == 0) == (abs(visits - ADVERSARY_VISITS) <= 1)
@@ -185,14 +197,24 @@ def check_board_matches_game(
     next_board: BoardInfo,
 ):
     """Returns true if `next_board` is a valid next board for (game, last_board)."""
+    # TODO(tomtseng): rm verbose, it's only for debugging
     if last_board.move_num + 1 != next_board.move_num:
         return False
     if last_board.black_player != next_board.black_player:
         return False
-    if (last_board.move_history + [last_board.proposed_move])[
-        -len(next_board.move_history) :
-    ] != next_board.move_history:
+
+    history_len = len(next_board.move_history)
+    expected_next_history = last_board.move_history + [last_board.proposed_move]
+    expected_next_history = expected_next_history[-history_len:]
+    # None in the move history may indicate a "duplicate" move, not a pass. To
+    # be conservative, we don't check None indices.
+    for i in range(history_len):
+        if expected_next_history[i] is None or next_board.move_history[i] is None:
+            expected_next_history[i] = None
+            next_board.move_history[i] = None
+    if expected_next_history != next_board.move_history:
         return False
+
     if last_board.proposed_move is None:
         if not np.array_equal(last_board.board, next_board.board):
             return False
@@ -201,6 +223,7 @@ def check_board_matches_game(
         next_board.board,
     ):
         return False
+
     return True
 
 
@@ -231,7 +254,7 @@ def main() -> None:
                 continue
             if i % 100 == 0:
                 print(f"Parsing board state {i}...")
-            board = parse_board_info(board_str)
+            board = parse_board_info(list(board_str))
 
             unfinished_game_index = None
             for j, game in enumerate(unfinished_games):
@@ -243,17 +266,20 @@ def main() -> None:
                 unfinished_games.append(GameAndBoardInfo(go.Game(BOARD_SIZE), board))
             elif board.is_finished:
                 unfinished_games.pop(j)
+                num_finished_games += 1
             else:
-                unfinished_games[j].game.play_move(board.move_history[-1])
+                unfinished_games[j].game.play_move(
+                    unfinished_games[j].board.proposed_move,
+                )
                 unfinished_games[j].board = board
 
     total_num_games = len(unfinished_games) + num_finished_games
     print(f"Unfinished games: {len(unfinished_games)}/{total_num_games}")
 
     args.output_dir.mkdir(exist_ok=True, parents=True)
-    for i, (game, board) in enumerate(unfinished_games):
-        with open(args.output_dir / f"game{i}.sgf", "w"):
-            f.write(game.to_sgf(black_name=board.black_player))
+    for i, game in enumerate(unfinished_games):
+        with open(args.output_dir / f"game{i}.sgf", "w") as f:
+            f.write(game.game.to_sgf(black_name=game.board.black_player))
 
 
 if __name__ == "__main__":
