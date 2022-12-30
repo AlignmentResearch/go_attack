@@ -149,6 +149,20 @@ services:
         2>&1 | tee --append /outputs/katago-raw.log
       "
 
+  katago-custom:
+    <<: *katago
+    profiles:
+      - katago-custom
+    command: >
+      sh -c "
+        socat TCP4-LISTEN:80,reuseaddr \
+        EXEC:\"/engines/KataGo-custom/cpp/katago gtp \
+          -config ${HOST_REPO_ROOT}/configs/gtp-custom.cfg \
+          -model /victim-model/${KATAGO_VICTIM_MODEL} \
+          \" \
+        2>&1 | tee --append /outputs/katago-custom.log
+      "
+
   twogtp:
     profiles:
       - katago
@@ -163,12 +177,16 @@ services:
       - type: bind
         source: ${HOST_OUTPUT_DIR}
         target: /outputs
+      - type: bind
+        source: ${OPENINGS}
+        target: /openings
     command:
       sh -c "
         mkdir --parents /outputs/sgfs &&
         bin/gogui-twogtp
-          -black 'nc ${VICTIM} 80' -white 'nc katago 80'
+          -${KATAGO_VICTIM_COLOR} 'nc ${VICTIM} 80' -${KATAGO_ADV_COLOR} 'nc katago 80'
           -alternate -auto -games ${NUM_GAMES} -komi ${KOMI} -maxmoves 1600
+          -openings /openings
           -sgffile /outputs/sgfs/game -verbose
         2>&1 | tee --append /outputs/twogtp.log
       "

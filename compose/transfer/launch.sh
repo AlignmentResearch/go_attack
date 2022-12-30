@@ -41,6 +41,11 @@ function usage() {
   echo "  --katago-victim-model MODEL"
   echo "              Victim model for KataGo to use in A-MCTS."
   echo "              Only used by katago-vs-* experiments."
+  echo "  --katago-adv-color COLOR"
+  echo "              Which color the adversary should be in the 1st game."
+  echo "  --openings OPENING_DIR"
+  echo "              Directory of SGFs that will be sampled to initialize "
+  echo "              games. (See docs for gogui-twogtp's -openings flag.)"
   echo "  -l LABEL, --label LABEL"
   echo "              Label attached to the output directory and docker-compose"
   echo "              project-name. If you are running multiple instances of"
@@ -60,7 +65,7 @@ function usage() {
   echo "positional arguments:"
   echo "  EXPERIMENT  Which experiment to run."
   echo "              values: {baseline-attack-vs-elf, baseline-attack-vs-leela,"
-  echo "                       katago-vs-elf, katago-vs-leela, katago-vs-katago-raw}"
+  echo "                       katago-vs-elf,katago-vs-leela,katago-vs-katago-raw,katago-vs-katago-custom}"
   echo "  COMMAND     docker-compose command to run."
   echo "              values: {build, up}"
   echo
@@ -76,7 +81,9 @@ GPUS_STR=${DEFAULT_GPUS_STR}
 export KATAGO_CONFIG=${DEFAULT_KATAGO_CONFIG}
 export KATAGO_MODEL=
 export KATAGO_VICTIM_MODEL=
+export KATAGO_ADV_COLOR="white"
 export KOMI=
+export OPENINGS=
 NUM_GAMES_TOTAL=${DEFAULT_NUM_GAMES_TOTAL}
 NUM_THREADS=${DEFAULT_NUM_THREADS}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
@@ -87,6 +94,8 @@ while true; do
     --katago-config) KATAGO_CONFIG=$2; shift ;;
     --katago-model) KATAGO_MODEL=$2; shift ;;
     --katago-victim-model) KATAGO_VICTIM_MODEL=$2; shift ;;
+    --katago-adv-color) KATAGO_ADV_COLOR=$2; shift ;;
+    --openings) OPENINGS=$2; shift ;;
     -l|--label) LABEL=$2; shift ;;
     -o|--output-dir) HOST_BASE_OUTPUT_DIR=$2; shift ;;
     -n|--num-games) NUM_GAMES_TOTAL=$2; shift ;;
@@ -151,17 +160,14 @@ if [[ "${ATTACKER}" == "katago" ]]; then
     echo "KataGo victim model does not exist: ${KATAGO_VICTIM_MODEL}"
     exit 1
   fi
+fi
 
-  # Each thread gets an even number of games so that the number of games of
-  # KataGo being black and being white are balanced.
-  NUM_GAMES_DIVISOR=$((2 * NUM_THREADS))
-  NUM_GAMES_ROUNDED=$(((NUM_GAMES_TOTAL + NUM_GAMES_DIVISOR - 1) / NUM_GAMES_DIVISOR * NUM_GAMES_DIVISOR))
-  if [[ $NUM_GAMES_TOTAL -ne $NUM_GAMES_ROUNDED  ]]; then
-    echo "Warning: To get an equal number of games of KataGo being black and"
-    echo "  being white, NUM_GAMES=${NUM_GAMES_TOTAL} is rounded up to the"
-    echo "  nearest multiple of (2*NUM_THREADS)=${NUM_GAMES_DIVISOR}: ${NUM_GAMES_ROUNDED}"
-    NUM_GAMES_TOTAL=NUM_GAMES_ROUNDED
-  fi
+if [[ "${KATAGO_ADV_COLOR}" == "white" ]] ; then
+  export KATAGO_VICTIM_COLOR="black"
+elif [[ "${KATAGO_ADV_COLOR}" == "black" ]] ; then
+  export KATAGO_VICTIM_COLOR="white"
+else
+  echo "Invalid KATAGO_ADV_COLOR, expected 'black' or 'white': ${KATAGO_ADV_COLOR}"
 fi
 
 ############################
@@ -193,6 +199,7 @@ if [[ "${VICTIM}" == "leela" ]]; then
   # Make sure $HOST_LEELA_TUNING_FILE exists.
   touch -a "${HOST_LEELA_TUNING_FILE}"
 fi
+
 
 # shellcheck disable=SC2154
 trap 'exit_code=$?; free_resources; exit $exit_code' INT TERM
