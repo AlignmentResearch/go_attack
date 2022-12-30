@@ -155,7 +155,7 @@ B1  : T  13.72c W  28.48c S  -9.66c ( -8.4 L -149.1) LCB -3356.75c P  7.87% WF  
     move_history = [None for _ in range(min(3, move_num))]
     proposed_move = None
     for y in range(BOARD_SIZE):
-        line = board_str[20 - y]
+        line = board_str[2 + y]
         for x in range(BOARD_SIZE):
             square = line[3 + 2 * x]
             if square == "X":
@@ -263,7 +263,7 @@ def main() -> None:
                     break
             if unfinished_game_index is None:
                 assert board.move_num == 0
-                unfinished_games.append(GameAndBoardInfo(go.Game(BOARD_SIZE), board))
+                unfinished_games.append(GameAndBoardInfo(go.Game(BOARD_SIZE, komi=6.5), board))
             elif board.is_finished:
                 unfinished_games.pop(j)
                 num_finished_games += 1
