@@ -98,7 +98,7 @@ else
 fi
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
-ctl job run --container \
+~/sleipnir/ctl/ctl/ctl.py job run --container \
     "$CPP_IMAGE" \
     "$CPP_IMAGE" \
     "$PYTHON_IMAGE" \
@@ -113,16 +113,18 @@ ctl job run --container \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
+    --shared-host-dir-slow-tolerant \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
   # shellcheck disable=SC2086
-  ctl job run --container \
+  ~/sleipnir/ctl/ctl/ctl.py job run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
       --gpu 1 \
       --name go-train-"$1"-extra \
+      --shared-host-dir-slow-tolerant \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
 fi
