@@ -2,6 +2,7 @@
 cd /engines/KataGo-custom/python
 RUN_NAME="$1"
 VOLUME_NAME="$2"
+LR_SCALE="$3"
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 
 # INITIAL_WEIGHTS="b6c96-s175395328-d26788732" # cp63
@@ -38,4 +39,4 @@ if [ -n "$INITIAL_MODEL" ] && [ ! -f "$EXPERIMENT_DIR"/done-copying-initial-mode
     touch "$EXPERIMENT_DIR"/done-copying-initial-model
 fi
 
-./selfplay/train.sh    /"$VOLUME_NAME"/victimplay/"$RUN_NAME"    t0    b40c256    256    main    -disable-vtimeloss    -lr-scale 0.05    -max-train-bucket-per-new-data 4
+./selfplay/train.sh    /"$VOLUME_NAME"/victimplay/"$RUN_NAME"    t0    b40c256 256    main    -disable-vtimeloss    -lr-scale "$LR_SCALE"   -max-train-bucket-per-new-data 4
