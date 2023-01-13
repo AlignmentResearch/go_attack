@@ -21,6 +21,7 @@ echo "$TWOGTP_IMG"
 #   /go_attack/kubernetes/gtp-eval.sh
 #   /shared/eval/$RUN_NAME" \
 #   --high-priority \
+#   --shared-host-dir-slow-tolerant \
 #   --gpu "$NUM_GPUS" \
 #   --name "go-gtp-$PREFIX" \
 #   --replicas 1
