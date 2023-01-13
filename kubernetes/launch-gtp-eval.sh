@@ -1,5 +1,6 @@
 #!/bin/bash
 
+export USE_WEKA=1
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 
 cd ~/go_attack || exit
@@ -15,14 +16,13 @@ NUM_CPUS=224
 PREFIX=ttseng-v10mil
 RUN_NAME="$PREFIX-$(date +%Y%m%d-%H%M%S)"
 
-~/sleipnir/ctl/ctl/ctl.py job run --container \
+ctl job run --container \
   "$TWOGTP_IMG" \
   $VOLUME_FLAGS \
   --command "bash -x
   /go_attack/kubernetes/gtp-eval.sh
   /shared/eval/$RUN_NAME" \
   --high-priority \
-  --shared-host-dir-slow-tolerant \
   --gpu "$NUM_GPUS" \
   --cpu "$NUM_CPUS" \
   --name "go-gtp-$PREFIX" \
