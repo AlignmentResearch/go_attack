@@ -16,12 +16,13 @@ NUM_CPUS=224
 PREFIX=ttseng-v10mil
 RUN_NAME="$PREFIX-$(date +%Y%m%d-%H%M%S)"
 
+# shellcheck disable=SC2086
 ctl job run --container \
   "$TWOGTP_IMG" \
   $VOLUME_FLAGS \
   --command "bash -x
   /go_attack/kubernetes/gtp-eval.sh
-  /shared/eval/$RUN_NAME" \
+  /shared/eval/$RUN_NAME $NUM_GPUS" \
   --high-priority \
   --gpu "$NUM_GPUS" \
   --cpu "$NUM_CPUS" \

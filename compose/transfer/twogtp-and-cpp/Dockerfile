@@ -18,5 +18,8 @@ COPY ./controllers/gogui /gogui
 WORKDIR /gogui
 # Modify ubuntu_setup.sh to play nice with Docker build
 RUN sed --in-place 's/sudo apt install/apt install --assume-yes/' ./ubuntu_setup.sh
+# TODO(tomtseng) this step is extremely slow and makes iterating painful, is it
+# possible to do the necessary installations earlier so we don't have to redo
+# this step whenever the cpp image changes?
 RUN apt-get update --quiet && ./ubuntu_setup.sh && apt-get clean && rm -rf /var/lib/apt/lists/*
 WORKDIR /
