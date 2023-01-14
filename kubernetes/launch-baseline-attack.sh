@@ -9,7 +9,7 @@ PREFIX=ttseng
 RUN_NAME="$PREFIX-$(date +%Y%m%d-%H%M%S)"
 
 # shellcheck disable=SC2086
-echo ctl job run --container \
+ctl job run --container \
   "$CPP_IMAGE" \
   $VOLUME_FLAGS \
   --command "bash -x
