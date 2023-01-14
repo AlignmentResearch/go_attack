@@ -69,17 +69,24 @@ def main():
         help="Path to file to write output SGFs",
         default=os.devnull,
     )
+    tmp_dir = Path(f"/tmp/score-with-katago-{getpass.getuser()}")
+    os.makedirs(tmp_dir, exist_ok=True)
+    parser.add_argument(
+        "-e",
+        "--executable",
+        type=str,
+        help="Path to KataGo executable",
+        default=(
+            f"docker run -i -v {tmp_dir}:{tmp_dir} "
+            "humancompatibleai/goattack:cpp /engines/KataGo-raw/cpp/katago"
+        )
+    )
     args = parser.parse_args()
     if args.output.is_file():
         raise ValueError(f"Output file already exists: {args.output}")
 
-    tmp_dir = Path(f"/tmp/score-with-katago-{getpass.getuser()}")
-    os.makedirs(tmp_dir, exist_ok=True)
     katago_command = (
-        "docker run -i "
-        f"-v {tmp_dir}:{tmp_dir} "
-        "humancompatibleai/goattack:cpp "
-        "/engines/KataGo-raw/cpp/katago gtp "
+        f"{args.executable} gtp "
         "-config /engines/KataGo-raw/cpp/configs/gtp_example.cfg "
         "-model /dev/null"
     )
@@ -150,7 +157,6 @@ def main():
             num_games += 1
             if katago_score * original_score < 0:
                 num_flipped_games += 1
-            print(f"Original score: {original_score}, KataGo score: {katago_score}")
 
             sgf.get_root().set("RE", katago_score_str)
             output_file.write(sgf.serialise(wrap=None))
