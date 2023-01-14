@@ -6,10 +6,10 @@ source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 cd ~/go_attack || exit
 docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp
 GIT_COMMIT=$(git rev-parse --short HEAD)
-TWOGTP_IMG="humancompatibleai/goattack:twogtp-and-cpp-$GIT_COMMIT"
-docker build . -f compose/transfer/twogtp-and-cpp/Dockerfile -t "$TWOGTP_IMG"
-docker push "$TWOGTP_IMG"
-echo "$TWOGTP_IMG"
+TWOGTP_IMAGE="humancompatibleai/goattack:twogtp-and-cpp-$GIT_COMMIT"
+docker build . -f compose/transfer/twogtp-and-cpp/Dockerfile -t "$TWOGTP_IMAGE"
+docker push "$TWOGTP_IMAGE"
+echo "$TWOGTP_IMAGE"
 
 NUM_GPUS=7
 NUM_CPUS=224
@@ -18,7 +18,7 @@ RUN_NAME="$PREFIX-$(date +%Y%m%d-%H%M%S)"
 
 # shellcheck disable=SC2086
 ctl job run --container \
-  "$TWOGTP_IMG" \
+  "$TWOGTP_IMAGE" \
   $VOLUME_FLAGS \
   --command "bash -x
   /go_attack/kubernetes/gtp-eval.sh
