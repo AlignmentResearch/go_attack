@@ -1,6 +1,5 @@
 #!/bin/bash
 
-export USE_WEKA=1
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images cpp
 
