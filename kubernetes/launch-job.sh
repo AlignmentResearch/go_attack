@@ -5,6 +5,7 @@
 # Argument parsing #
 ####################
 
+DEFAULT_LR_SCALE=1
 DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
@@ -27,6 +28,9 @@ usage() {
   echo "    Path to curriculum json file to use for victimplay."
   echo "  -p, --predictor"
   echo "    Use AMCTS with a predictor network. (A-MCTS-VM)"
+  echo "  --lr-scale"
+  echo "    Learning rate scale for training.
+  echo "    default: ${DEFAULT_LR_SCALE}
   echo "  --predictor-warmstart-ckpt"
   echo "    Path to checkpoint to use for predictor warmstart."
   echo "  -r, --resume TIMESTAMP"
@@ -43,6 +47,7 @@ usage() {
 }
 
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
+LR_SCALE=${DEFAULT_LR_SCALE}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while true; do
   case $1 in
@@ -50,6 +55,7 @@ while true; do
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
     -c|--curriculum) CURRICULUM=$2; shift ;;
+    --lr-scale) LR_SCALE=$2; shift ;;
     -p|--predictor) USE_PREDICTOR=1 ;;
     --predictor-warmstart-ckpt) PREDICTOR_WARMSTART_CKPT=$2; shift ;;
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
@@ -107,7 +113,7 @@ fi
     $VOLUME_FLAGS \
     --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval" \
-    "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
+    "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME $LR_SCALE" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --high-priority \
