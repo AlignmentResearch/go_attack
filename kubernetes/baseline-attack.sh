@@ -3,14 +3,13 @@
 RUN_NAME=$1
 
 python3 go_attack/scripts/baseline_attack.py \
-  --executable /engines/KataGo-raw/cpp/katago \
   --config go_attack/configs/gtp-base.cfg \
   --models /shared/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz \
     /shared/victims/kata1-b20c256x2-s5303129600-d1228401921.bin.gz \
   --num-games 150 \
   --policy edge mirror spiral random \
   --num-visits 1 2 4 8 16 32 \
-  --passing-behavior standard avoid-pass-alive-territory \
+  --passing-behavior avoid-pass-alive-territory \
   --victim-color B W \
   --moves-before-pass 800 \
   --parallel-runs-per-gpu 15 \

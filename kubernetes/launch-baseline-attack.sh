@@ -3,7 +3,7 @@
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images cpp
 
-NUM_GPUS=4
+NUM_GPUS=6
 PREFIX=ttseng
 RUN_NAME="$PREFIX-$(date +%Y%m%d-%H%M%S)"
 
