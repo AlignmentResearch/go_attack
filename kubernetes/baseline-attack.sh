@@ -9,7 +9,7 @@ python3 go_attack/scripts/baseline_attack.py \
   --num-games 150 \
   --policy edge mirror spiral random \
   --num-visits 1 2 4 8 16 32 \
-  --passing-behavior avoid-pass-alive-territory \
+  --passing-behavior standard avoid-pass-alive-territory \
   --victim-color B W \
   --moves-before-pass 800 \
   --parallel-runs-per-gpu 15 \
