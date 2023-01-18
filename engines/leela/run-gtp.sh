@@ -29,10 +29,10 @@ if [[ -n "${FAST}" ]]; then
   "
 else
   # It's not documented at what settings Leela plays at a superhuman
-  # level. We'll guess that 32k visits is sufficient.
+  # level. We'll guess that 40k visits is sufficient.
   FLAGS+="\
     --timelimit 0 \
-    --visits 32768 \
+    --visits 40000 \
   "
 fi
 if [[ -z "${VERBOSE}" ]]; then
