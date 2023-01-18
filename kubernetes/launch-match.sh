@@ -85,7 +85,7 @@ else
 fi
 
 # shellcheck disable=SC2086
-ctl job run --container \
+~/sleipnir/ctl/ctl/ctl.py job run --container \
   "$CPP_IMAGE" \
   $VOLUME_FLAGS \
   --command "bash -x
@@ -94,6 +94,7 @@ ctl job run --container \
   ${GAMES_PER_REPLICA}
   $*" \
   --high-priority \
+  --shared-host-dir-slow-tolerant \
   --gpu 1 \
   --name go-match-"$PREFIX" \
   --replicas "${NUM_GPUS}"
