@@ -8,16 +8,16 @@
 main_adversary:
   path: "/shared/victimplay\
     /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models\
-    /t0-s497721856-d125043118/model.bin.gz"
+    /t0-s545065216-d136760487/model.bin.gz"
 
 # Experiment: Evaluate `main_adversary` against several victims.
 main_adversary_evaluation:
   adversary_visits: 600
   num_games_per_matchup: 1000
   victims:
-    - name: cp505h-v2048
+    - name: cp505h-v4096
       filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
-      visits: 2048
+      visits: 4096
       extra_parameters:
         - key: passingBehavior
           value: avoid-pass-alive-territory
@@ -27,9 +27,9 @@ main_adversary_evaluation:
       extra_parameters:
         - key: passingBehavior
           value: avoid-pass-alive-territory
-    - name: cp505-v2048
+    - name: cp505-v4096
       filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
-      visits: 2048
+      visits: 4096
     - name: cp505-v1
       filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
       visits: 1
@@ -44,13 +44,13 @@ training_checkpoint_sweep:
   adversary_visits: 600
   # Maximum number of checkpoints to evaluate (not including the main
   # adversary).
-  num_checkpoints_to_evaluate: 50
+  num_checkpoints_to_evaluate: 55
   # How many games to run between a adversary checkpoint and a victim.
   num_games_per_matchup: 50
   victims:
-    - name: cp505h-v2048
+    - name: cp505h-v4096
       filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
-      visits: 2048
+      visits: 4096
       extra_parameters:
         - key: passingBehavior
           value: avoid-pass-alive-territory
@@ -75,7 +75,7 @@ training_checkpoint_sweep:
 
 # Experiment: evaluate adversary vs. victim with varying victim visits.
 victim_visit_sweep:
-  adversary_visits: 200
+  adversary_visits: 600
   num_games_per_matchup: 150
   victims:
     - name: cp505h
@@ -86,7 +86,7 @@ victim_visit_sweep:
   # Specify which adversary algorithms to evaluate.
   adversary_algorithms:
     - algorithm: AMCTS-S++
-      max_victim_visits: 16384
+      max_victim_visits: 32768
     - algorithm: AMCTS-R
       max_victim_visits: 128
 
@@ -94,11 +94,11 @@ victim_visit_sweep:
 adversary_visit_sweep:
   adversary_algorithm: AMCTS-S
   num_games_per_matchup: 150
-  max_adversary_visits: 8192
+  max_adversary_visits: 32768
   victims:
-    - name: cp505h-v2048
+    - name: cp505h-v4096
       filename: kata1-b40c256-s11840935168-d2898845681.bin.gz
-      visits: 2048
+      visits: 4096
       extra_parameters:
         - key: passingBehavior
           value: avoid-pass-alive-territory
