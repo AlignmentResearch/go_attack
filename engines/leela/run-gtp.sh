@@ -20,12 +20,19 @@ while [[ "$#" -gt 0 ]]; do
   shift
 done
 
-FLAGS="--noponder"
+FLAGS="--noponder --resignpct 0"
 if [[ -n "${FAST}" ]]; then
   FLAGS+="\
     --playouts 1 \
     --timemanage fast \
     --visits 1 \
+  "
+else
+  # It's not documented at what settings Leela plays at a superhuman
+  # level. We'll guess that 32k visits is sufficient.
+  FLAGS+="\
+    --timelimit 0 \
+    --visits 32768 \
   "
 fi
 if [[ -z "${VERBOSE}" ]]; then

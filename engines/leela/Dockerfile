@@ -19,7 +19,7 @@ RUN apt-get update --quiet \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --depth=1 --branch=v0.0.0 --recurse-submodules \
+RUN git clone --depth=1 --branch=v0.0.1 --recurse-submodules \
   --shallow-submodules https://github.com/HumanCompatibleAI/leela-zero
 WORKDIR leela-zero/build
 RUN cmake .. && cmake --build . -- -j16
