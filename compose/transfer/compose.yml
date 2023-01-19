@@ -122,6 +122,7 @@ services:
         socat TCP4-LISTEN:80,reuseaddr \
         EXEC:\"/engines/KataGo-custom/cpp/katago gtp \
           -config ${KATAGO_CONFIG} \
+          -override-config logSearchInfo=true,logToStdout=true \
           -model /adversary-model/${KATAGO_MODEL} \
           -victim-model /victim-model/${KATAGO_VICTIM_MODEL} \
           \" \
@@ -144,6 +145,7 @@ services:
         socat TCP4-LISTEN:80,reuseaddr \
         EXEC:\"/engines/KataGo-raw/cpp/katago gtp \
           -config ${HOST_REPO_ROOT}/configs/gtp-raw.cfg \
+          -override-config logSearchInfo=true,logToStdout=true \
           -model /victim-model/${KATAGO_VICTIM_MODEL} \
           \" \
         2>&1 | tee --append /outputs/katago-raw.log
