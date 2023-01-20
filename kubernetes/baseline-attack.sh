@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/bin/bash -eu
+# shellcheck disable=SC2001
 
 RUN_NAME=$1
 
@@ -12,7 +13,7 @@ python3 go_attack/scripts/baseline_attack.py \
   --passing-behavior standard avoid-pass-alive-territory \
   --victim-color B W \
   --moves-before-pass 800 \
-  --parallel-runs-per-gpu 15 \
+  --parallel-runs-per-gpu 12 \
   --log-dir "$RUN_NAME"/original
 
 # Rescore the results using KataGo scoring.
