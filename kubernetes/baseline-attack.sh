@@ -1,7 +1,9 @@
 #!/bin/bash -eu
 # shellcheck disable=SC2001
 
-RUN_NAME=$1
+OUTPUT_DIR=$1
+
+/go_attack/kubernetes/log-git-commit.sh "$OUTPUT_DIR"
 
 python3 go_attack/scripts/baseline_attack.py \
   --config go_attack/configs/gtp-base.cfg \
@@ -14,11 +16,11 @@ python3 go_attack/scripts/baseline_attack.py \
   --victim-color B W \
   --moves-before-pass 800 \
   --parallel-runs-per-gpu 12 \
-  --log-dir "$RUN_NAME"/original
+  --log-dir "$OUTPUT_DIR"/original
 
 # Rescore the results using KataGo scoring.
-mkdir -p "$RUN_NAME/rescored"
-for DIR in "$RUN_NAME/original/"*; do
+mkdir -p "$OUTPUT_DIR/rescored"
+for DIR in "$OUTPUT_DIR/original/"*; do
   MODEL=$(echo "$DIR" | sed "s/.*model=\([a-z0-9-]\+\).*/\1/")
   VISITS=$(echo "$DIR" | sed "s/.*visits=\([0-9]\+\).*/\1/")
   POLICY=$(echo "$DIR" | sed "s/.*policy=\([a-z]\+\).*/\1/")
@@ -39,6 +41,6 @@ for DIR in "$RUN_NAME/original/"*; do
   echo "policy: $POLICY, victim: $VICTIM"
   python3 /go_attack/scripts/score_with_katago.py \
     --executable /engines/KataGo-raw/cpp/katago \
-    --output "$RUN_NAME/rescored/${VICTIM}-vs-${POLICY}.sgfs" \
+    --output "$OUTPUT_DIR/rescored/${VICTIM}-vs-${POLICY}.sgfs" \
     "$DIR"
 done
