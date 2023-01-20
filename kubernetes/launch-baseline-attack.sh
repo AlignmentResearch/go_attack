@@ -39,6 +39,7 @@ if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
 fi
 
 RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
+echo "Run name: $RUN_NAME"
 RUN_DIR="/shared/baseline-attack/$RUN_NAME"
 
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
