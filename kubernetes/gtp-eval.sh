@@ -11,11 +11,12 @@
 OUTPUT_DIR=$1
 NUM_GPUS=$2
 NUM_GAMES=$3
-GPU_CONFIG="go_attack/configs/compute/${NUM_GPUS}gpu.cfg"
 ADV_CONFIG=$4
 VICTIM_CONFIG=$5
 ADV_MODEL=$6
 VICTIM_MODEL=$7
+
+GPU_CONFIG="go_attack/configs/compute/${NUM_GPUS}gpu.cfg"
 
 /go_attack/kubernetes/log-git-commit.sh "$OUTPUT_DIR"
 

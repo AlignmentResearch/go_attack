@@ -97,7 +97,8 @@ ctl job run --container \
   $VOLUME_FLAGS \
   --command "bash -x
   /go_attack/kubernetes/gtp-eval.sh
-  /shared/eval/$RUN_NAME $NUM_GPUS" \
+  /shared/gtp-eval/$RUN_NAME $NUM_GPUS $NUM_GAMES
+  $ADV_CONFIG $VICTIM_CONFIG $ADV_MODEL $VICTIM_CONFIG" \
   --high-priority \
   --gpu "$NUM_GPUS" \
   --cpu "$NUM_CPUS" \
