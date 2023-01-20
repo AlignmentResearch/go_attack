@@ -9,7 +9,12 @@ from argparse import ArgumentParser
 import docker
 from docker.models.images import Image
 
-IMAGE_TYPES = ("cpp", "python")
+IMAGE_TYPES = ("cpp", "python", "cpp-and-twogtp")
+# Maps an image type X in IMAGE_TYPES to a list of image types that should built
+# before X can be built.
+IMAGE_PREREQS = {
+    "cpp-and-twogtp": ["cpp"],
+}
 REPO_NAME = "humancompatibleai/goattack"
 
 
@@ -22,7 +27,7 @@ def main():
         "--image",
         type=str,
         choices=IMAGE_TYPES,
-        default=IMAGE_TYPES,
+        default=["cpp", "python"],
         help="Which images to update",
         nargs="+",
     )
@@ -60,6 +65,15 @@ def main():
             print(f"Using existing local copy of {image_name}")
             continue
 
+        prereqs = IMAGE_PREREQS.get(image_type, [])
+        for prereq in prereqs:
+            print(f"Building prereq: {prereq}")
+            build_result = client.images.build(
+                path=rootdir,
+                dockerfile=f"compose/{prereq}/Dockerfile",
+                tag=f"{REPO_NAME}:{prereq}",
+                buildargs={"ARG_GIT_COMMIT": current_hash},
+            )
         print(f"Building {REPO_NAME}:{tag}")
         build_result = client.images.build(
             path=rootdir,
@@ -84,9 +98,8 @@ def main():
     # Write the current image tags to a file so that Kubernetes can use them.
     with open(f"{rootdir}/kubernetes/active-images.env", "w") as f:
         for image_type in image_types:
-            f.write(
-                f"{image_type.upper()}_IMAGE={REPO_NAME}:{current_hash}-{image_type}\n",
-            )
+            env_variable_name = f"{image_type.upper().replace('-', '_')}_IMAGE"
+            f.write(f"{env_variable_name}={REPO_NAME}:{current_hash}-{image_type}\n")
 
 
 if __name__ == "__main__":
