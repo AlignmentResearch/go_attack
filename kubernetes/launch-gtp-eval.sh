@@ -101,5 +101,5 @@ ctl job run --container \
   --high-priority \
   --gpu "$NUM_GPUS" \
   --cpu "$NUM_CPUS" \
-  --name "go-gtp-$PREFIX" \
+  --name "go-gtp-$1" \
   --replicas 1
