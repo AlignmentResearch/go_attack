@@ -14,7 +14,11 @@ usage() {
   echo "Schedules a job that plays a victim (on KataGo-raw) against an A-MCTS"
   echo "adversary via GTP."
   echo
-  echo "Usage: $0 [--cpus CPUS] [--gpus GPUS] [--games NUM_GAMES] [--use-weka]"
+  echo "Results are stored on the go-attack Weka volume by default. On the NAS,"
+  echo "twogtp hits the following error:"
+  echo "  Could not lock file '/shared/gtp-eval/test-20230120-140920/sgfs/game.lock': Input/output error"
+  echo
+  echo "Usage: $0 [--cpus CPUS] [--gpus GPUS] [--games NUM_GAMES]"
   echo "         [--adv-config ADV_CONFIG] [--victim-config VICTIM_CONFIG]"
   echo "         [--adv-config ADV_MODEL] [--victim-config VICTIM_MODEL] PREFIX"
   echo
@@ -31,9 +35,6 @@ usage() {
   echo "    default: ${DEFAULT_NUM_GPUS}"
   echo "  -n NUM_GAMES, --games NUM_GAMES"
   echo "    Number of games to play."
-  echo "  -w, --use-weka"
-  echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
-  echo "    volume."
   echo
   echo "  --adv-config ADV_CONFIG"
   echo "              Config for adversary to use."
@@ -64,7 +65,6 @@ while [ -n "${1-}" ]; do
     --cpus) NUM_CPUS=$2; shift ;;
     -g|--gpus) NUM_GPUS=$2; shift ;;
     -n|--games) NUM_GAMES=$2; shift ;;
-    -w|--use-weka) export USE_WEKA=1 ;;
     --adv-config) ADV_CONFIG=$2; shift ;;
     --victim-config) VICTIM_CONFIG=$2; shift ;;
     --adv-model) ADV_MODEL=$2; shift ;;
@@ -83,6 +83,7 @@ fi
 RUN_NAME="$1-$(date +%Y%m%d-%H%M%S)"
 echo "Run name: $RUN_NAME"
 
+export USE_WEKA=1
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images cpp-and-twogtp
 
