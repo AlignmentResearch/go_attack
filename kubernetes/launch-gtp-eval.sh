@@ -35,6 +35,7 @@ usage() {
   echo "    default: ${DEFAULT_NUM_GPUS}"
   echo "  -n NUM_GAMES, --games NUM_GAMES"
   echo "    Number of games to play."
+  echo "    default: ${DEFAULT_NUM_GAMES}"
   echo
   echo "  --adv-config ADV_CONFIG"
   echo "              Config for adversary to use."
