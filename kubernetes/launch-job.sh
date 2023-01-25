@@ -1,10 +1,11 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090,SC2016,SC2034,SC2068
 
 ####################
 # Argument parsing #
 ####################
 
+DEFAULT_CURRICULUM="/go_attack/configs/curriculum.json"
 DEFAULT_LR_SCALE=1
 DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
@@ -26,6 +27,7 @@ usage() {
   echo "    default: twice the minimum number of GPUs."
   echo "  -c CURRICULUM, --curriculum CURRICULUM"
   echo "    Path to curriculum json file to use for victimplay."
+  echo "    default: ${DEFAULT_CURRICULUM}"
   echo "  -p, --predictor"
   echo "    Use AMCTS with a predictor network. (A-MCTS-VM)"
   echo "  --lr-scale"
@@ -46,10 +48,11 @@ usage() {
   echo "Optional arguments should be specified before positional arguments."
 }
 
+CURRICULUM=${DEFAULT_CURRICULUM}
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
 LR_SCALE=${DEFAULT_LR_SCALE}
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
-while true; do
+while [ -n "${1-}" ]; do
   case $1 in
     -h|--help) usage; exit 0 ;;
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
@@ -85,7 +88,7 @@ VOLUME_NAME="shared"
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images "cpp python"
 
-if [ -n "${USE_PREDICTOR}" ]; then
+if [ -n "${USE_PREDICTOR:-}" ]; then
   PREDICTOR_FLAG="-p $RUN_NAME/predictor"
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay-predictor.sh"
 
@@ -100,6 +103,7 @@ if [ -n "${USE_PREDICTOR}" ]; then
       --gpu 0 1 \
       --name go-training-"$1"-predictor
 else
+  PREDICTOR_FLAG=""
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
 fi
 
