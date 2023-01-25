@@ -102,11 +102,18 @@ def main():  # noqa: D103
         help="Output every move",
     )
     parser.add_argument(
-        "--victim",
+        "--victim-color",
         type=str,
         choices=("B", "W"),
-        default="B",
+        default=["B"],
         help="The color the victim plays as (black or white)",
+        nargs="+",
+    )
+    parser.add_argument(
+        "--parallel-runs-per-gpu",
+        type=int,
+        default=5,
+        help="Number of parallel jobs to run per GPU",
     )
     args = parser.parse_args()
     if args.engine == "katago":
@@ -114,11 +121,6 @@ def main():  # noqa: D103
             args.num_visits = [512]
         if args.passing_behavior is None:
             args.passing_behavior = ["standard"]
-
-    # The mirror policy only makes sense when we're attacking black because we need
-    # the victim to play first in order to know where to play next
-    if args.policy == "mirror" and args.victim != "B":
-        raise ValueError("Mirror policy only works when victim == black")
 
     config_path = args.config
     if args.engine == "katago":
@@ -174,11 +176,16 @@ def main():  # noqa: D103
         num_games=args.num_games,
         seed=args.seed,
         verbose=args.verbose,
-        victim=args.victim,
     )
 
     configs = list(
-        product(args.policy, model_paths, args.num_visits, args.passing_behavior)
+        product(
+            args.policy,
+            model_paths,
+            args.num_visits,
+            args.passing_behavior,
+            args.victim_color,
+        )
         if args.engine == "katago"
         else product(args.policy),
     )
@@ -199,7 +206,7 @@ def main():  # noqa: D103
         num_devices = min(len(configs), nvmlDeviceGetCount())
         print(f"Using {num_devices} GPU devices")
 
-        with Pool(2 * num_devices) as p:
+        with Pool(args.parallel_runs_per_gpu * num_devices) as p:
             baseline_fn = partial(baseline_fn, progress_bar=False)
             configs = [(*config, i % num_devices) for i, config in enumerate(configs)]
             p.starmap(baseline_fn, configs)
