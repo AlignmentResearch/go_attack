@@ -12,6 +12,8 @@ while [ -n "${1-}" ]; do
     --copy-initial-model) COPY_INITIAL_MODEL=1; ;;
     # Name of directory of TF weights for warmstarting.
     --initial-weights) INITIAL_WEIGHTS=$2; shift ;;
+    -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    *) break ;;
   esac
   shift
 done
