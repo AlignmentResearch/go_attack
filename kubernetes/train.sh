@@ -50,7 +50,7 @@ else
       )
       for POSSIBLE_NAME in "${POSSIBLE_MODEL_NAMES[@]}"; do
           INITIAL_MODEL="$VICTIM_MODELS_DIR/$POSSIBLE_NAME"
-          if [ -f "$MODEL" ]; then
+          if [ -f "$INITIAL_MODEL" ]; then
               echo "Using initial model: $INITIAL_MODEL"
               FOUND_MODEL=1
               MODEL_EXTENSION=${INITIAL_MODEL: -6} # bin.gz or txt.gz
