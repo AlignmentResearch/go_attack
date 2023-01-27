@@ -7,8 +7,11 @@ INITIAL_WEIGHTS="$3"
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 if [ -z "$INITIAL_WEIGHTS" ]; then
     echo "No initial weights specified, using random weights"
+    MODEL_KIND=b6c96
 else
     echo "Using initial weights: $INITIAL_WEIGHTS"
+    MODEL_KIND=$(echo "$INITIAL_WEIGHTS" | sed "s/.*\(b[0-9]\+c[0-9]\+\).*/\1/")
+
     INITIAL_WEIGHTS_DIR=/"$VOLUME_NAME"/victim-weights/"$INITIAL_WEIGHTS"/
     if [ ! -d $INITIAL_WEIGHTS_DIR ]; then
         echo "Initial weights do not exist: $INITIAL_WEIGHTS_DIR"
@@ -44,4 +47,5 @@ else
     fi
 fi
 
-./selfplay/train.sh    "$EXPERIMENT_DIR"    t0    b6c96    256    main    -disable-vtimeloss    -lr-scale 1.0    -max-train-bucket-per-new-data 4
+echo "Model kind: $MODEL_KIND"
+./selfplay/train.sh    "$EXPERIMENT_DIR"    t0    "$MODEL_KIND"    256    main    -disable-vtimeloss    -lr-scale 1.0    -max-train-bucket-per-new-data 4
