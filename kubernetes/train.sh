@@ -52,11 +52,11 @@ else
           if [ -f "$MODEL" ]; then
               echo "Using initial model: $INITIAL_MODEL"
               FOUND_MODEL=1
+              MODEL_EXTENSION=${INITIAL_MODEL: -6} # bin.gz or txt.gz
+              mkdir -p "$EXPERIMENT_DIR"/models/t0-s0-d0
+              cp "$INITIAL_MODEL" "$EXPERIMENT_DIR"/models/t0-s0-d0/model."$MODEL_EXTENSION"
+              touch "$EXPERIMENT_DIR"/done-copying-warmstart-model
           fi
-          MODEL_EXTENSION=${INITIAL_MODEL: -6} # bin.gz or txt.gz
-          mkdir -p "$EXPERIMENT_DIR"/models/t0-s0-d0
-          cp "$INITIAL_MODEL" "$EXPERIMENT_DIR"/models/t0-s0-d0/model."$MODEL_EXTENSION"
-          touch "$EXPERIMENT_DIR"/done-copying-warmstart-model
       done
       if [ $FOUND_MODEL -eq 0 ]; then
           echo "Did not find initial model $INITIAL_WEIGHTS_DIR"
