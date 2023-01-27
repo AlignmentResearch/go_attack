@@ -66,8 +66,6 @@ while [ -n "${1-}" ]; do
   esac
   shift
 done
-[ -n "${WARMSTART_CKPT:-}" ] && USE_WARMSTART=1 || USE_WARMSTART=0
-
 NUM_POSITIONAL_ARGUMENTS=1
 if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
   usage
@@ -97,13 +95,21 @@ if [ -n "${USE_PREDICTOR:-}" ]; then
       "$PYTHON_IMAGE" \
       $VOLUME_FLAGS \
       --command "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME" \
-      "/go_attack/kubernetes/train.sh $RUN_NAME/predictor $VOLUME_NAME $PREDICTOR_WARMSTART_CKPT" \
+      "/go_attack/kubernetes/train.sh --initial-weights $PREDICTOR_WARMSTART_CKPT $RUN_NAME/predictor $VOLUME_NAME" \
       --high-priority \
       --gpu 0 1 \
       --name go-training-"$1"-predictor
 else
   PREDICTOR_FLAG=""
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
+fi
+
+if [ -n "${WARMSTART_CKPT:-}" ]; then
+  USE_WARMSTART=1
+  TRAIN_FLAGS="--copy-initial-model --initial-weights ${WARMSTART_CKPT}"
+else
+  USE_WARMSTART=0
+  TRAIN_FLAGS=""
 fi
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
@@ -116,7 +122,7 @@ ctl job run --container \
     $VOLUME_FLAGS \
     --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME $USE_WARMSTART" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval" \
-    "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME ${WARMSTART_CKPT:-}" \
+    "/go_attack/kubernetes/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --high-priority \
