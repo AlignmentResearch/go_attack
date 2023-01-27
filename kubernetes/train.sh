@@ -25,9 +25,9 @@ else
       FOUND_MODEL=0
       VICTIM_MODELS_DIR=/"$VOLUME_NAME"/victims
       POSSIBLE_MODEL_NAMES=(\
-          "kata1-$INITIAL_WEIGHTS_DIR.txt.gz"
-          "kata1-$INITIAL_WEIGHTS_DIR.bin.gz"
-          "$INITIAL_WEIGHTS_DIR.bin.gz"
+          "kata1-$INITIAL_WEIGHTS.txt.gz"
+          "kata1-$INITIAL_WEIGHTS.bin.gz"
+          "$INITIAL_WEIGHTS.bin.gz"
       )
       for POSSIBLE_NAME in ${POSSIBLE_MODEL_NAMES[@]}; do
           INITIAL_MODEL="$VICTIM_MODELS_DIR/$POSSIBLE_NAME"
