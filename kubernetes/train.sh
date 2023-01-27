@@ -27,10 +27,11 @@ if [ -z "$INITIAL_WEIGHTS" ]; then
     MODEL_KIND=b6c96
 else
     echo "Using initial weights: $INITIAL_WEIGHTS"
+    # shellcheck disable=SC2001
     MODEL_KIND=$(echo "$INITIAL_WEIGHTS" | sed "s/.*\(b[0-9]\+c[0-9]\+\).*/\1/")
 
     INITIAL_WEIGHTS_DIR=/"$VOLUME_NAME"/victim-weights/"$INITIAL_WEIGHTS"/
-    if [ ! -d $INITIAL_WEIGHTS_DIR ]; then
+    if [ ! -d "$INITIAL_WEIGHTS_DIR" ]; then
         echo "Initial weights do not exist: $INITIAL_WEIGHTS_DIR"
         exit 1
     fi
@@ -47,7 +48,7 @@ else
           "kata1-$INITIAL_WEIGHTS.bin.gz"
           "$INITIAL_WEIGHTS.bin.gz"
       )
-      for POSSIBLE_NAME in ${POSSIBLE_MODEL_NAMES[@]}; do
+      for POSSIBLE_NAME in "${POSSIBLE_MODEL_NAMES[@]}"; do
           INITIAL_MODEL="$VICTIM_MODELS_DIR/$POSSIBLE_NAME"
           if [ -f "$MODEL" ]; then
               echo "Using initial model: $INITIAL_MODEL"
