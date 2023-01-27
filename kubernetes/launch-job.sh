@@ -11,7 +11,7 @@ DEFAULT_NUM_VICTIMPLAY_GPUS=4
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
   echo "          [--curriculum CURRICULUM] [--predictor] [--predictor-warmstart-ckpt]"
-  echo "          [--resume TIMESTAMP] [--use-weka] PREFIX"
+  echo "          [--resume TIMESTAMP] [--warmstart-ckpt] [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -30,13 +30,16 @@ usage() {
   echo "  -p, --predictor"
   echo "    Use AMCTS with a predictor network. (A-MCTS-VM)"
   echo "  --predictor-warmstart-ckpt"
-  echo "    Path to checkpoint to use for predictor warmstart."
+  echo "    Name of checkpoint's TF weights directory to use for predictor warmstart."
   echo "  -r, --resume TIMESTAMP"
   echo "    Resume a previous run. If this flag is given, the PREFIX argument"
   echo "    must exactly be match the run to be resumed, and the TIMESTAMP"
   echo "    argument should match the timestamp attached to the name of the"
   echo "    previous run's output directory. The use of the --use-weka flag"
   echo "    must also exactly match that of the previous run."
+  echo "  --warmstart-ckpt"
+  echo "    Name to checkpoint's TF weights directory to use for warmstarting"
+  echo "    the adversary."
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
   echo "    volume."
@@ -56,12 +59,14 @@ while [ -n "${1-}" ]; do
     -p|--predictor) USE_PREDICTOR=1 ;;
     --predictor-warmstart-ckpt) PREDICTOR_WARMSTART_CKPT=$2; shift ;;
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
+    --warmstart-ckpt) WARMSTART_CKPT=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
   shift
 done
+[ -n "${WARMSTART_CKPT:-}" ] && IS_WARMSTARTED=1 || IS_WARMSTARTED=0
 
 NUM_POSITIONAL_ARGUMENTS=1
 if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
@@ -109,9 +114,9 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
-    --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
+    --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME $IS_WARMSTARTED" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval" \
-    "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
+    "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME ${WARMSTART_CKPT:-}" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --high-priority \
@@ -125,7 +130,7 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
   ctl job run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
-      --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
+      --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME $IS_WARMSTARTED" \
       --gpu 1 \
       --name go-train-"$1"-extra \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
