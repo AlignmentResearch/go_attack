@@ -66,7 +66,7 @@ while [ -n "${1-}" ]; do
   esac
   shift
 done
-[ -n "${WARMSTART_CKPT:-}" ] && IS_WARMSTARTED=1 || IS_WARMSTARTED=0
+[ -n "${WARMSTART_CKPT:-}" ] && USE_WARMSTART=1 || USE_WARMSTART=0
 
 NUM_POSITIONAL_ARGUMENTS=1
 if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
@@ -114,7 +114,7 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
-    --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME $IS_WARMSTARTED" \
+    --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME $USE_WARMSTART" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME ${WARMSTART_CKPT:-}" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
@@ -130,7 +130,7 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
   ctl job run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
-      --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME $IS_WARMSTARTED" \
+      --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME $USE_WARMSTART" \
       --gpu 1 \
       --name go-train-"$1"-extra \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"

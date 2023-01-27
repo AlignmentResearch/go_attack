@@ -1,9 +1,9 @@
 #!/bin/sh
 RUN_NAME="$1"
 VOLUME_NAME="$2"
-IS_WARMSTARTED="$3"
+USE_WARMSTART="$3"
 
-while [ IS_WARMSTARTED -ne 0 ] &&
+while [ USE_WARMSTART -ne 0 ] &&
       [ ! -f /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/done-copying-warmstart-model ]; do
   echo "Waiting for train.sh to copy initial warmstart model"
   sleep 30;
