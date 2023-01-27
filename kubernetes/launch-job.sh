@@ -11,8 +11,9 @@ DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
-  echo "          [--curriculum CURRICULUM] [--predictor] [--predictor-warmstart-ckpt]"
-  echo "          [--resume TIMESTAMP] [--use-weka] PREFIX"
+  echo "          [--curriculum CURRICULUM] [--lr-scale] [--predictor]"
+  echo "          [--predictor-warmstart-ckpt] [--resume TIMESTAMP]"
+  echo "          [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
