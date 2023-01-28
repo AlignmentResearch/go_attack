@@ -1,5 +1,41 @@
 [
     {
+        "_comment": "cp505@1",
+        "name": "kata1-b40c256-s11840935168-d2898845681.bin.gz",
+        "max_visits_victim": 1,
+        "win_rate": 0.9
+    },
+    {
+        "_comment": "cp505@4",
+        "name": "kata1-b40c256-s11840935168-d2898845681.bin.gz",
+        "max_visits_victim": 4,
+        "win_rate": 0.9
+    },
+    {
+        "_comment": "cp505@8",
+        "name": "kata1-b40c256-s11840935168-d2898845681.bin.gz",
+        "max_visits_victim": 8,
+        "win_rate": 0.9
+    },
+    {
+        "_comment": "cp505@16",
+        "name": "kata1-b40c256-s11840935168-d2898845681.bin.gz",
+        "max_visits_victim": 16,
+        "win_rate": 0.9
+    },
+    {
+        "_comment": "cp505@32",
+        "name": "kata1-b40c256-s11840935168-d2898845681.bin.gz",
+        "max_visits_victim": 32,
+        "win_rate": 0.9
+    },
+    {
+        "_comment": "cp505@64",
+        "name": "kata1-b40c256-s11840935168-d2898845681.bin.gz",
+        "max_visits_victim": 64,
+        "win_rate": 0.9
+    },
+    {
         "_comment": "cp505@128",
         "name": "kata1-b40c256-s11840935168-d2898845681.bin.gz",
         "max_visits_victim": 128,
