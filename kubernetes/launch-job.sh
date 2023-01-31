@@ -103,18 +103,16 @@ fi
     "$CPP_IMAGE" \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
-    "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
     --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME" \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --high-priority \
-    --gpu 1 1 1 0 0 \
+    --gpu 1 1 1 0 \
     --name go-train-"$1"-vital \
     --shared-host-dir-slow-tolerant \
-    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
+    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then

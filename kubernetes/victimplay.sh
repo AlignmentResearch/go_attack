@@ -11,7 +11,7 @@ while [ ! -f /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/done-copying-initial-model ]
 done
 
 mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"
-/engines/KataGo-custom/cpp/katago victimplay \
+/engines/KataGo-custom/cpp/katago selfplay \
     -output-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/ \
     -models-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/models/ \
     -nn-victim-path /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/victims/ \
