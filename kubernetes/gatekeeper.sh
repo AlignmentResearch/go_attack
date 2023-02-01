@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 RUN_NAME="$1"
 VOLUME_NAME="$2"
 
