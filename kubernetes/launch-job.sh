@@ -11,7 +11,7 @@ DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
-  echo "          [--curriculum CURRICULUM] [--lr-scale] [--predictor]"
+  echo "          [--curriculum CURRICULUM] [--gating] [--lr-scale] [--predictor]"
   echo "          [--predictor-warmstart-ckpt] [--resume TIMESTAMP]"
   echo "          [--use-weka] PREFIX"
   echo
@@ -29,6 +29,8 @@ usage() {
   echo "  -c CURRICULUM, --curriculum CURRICULUM"
   echo "    Path to curriculum json file to use for victimplay."
   echo "    default: ${DEFAULT_CURRICULUM}"
+  echo "  --gating"
+  echo "    Enable gatekeeping."
   echo "  --lr-scale"
   echo "    Learning rate scale for training."
   echo "    default: ${DEFAULT_LR_SCALE}"
@@ -52,6 +54,7 @@ usage() {
 CURRICULUM=${DEFAULT_CURRICULUM}
 LR_SCALE=${DEFAULT_LR_SCALE}
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
+USE_GATING=0
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while [ -n "${1-}" ]; do
   case $1 in
@@ -59,6 +62,7 @@ while [ -n "${1-}" ]; do
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
     -c|--curriculum) CURRICULUM=$2; shift ;;
+    --gating) USE_GATING=1 ;;
     --lr-scale) LR_SCALE=$2; shift ;;
     -p|--predictor) USE_PREDICTOR=1 ;;
     --predictor-warmstart-ckpt) PREDICTOR_WARMSTART_CKPT=$2; shift ;;
@@ -119,12 +123,23 @@ ctl job run --container \
     --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval" \
     "/go_attack/kubernetes/train.sh $RUN_NAME $VOLUME_NAME $LR_SCALE" \
-    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
+    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME $USE_GATING" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
+
+if [ "$USE_GATING" -eq 1 ]; then
+  ctl job run --container \
+      "$CPP_IMAGE" \
+      $VOLUME_FLAGS \
+      --command "/go_attack/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
+      --high-priority \
+      --gpu 1 \
+      --name go-train-"$1"-gate \
+      --replicas 1
+fi
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
