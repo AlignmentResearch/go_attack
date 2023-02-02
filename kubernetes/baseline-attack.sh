@@ -3,12 +3,15 @@
 
 OUTPUT_DIR=$1
 
+CP505_NAME=kata1-b40c256-s11840935168-d2898845681
+CP127_NAME=kata1-b20c256x2-s5303129600-d1228401921
+
 /go_attack/kubernetes/log-git-commit.sh "$OUTPUT_DIR"
 
 python3 go_attack/scripts/baseline_attack.py \
   --config go_attack/configs/gtp-base.cfg \
-  --models /shared/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz \
-    /shared/victims/kata1-b20c256x2-s5303129600-d1228401921.bin.gz \
+  --models /shared/victims/"$CP505_NAME".bin.gz \
+    /shared/victims/"$CP127_NAME".bin.gz \
   --num-games 150 \
   --policy edge mirror spiral random \
   --num-visits 1 2 4 8 16 32 \
@@ -26,9 +29,9 @@ for DIR in "$OUTPUT_DIR/original/"*; do
   POLICY=$(echo "$DIR" | sed "s/.*policy=\([a-z]\+\).*/\1/")
   VICTIM_COLOR=$(echo "$DIR" | sed "s/.*victim=\([A-Z]\).*/\1/")
   PASSING_BEHAVIOR=$(echo "$DIR" | sed "s/.*pass=\([a-z\-]\+\).*/\1/")
-  if [ "$MODEL" = "kata1-b40c256-s11840935168-d2898845681" ]; then
+  if [ "$MODEL" = "$CP505_NAME" ]; then
     VICTIM=cp505
-  elif [ "$MODEL" = "kata1-b20c256x2-s5303129600-d1228401921" ]; then
+  elif [ "$MODEL" = "$CP127_NAME" ]; then
     VICTIM=cp127
   else
     echo "Unknown model: $MODEL"
