@@ -79,7 +79,7 @@ def main():
         default=(
             f"docker run -i -v {tmp_dir}:{tmp_dir} "
             "humancompatibleai/goattack:cpp /engines/KataGo-raw/cpp/katago"
-        )
+        ),
     )
     args = parser.parse_args()
     if args.output.is_file():
