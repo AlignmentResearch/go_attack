@@ -21,8 +21,15 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Parameters for ELF OpenGo. If FAST is not set, then we're running ELF with
-# the default parameters listed in the ELF README, except that `--resign_thres`
-# is set to 0 instead of 0.05.
+# the default parameters listed in the ELF README, except for the following
+# changes:
+# - `--resign_thres` is set to 0 instead of 0.05.
+# - `--mcts_rollout_per_thread` is set to 40,000 (for a total of 80,000
+#   rollouts) instead of 8,192 to make ELF play at a superhuman level.
+#   - The ELF paper says that ELF running with the "prototype model" with
+#     ~80,000 playouts won 20/20 games in total against four top-30 players.
+#     We're using the "final model", which is 150 Elo stronger than the
+#     prototype model.
 FLAGS="\
   --gpu 0 \
   --num_block 20 \
@@ -43,7 +50,7 @@ else
     --batchsize 16 \
     --mcts_rollout_per_batch 16 \
     --mcts_threads 2 \
-    --mcts_rollout_per_thread 8192 \
+    --mcts_rollout_per_thread 40000 \
   "
 fi
 if [[ -n "${VERBOSE}" ]]; then
