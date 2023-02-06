@@ -56,30 +56,30 @@ def main():
     rootdir_raw = subprocess.check_output(["git", "rev-parse", "--show-toplevel"])
     rootdir = rootdir_raw.decode("ascii").strip()
 
-    # There's 2 images we care about: {current_hash}-cpp and {current_hash}-python.
-    # If either is missing, we need to build and push a new image.
     for image_type in image_types:
         tag = f"{current_hash}-{image_type}"
         image_name = f"{REPO_NAME}:{tag}"
         if tag in available_tags:
             print(f"Using existing local copy of {image_name}")
             continue
+        # The image is missing, so we need to build and push it.
 
+        BUILD_ARGS = {"ARG_GIT_COMMIT": current_hash}
         prereqs = IMAGE_PREREQS.get(image_type, [])
         for prereq in prereqs:
             print(f"Building prereq: {prereq}")
-            build_result = client.images.build(
+            client.images.build(
                 path=rootdir,
                 dockerfile=f"compose/{prereq}/Dockerfile",
                 tag=f"{REPO_NAME}:{prereq}",
-                buildargs={"ARG_GIT_COMMIT": current_hash},
+                buildargs=BUILD_ARGS,
             )
         print(f"Building {REPO_NAME}:{tag}")
         build_result = client.images.build(
             path=rootdir,
             dockerfile=f"compose/{image_type}/Dockerfile",
             tag=image_name,
-            buildargs={"ARG_GIT_COMMIT": current_hash},
+            buildargs=BUILD_ARGS,
         )
         # Pylance can't quite figure out the type of build_result; see
         # https://docker-py.readthedocs.io/en/stable/images.html#image-objects for info
