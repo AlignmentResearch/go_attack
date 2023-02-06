@@ -17,6 +17,8 @@ RUN apt-get update --quiet \
 RUN git clone --depth=1 --branch=v0.0.0 https://github.com/HumanCompatibleAI/gogui
 WORKDIR gogui
 
+# Code changes to these gogui installation commands likely should be copied to
+# compose/cpp-and-twogtp/Dockerfile as well.
 # Modify ubuntu_setup.sh to play nice with Docker build
 RUN sed --in-place 's/sudo apt install/apt install --assume-yes/' ubuntu_setup.sh
 # Build gogui

@@ -8,6 +8,10 @@ FROM humancompatibleai/goattack:cpp as cpp
 
 COPY ./controllers/gogui /gogui
 WORKDIR /gogui
+
+# These gogui installation commands are copied
+# compose/transfer/twogtp/Dockerfile. Code changes here likely should be copied
+# to the other Dockerfile as well.
 # Modify ubuntu_setup.sh to play nice with Docker build
 RUN sed --in-place 's/sudo apt install/apt install --assume-yes/' ./ubuntu_setup.sh
 RUN apt-get update --quiet && ./ubuntu_setup.sh && apt-get clean && rm -rf /var/lib/apt/lists/*
