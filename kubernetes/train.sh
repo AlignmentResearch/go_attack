@@ -68,4 +68,4 @@ else
 fi
 
 echo "Model kind: $MODEL_KIND"
-./selfplay/train.sh    "$EXPERIMENT_DIR"    t0    "$MODEL_KIND"    256    main    -disable-vtimeloss    -lr-scale "$LR_SCALE"   -max-train-bucket-per-new-data 4
+./selfplay/train.sh "$EXPERIMENT_DIR" t0 "$MODEL_KIND" 256 main -disable-vtimeloss -lr-scale "$LR_SCALE" -max-train-bucket-per-new-data 4
