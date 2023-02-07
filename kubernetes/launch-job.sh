@@ -6,11 +6,13 @@
 ####################
 
 DEFAULT_CURRICULUM="/go_attack/configs/curriculum.json"
+DEFAULT_LR_SCALE=1.0
 DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
-  echo "          [--curriculum CURRICULUM] [--predictor] [--predictor-warmstart-ckpt]"
+  echo "          [--curriculum CURRICULUM] [--gating] [--lr-scale]"
+  echo "          [--predictor] [--predictor-warmstart-ckpt]"
   echo "          [--resume TIMESTAMP] [--warmstart-ckpt] [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
@@ -27,6 +29,11 @@ usage() {
   echo "  -c CURRICULUM, --curriculum CURRICULUM"
   echo "    Path to curriculum json file to use for victimplay."
   echo "    default: ${DEFAULT_CURRICULUM}"
+  echo "  --gating"
+  echo "    Enable gatekeeping."
+  echo "  --lr-scale"
+  echo "    Learning rate scale for training."
+  echo "    default: ${DEFAULT_LR_SCALE}"
   echo "  -p, --predictor"
   echo "    Use AMCTS with a predictor network. (A-MCTS-VM)"
   echo "  --predictor-warmstart-ckpt"
@@ -49,7 +56,9 @@ usage() {
 }
 
 CURRICULUM=${DEFAULT_CURRICULUM}
+LR_SCALE=${DEFAULT_LR_SCALE}
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
+USE_GATING=0
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while [ -n "${1-}" ]; do
   case $1 in
@@ -57,6 +66,8 @@ while [ -n "${1-}" ]; do
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
     -c|--curriculum) CURRICULUM=$2; shift ;;
+    --gating) USE_GATING=1 ;;
+    --lr-scale) LR_SCALE=$2; shift ;;
     -p|--predictor) USE_PREDICTOR=1 ;;
     --predictor-warmstart-ckpt) PREDICTOR_WARMSTART_CKPT=$2; shift ;;
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
@@ -96,7 +107,7 @@ if [ -n "${USE_PREDICTOR:-}" ]; then
       "$PYTHON_IMAGE" \
       $VOLUME_FLAGS \
       --command "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME" \
-      "/go_attack/kubernetes/train.sh --initial-weights $PREDICTOR_WARMSTART_CKPT $RUN_NAME/predictor $VOLUME_NAME" \
+      "/go_attack/kubernetes/train.sh --initial-weights $PREDICTOR_WARMSTART_CKPT $RUN_NAME/predictor $VOLUME_NAME $LR_SCALE" \
       --high-priority \
       --gpu 0 1 \
       --name go-training-"$1"-predictor
@@ -123,13 +134,24 @@ ctl job run --container \
     $VOLUME_FLAGS \
     --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME $USE_WARMSTART" \
     "/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval" \
-    "/go_attack/kubernetes/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME" \
-    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME" \
+    "/go_attack/kubernetes/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE" \
+    "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME $USE_GATING" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
+
+if [ "$USE_GATING" -eq 1 ]; then
+  ctl job run --container \
+      "$CPP_IMAGE" \
+      $VOLUME_FLAGS \
+      --command "/go_attack/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
+      --high-priority \
+      --gpu 1 \
+      --name go-train-"$1"-gate \
+      --replicas 1
+fi
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then

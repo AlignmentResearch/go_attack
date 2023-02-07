@@ -6,10 +6,9 @@ consistency throughout experiments, we should use KataGo scoring everywhere
 baseline attacks vs. ELF).
 """
 import argparse
-import getpass
 import os
-import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 
 import sgfmill.sgf
@@ -54,112 +53,118 @@ def get_white_score(game: sgfmill.sgf.Sgf_game) -> float:
 
 def main():
     """Entrypoint for script."""
-    parser = argparse.ArgumentParser(
-        description="Rescores SGFs using KataGo's Tromp-Taylor scoring.",
-    )
-    parser.add_argument(
-        "sgf_path",
-        type=Path,
-        help="Path to directory (to be searched recursively) with input SGFs",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        type=Path,
-        help="Path to file to write output SGFs",
-        default=os.devnull,
-    )
-    args = parser.parse_args()
-    if args.output.is_file():
-        raise ValueError(f"Output file already exists: {args.output}")
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
 
-    tmp_dir = Path(f"/tmp/score-with-katago-{getpass.getuser()}")
-    os.makedirs(tmp_dir, exist_ok=True)
-    katago_command = (
-        "docker run -i "
-        f"-v {tmp_dir}:{tmp_dir} "
-        "humancompatibleai/goattack:cpp "
-        "/engines/KataGo-raw/cpp/katago gtp "
-        "-config /engines/KataGo-raw/cpp/configs/gtp_example.cfg "
-        "-model /dev/null"
-    )
-    proc = subprocess.Popen(
-        katago_command,
-        bufsize=0,
-        shell=True,
-        stderr=open(tmp_dir / "stderr.log", "w"),
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-    )
-    to_engine = proc.stdin
-    from_engine = proc.stdout
-    assert to_engine is not None
+        parser = argparse.ArgumentParser(
+            description="Rescores SGFs using KataGo's Tromp-Taylor scoring.",
+        )
+        parser.add_argument(
+            "sgf_path",
+            type=Path,
+            help="Path to directory (to be searched recursively) with input SGFs",
+        )
+        parser.add_argument(
+            "-o",
+            "--output",
+            type=Path,
+            help="Path to file to write output SGFs",
+            default=os.devnull,
+        )
+        parser.add_argument(
+            "-e",
+            "--executable",
+            type=str,
+            help="Path to KataGo executable",
+            default=(
+                f"docker run -i -v {tmp_dir}:{tmp_dir} "
+                "humancompatibleai/goattack:cpp /engines/KataGo-raw/cpp/katago"
+            ),
+        )
+        args = parser.parse_args()
+        if args.output.is_file():
+            raise ValueError(f"Output file already exists: {args.output}")
 
-    def send_command(message, assert_success=True):
-        to_engine.write(f"{message}\n".encode("ascii"))
-        output = ""
-        found_output_start = False
-        success = False
-        for i, line in enumerate(from_engine):
-            line = line.decode("ascii")
+        katago_command = (
+            f"{args.executable} gtp "
+            "-config /engines/KataGo-raw/cpp/configs/gtp_example.cfg "
+            "-model /dev/null"
+        )
+        proc = subprocess.Popen(
+            katago_command,
+            bufsize=0,
+            shell=True,
+            stderr=open(tmp_dir / "stderr.log", "w"),
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+        to_engine = proc.stdin
+        from_engine = proc.stdout
+        assert to_engine is not None
 
-            if found_output_start and line.strip() == "":
-                # Blank line signals the end of a response.
-                break
+        def send_command(message, assert_success=True):
+            to_engine.write(f"{message}\n".encode("ascii"))
+            output = ""
+            found_output_start = False
+            success = False
+            for i, line in enumerate(from_engine):
+                line = line.decode("ascii")
 
-            if not found_output_start:
-                if line[0] == "?":
-                    # Error response, no success.
-                    found_output_start = True
-                    output += line[1:]
-                elif line[0] == "=":
-                    success = True
-                    found_output_start = True
-                    output += line[1:]
-            else:
-                output += line
-        if assert_success:
-            assert success
-        return output.lstrip().strip()
+                if found_output_start and line.strip() == "":
+                    # Blank line signals the end of a response.
+                    break
 
-    num_games = 0
-    num_flipped_games = 0
-    squared_error_sum = 0
-    tmp_sgf_path = tmp_dir / "game.sgf"
-    with open(args.output, "wb") as output_file:
-        for sgf in get_sgfs_in_path(args.sgf_path):
-            try:
-                original_score = get_white_score(sgf)
-            except KeyError:
-                print("Skipping game due to no result")
-                continue
+                if not found_output_start:
+                    if line[0] == "?":
+                        # Error response, no success.
+                        found_output_start = True
+                        output += line[1:]
+                    elif line[0] == "=":
+                        success = True
+                        found_output_start = True
+                        output += line[1:]
+                else:
+                    output += line
+            if assert_success:
+                assert success
+            return output.lstrip().strip()
 
-            with open(tmp_sgf_path, "wb") as katago_input_sgf_file:
-                katago_input_sgf_file.write(sgf.serialise())
-            send_command(f"loadsgf {tmp_sgf_path}")
-            send_command("kata-set-rules Tromp-Taylor")
-            # We need to make sure KataGo thinks the game has ended or else it may
-            # estimate the score using its model (which in this case is /dev/null, a
-            # random model).
-            send_command("play b pass")
-            send_command("play w pass")
-            katago_score_str = send_command("final_score")
+        num_games = 0
+        num_flipped_games = 0
+        squared_error_sum = 0
+        tmp_sgf_path = tmp_dir / "game.sgf"
+        with open(args.output, "wb") as output_file:
+            for sgf in get_sgfs_in_path(args.sgf_path):
+                try:
+                    original_score = get_white_score(sgf)
+                except KeyError:
+                    print("Skipping game due to no result")
+                    continue
 
-            katago_score = score_str_to_white_score(katago_score_str)
-            squared_error_sum += (katago_score - original_score) ** 2
-            num_games += 1
-            if katago_score * original_score < 0:
-                num_flipped_games += 1
-            print(f"Original score: {original_score}, KataGo score: {katago_score}")
+                with open(tmp_sgf_path, "wb") as katago_input_sgf_file:
+                    katago_input_sgf_file.write(sgf.serialise())
+                send_command(f"loadsgf {tmp_sgf_path}")
+                send_command("kata-set-rules Tromp-Taylor")
+                # We need to make sure KataGo thinks the game has ended or else it may
+                # estimate the score using its model (which in this case is /dev/null, a
+                # random model).
+                send_command("play b pass")
+                send_command("play w pass")
+                katago_score_str = send_command("final_score")
 
-            sgf.get_root().set("RE", katago_score_str)
-            output_file.write(sgf.serialise(wrap=None))
-    if num_games > 0:
-        print(f"Games that changed winners: {num_flipped_games}/{num_games}")
-        print(f"Mean squared error: {squared_error_sum / num_games}")
-    else:
-        print("No games found.")
-    shutil.rmtree(tmp_dir)
+                katago_score = score_str_to_white_score(katago_score_str)
+                squared_error_sum += (katago_score - original_score) ** 2
+                num_games += 1
+                if katago_score * original_score < 0:
+                    num_flipped_games += 1
+
+                sgf.get_root().set("RE", katago_score_str)
+                output_file.write(sgf.serialise(wrap=None))
+        if num_games > 0:
+            print(f"Games that changed winners: {num_flipped_games}/{num_games}")
+            print(f"Mean squared error: {squared_error_sum / num_games}")
+        else:
+            print("No games found.")
 
 
 if __name__ == "__main__":

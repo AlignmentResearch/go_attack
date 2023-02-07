@@ -20,6 +20,7 @@ done
 
 RUN_NAME="$1"
 VOLUME_NAME="$2"
+LR_SCALE="$3"
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 if [ -z "$INITIAL_WEIGHTS" ]; then
@@ -67,4 +68,4 @@ else
 fi
 
 echo "Model kind: $MODEL_KIND"
-./selfplay/train.sh    "$EXPERIMENT_DIR"    t0    "$MODEL_KIND"    256    main    -disable-vtimeloss    -lr-scale 1.0    -max-train-bucket-per-new-data 4
+./selfplay/train.sh    "$EXPERIMENT_DIR"    t0    "$MODEL_KIND"    256    main    -disable-vtimeloss    -lr-scale "$LR_SCALE"   -max-train-bucket-per-new-data 4
