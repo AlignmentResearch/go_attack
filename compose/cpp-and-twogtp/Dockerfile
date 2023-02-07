@@ -9,7 +9,7 @@ FROM humancompatibleai/goattack:cpp as cpp
 COPY ./controllers/gogui /gogui
 WORKDIR /gogui
 
-# These gogui installation commands are copied
+# These gogui installation commands are copied from
 # compose/transfer/twogtp/Dockerfile. Code changes here likely should be copied
 # to the other Dockerfile as well.
 # Modify ubuntu_setup.sh to play nice with Docker build
