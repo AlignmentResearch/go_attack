@@ -58,10 +58,12 @@ else
               mkdir -p "$EXPERIMENT_DIR"/models/t0-s0-d0
               cp "$INITIAL_MODEL" "$EXPERIMENT_DIR"/models/t0-s0-d0/model."$MODEL_EXTENSION"
               touch "$EXPERIMENT_DIR"/done-copying-warmstart-model
+              break
           fi
       done
       if [ $FOUND_MODEL -eq 0 ]; then
-          echo "Did not find initial model $INITIAL_WEIGHTS_DIR"
+          echo "Error: initial weights exist at $INITIAL_WEIGHTS_DIR, but no"
+          echo "matching model was found in $VICTIM_MODELS_DIR."
           exit 1
       fi
     fi
