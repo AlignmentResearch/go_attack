@@ -9,7 +9,12 @@ from argparse import ArgumentParser
 import docker
 from docker.models.images import Image
 
-IMAGE_TYPES = ("cpp", "python")
+IMAGE_TYPES = ("cpp", "python", "cpp-and-twogtp")
+# Maps an image type X in IMAGE_TYPES to a list of image types that should built
+# before X can be built.
+IMAGE_PREREQS = {
+    "cpp-and-twogtp": ["cpp"],
+}
 REPO_NAME = "humancompatibleai/goattack"
 
 
@@ -22,7 +27,7 @@ def main():
         "--image",
         type=str,
         choices=IMAGE_TYPES,
-        default=IMAGE_TYPES,
+        default=["cpp", "python"],
         help="Which images to update",
         nargs="+",
     )
@@ -51,21 +56,30 @@ def main():
     rootdir_raw = subprocess.check_output(["git", "rev-parse", "--show-toplevel"])
     rootdir = rootdir_raw.decode("ascii").strip()
 
-    # There's 2 images we care about: {current_hash}-cpp and {current_hash}-python.
-    # If either is missing, we need to build and push a new image.
     for image_type in image_types:
         tag = f"{current_hash}-{image_type}"
         image_name = f"{REPO_NAME}:{tag}"
         if tag in available_tags:
             print(f"Using existing local copy of {image_name}")
             continue
+        # The image is missing, so we need to build and push it.
 
+        BUILD_ARGS = {"ARG_GIT_COMMIT": current_hash}
+        prereqs = IMAGE_PREREQS.get(image_type, [])
+        for prereq in prereqs:
+            print(f"Building prereq: {prereq}")
+            client.images.build(
+                path=rootdir,
+                dockerfile=f"compose/{prereq}/Dockerfile",
+                tag=f"{REPO_NAME}:{prereq}",
+                buildargs=BUILD_ARGS,
+            )
         print(f"Building {REPO_NAME}:{tag}")
         build_result = client.images.build(
             path=rootdir,
             dockerfile=f"compose/{image_type}/Dockerfile",
             tag=image_name,
-            buildargs={"ARG_GIT_COMMIT": current_hash},
+            buildargs=BUILD_ARGS,
         )
         # Pylance can't quite figure out the type of build_result; see
         # https://docker-py.readthedocs.io/en/stable/images.html#image-objects for info
@@ -84,9 +98,8 @@ def main():
     # Write the current image tags to a file so that Kubernetes can use them.
     with open(f"{rootdir}/kubernetes/active-images.env", "w") as f:
         for image_type in image_types:
-            f.write(
-                f"{image_type.upper()}_IMAGE={REPO_NAME}:{current_hash}-{image_type}\n",
-            )
+            env_variable_name = f"{image_type.upper().replace('-', '_')}_IMAGE"
+            f.write(f"{env_variable_name}={REPO_NAME}:{current_hash}-{image_type}\n")
 
 
 if __name__ == "__main__":
