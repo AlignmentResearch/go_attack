@@ -33,7 +33,7 @@ else
 
     INITIAL_WEIGHTS_DIR=/"$VOLUME_NAME"/victim-weights/"$INITIAL_WEIGHTS"/
     if [ ! -d "$INITIAL_WEIGHTS_DIR" ]; then
-        echo "Initial weights do not exist: $INITIAL_WEIGHTS_DIR"
+        echo "Error: initial weights do not exist: $INITIAL_WEIGHTS_DIR"
         exit 1
     fi
     mkdir -p "$EXPERIMENT_DIR"/train/t0
@@ -62,8 +62,8 @@ else
           fi
       done
       if [ $FOUND_MODEL -eq 0 ]; then
-          echo "Error: initial weights exist at $INITIAL_WEIGHTS_DIR, but no"
-          echo "matching model was found in $VICTIM_MODELS_DIR."
+          echo "Error: initial weights exist at $INITIAL_WEIGHTS_DIR, but no"\
+               "matching model was found in $VICTIM_MODELS_DIR."
           exit 1
       fi
     fi
