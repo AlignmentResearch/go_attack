@@ -119,7 +119,7 @@ fi
 
 if [ -n "${WARMSTART_CKPT:-}" ]; then
   USE_WARMSTART=1
-  TRAIN_FLAGS="--copy-initial-model --initial-weights ${WARMSTART_CKPT}"
+  TRAIN_FLAGS="--copy-initial-model --initial-weights $WARMSTART_CKPT"
 else
   USE_WARMSTART=0
   TRAIN_FLAGS=""
