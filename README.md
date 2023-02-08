@@ -4,11 +4,11 @@ This repository contains code for studying the adversarial robustness of KataGo.
 
 Links:
 * [Paper on arXiv](https://arxiv.org/abs/2211.00241)
-* [Website](https://goattack.alignmentfund.org/)
+* [Website](https://goattack.far.ai/)
 
 ## Git submodule: KataGo-custom
 
-Modifications to KataGo *are not* tracked in this repository and should instead be made to the [HumanCompatibleAI/KataGo-custom](https://github.com/HumanCompatibleAI/KataGo-custom) repository. We use code from KataGo-custom in this repository via Git submodules.
+Modifications to KataGo *are not* tracked in this repository and should instead be made to the [AlignmentResearch/KataGo-custom](https://github.com/AlignmentResearch/KataGo-custom) repository. We use code from KataGo-custom in this repository via Git submodules.
 
 KataGo-custom has the following significant branches:
 
@@ -44,21 +44,21 @@ parameters of the run (
     where to look for other config files
 ).
 
-# Helpful notebooks
+## Useful analysis notebooks
 
-- [notebooks/sgf-explorer.ipynb](notebooks/sgf-explorer.ipynb) loads self/victim-play games into a pandas dataframe and lets you do some data analysis. One thing I use this file for is to pick out specific games I then load into a visualizer.
+See [AlignmentResearch/KataGoVisualizer](https://github.com/AlignmentResearch/KataGoVisualizer).
 
 # Prerequisite & Dependencies
 
 - **Summary**: For this project, we use **Docker** and **Git** to set up the dependencies and environment.
 - **Docker image**: HumanCompatibleAI/go_attack:latest
 - **GitHub repo**:
-    - Project code: https://github.com/HumanCompatibleAI/go_attack
-    - Agent code: https://github.com/HumanCompatibleAI/KataGo-custom
+    - Project code: https://github.com/AlignmentResearch/go_attack
+    - Agent code: https://github.com/AlignmentResearch/KataGo-custom
     - Controller code: https://github.com/HumanCompatibleAI/gogui
 - **Setting up**
     - Download the repo
-        - `git clone --recurse-submodules https://github.com/HumanCompatibleAI/go_attack.git`
+        - `git clone --recurse-submodules https://github.com/AlignmentResearch/go_attack.git`
         - `cd go_attack`
     - Build C++ and Python Docker containers, and run the C++ container. A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory inside the container.
         - `docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp`
