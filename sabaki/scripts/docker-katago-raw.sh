@@ -7,6 +7,6 @@ GIT_ROOT=$(git rev-parse --show-toplevel)
 cd ${GIT_ROOT}
 
 docker run \
-    -v models:/models \
+    -v sabaki/models:/models \
     -it $(docker build -f compose/cpp/Dockerfile -q .) \
     /engines/KataGo-raw/cpp/katago $@

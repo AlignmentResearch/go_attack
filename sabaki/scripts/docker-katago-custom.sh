@@ -8,6 +8,6 @@ cd ${GIT_ROOT}
 
 docker run \
     --gpus device=5 \
-    -v ${GIT_ROOT}/models:/models \
+    -v ${GIT_ROOT}/sabaki/models:/models \
     -it $(docker build -f compose/cpp/Dockerfile -q .) \
     /engines/KataGo-custom/cpp/katago $@
