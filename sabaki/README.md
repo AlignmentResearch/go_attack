@@ -39,6 +39,7 @@ The base KataGo models are downloaded from https://katagotraining.org/networks/.
 4. After adding a config, you can follow the instructions at https://youtu.be/6ZA_saVHyTA to play against newly configured engine.
 
 ## More sample bot configs
+Some of the following are for internal use.
 ```
 # Strongest cyclic-adversary
 cyclic-adv-s545m-v600-vm-cp505-v1-s
@@ -76,3 +77,5 @@ ssh
 rnn -tt 'bash -l -c "/nas/ucb/tony/go-attack/gtp-host/go_attack/sabaki/scripts/docker-katago-custom.sh gtp -model /models/adv/cyclic-adv-s545065216-d136760487.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/gtp/gtp-adv600-vm1-s.cfg"'
 time_settings 0 1 0
 ```
+
+Also see https://github.com/AlignmentResearch/KataGoVisualizer/blob/3216f9b5bebaf1377dc1e320294abcc0f65bd8bd/notebooks/notebooks/paper/estimate-flops-adv.ipynb for locations of adversaries on the nas.
