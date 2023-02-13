@@ -1,16 +1,16 @@
-#!/bin/bash -e
+#!/bin/bash -eu
 cd /engines/KataGo-custom/python
 
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
 # Flags must be specified before positional arguments.
 while [ -n "${1-}" ]; do
   case $1 in
-    # Whether to copy model for warmstarting. If this flag is used,
+    # Path to model for warmstarting. If this flag is used,
     # --initial-weights flag should be specified as well.
     # For predictor training, this flag should not be specified since the
     # curriculum script will handle copying the victim models for the predictor.
-    --copy-initial-model) COPY_INITIAL_MODEL=1; ;;
-    # Name of directory of TF weights for warmstarting.
+    --initial-model) INITIAL_MODEL=$2; shift ;;
+    # Path to directory of TF weights for warmstarting.
     --initial-weights) INITIAL_WEIGHTS=$2; shift ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
@@ -23,50 +23,38 @@ VOLUME_NAME="$2"
 LR_SCALE="$3"
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
-if [ -z "$INITIAL_WEIGHTS" ]; then
-    echo "No initial weights specified, using random weights"
-    MODEL_KIND=b6c96
+if [ -z "${INITIAL_WEIGHTS:-}" ]; then
+  if [ -n "${INITIAL_MODEL:-}" ]; then
+    echo "Error: --initial-weights must be specified if --initial-model is"\
+         "specified."
+    exit 1
+  fi
+  echo "No initial weights specified, using random weights"
+  MODEL_KIND=b6c96
 else
-    echo "Using initial weights: $INITIAL_WEIGHTS"
-    # shellcheck disable=SC2001
-    MODEL_KIND=$(echo "$INITIAL_WEIGHTS" | sed "s/.*\(b[0-9]\+c[0-9]\+\).*/\1/")
+  echo "Using initial weights: $INITIAL_WEIGHTS"
+  # shellcheck disable=SC2001
+  MODEL_KIND=$(echo "$INITIAL_WEIGHTS" | sed "s/.*\(b[0-9]\+c[0-9]\+\).*/\1/")
 
-    INITIAL_WEIGHTS_DIR=/"$VOLUME_NAME"/victim-weights/"$INITIAL_WEIGHTS"/
-    if [ ! -d "$INITIAL_WEIGHTS_DIR" ]; then
-        echo "Error: initial weights do not exist: $INITIAL_WEIGHTS_DIR"
-        exit 1
-    fi
-    mkdir -p "$EXPERIMENT_DIR"/train/t0
-    cp "$INITIAL_WEIGHTS_DIR"/saved_model/model.config.json "$EXPERIMENT_DIR"/train/t0/model.config.json
-    cp -r "$INITIAL_WEIGHTS_DIR"/saved_model/variables "$EXPERIMENT_DIR"/train/t0/initial_weights
+  if [ ! -d "$INITIAL_WEIGHTS" ]; then
+    echo "Error: initial weights do not exist: $INITIAL_WEIGHTS"
+    exit 1
+  mkdir -p "$EXPERIMENT_DIR"/train/t0
+  cp "$INITIAL_WEIGHTS"/saved_model/model.config.json "$EXPERIMENT_DIR"/train/t0/model.config.json
+  cp -r "$INITIAL_WEIGHTS"/saved_model/variables "$EXPERIMENT_DIR"/train/t0/initial_weights
 
-    if [ -n "${COPY_INITIAL_MODEL:-}" ] &&
-       [ ! -f "$EXPERIMENT_DIR"/done-copying-warmstart-model ]; then
-      FOUND_MODEL=0
-      VICTIM_MODELS_DIR=/"$VOLUME_NAME"/victims
-      POSSIBLE_MODEL_NAMES=(\
-          "kata1-$INITIAL_WEIGHTS.txt.gz"
-          "kata1-$INITIAL_WEIGHTS.bin.gz"
-          "$INITIAL_WEIGHTS.bin.gz"
-      )
-      for POSSIBLE_NAME in "${POSSIBLE_MODEL_NAMES[@]}"; do
-          INITIAL_MODEL="$VICTIM_MODELS_DIR/$POSSIBLE_NAME"
-          if [ -f "$INITIAL_MODEL" ]; then
-              echo "Using initial model: $INITIAL_MODEL"
-              FOUND_MODEL=1
-              MODEL_EXTENSION=${INITIAL_MODEL: -6} # bin.gz or txt.gz
-              mkdir -p "$EXPERIMENT_DIR"/models/t0-s0-d0
-              cp "$INITIAL_MODEL" "$EXPERIMENT_DIR"/models/t0-s0-d0/model."$MODEL_EXTENSION"
-              touch "$EXPERIMENT_DIR"/done-copying-warmstart-model
-              break
-          fi
-      done
-      if [ $FOUND_MODEL -eq 0 ]; then
-          echo "Error: initial weights exist at $INITIAL_WEIGHTS_DIR, but no"\
-               "matching model was found in $VICTIM_MODELS_DIR."
-          exit 1
-      fi
+  if [ -n "${INITIAL_MODEL:-}" ]; then
+    echo "Using initial model: $INITIAL_MODEL"
+    if [ ! -f "$INITIAL_MODEL" ]; then
+      echo "Error: initial model does not exist: $INITIAL_MODEL"
+      exit 1
     fi
+    if [ ! -f "$EXPERIMENT_DIR"/done-copying-warmstart-model ]; then
+      mkdir -p "$EXPERIMENT_DIR"/models/t0-s0-d0
+      cp "$INITIAL_MODEL" "$EXPERIMENT_DIR"/models/t0-s0-d0/
+      touch "$EXPERIMENT_DIR"/done-copying-warmstart-model
+    fi
+  fi
 fi
 
 echo "Model kind: $MODEL_KIND"

@@ -12,9 +12,9 @@ DEFAULT_NUM_VICTIMPLAY_GPUS=4
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
   echo "          [--curriculum CURRICULUM] [--gating] [--lr-scale]"
-  echo "          [--predictor] [--predictor-warmstart-ckpt CHECKPOINT]"
-  echo "          [--resume TIMESTAMP] [--warmstart-ckpt CHECKPOINT]"
-  echo "          [--use-weka] PREFIX"
+  echo "          [--predictor] [--predictor-warmstart-tf-weights WEIGHTS]"
+  echo "          [--resume TIMESTAMP] [--warmstart-model MODEL] "
+  echo "          [--warmstart-tf-weights WEIGHTS] [--use-weka] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -37,18 +37,20 @@ usage() {
   echo "    default: ${DEFAULT_LR_SCALE}"
   echo "  -p, --predictor"
   echo "    Use AMCTS with a predictor network. (A-MCTS-VM)"
-  echo "  --predictor-warmstart-ckpt CHECKPOINT"
-  echo "    Name of checkpoint's TF weights directory to use for predictor warmstart."
+  echo "  --predictor-warmstart-tf-weights WEIGHTS"
+  echo "    Path to model's TF weights directory to use for predictor warmstart."
   echo "  -r, --resume TIMESTAMP"
   echo "    Resume a previous run. If this flag is given, the PREFIX argument"
   echo "    must exactly be match the run to be resumed, and the TIMESTAMP"
   echo "    argument should match the timestamp attached to the name of the"
   echo "    previous run's output directory. The use of the --use-weka flag"
   echo "    must also exactly match that of the previous run."
-  echo "  --warmstart-ckpt CHECKPOINT"
-  echo "    Name to checkpoint's TF weights directory to use for warmstarting"
-  echo "    the adversary, e.g., b6c96-s175395328-d26788732 for cp63 or"
-  echo "    kata1-b40c256-s11840935168-d2898845681 for cp505."
+  echo "  --warmstart-model MODEL"
+  echo "    Path to model to use for warmstarting the adversary."
+  echo "  --warmstart-tf-weights WEIGHTS"
+  echo "    Path to model's TF weights directory to use for warmstarting"
+  echo "    the adversary, e.g.,"
+  echo "    /shared/victim-weights/kata1-b40c256-s11840935168-d2898845681"
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
   echo "    volume."
@@ -70,9 +72,10 @@ while [ -n "${1-}" ]; do
     --gating) USE_GATING=1 ;;
     --lr-scale) LR_SCALE=$2; shift ;;
     -p|--predictor) USE_PREDICTOR=1 ;;
-    --predictor-warmstart-ckpt) PREDICTOR_WARMSTART_CKPT=$2; shift ;;
+    --predictor-warmstart-tf-weights) PREDICTOR_WARMSTART_TF_WEIGHTS=$2; shift ;;
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
-    --warmstart-ckpt) WARMSTART_CKPT=$2; shift ;;
+    --warmstart-model) WARMSTART_MODEL=$2; shift ;;
+    --warmstart-tf-weights) WARMSTART_TF_WEIGHTS=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
@@ -108,7 +111,7 @@ if [ -n "${USE_PREDICTOR:-}" ]; then
       "$PYTHON_IMAGE" \
       $VOLUME_FLAGS \
       --command "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME" \
-      "/go_attack/kubernetes/train.sh --initial-weights $PREDICTOR_WARMSTART_CKPT $RUN_NAME/predictor $VOLUME_NAME $LR_SCALE" \
+      "/go_attack/kubernetes/train.sh --initial-weights $PREDICTOR_WARMSTART_TF_WEIGHTS $RUN_NAME/predictor $VOLUME_NAME $LR_SCALE" \
       --high-priority \
       --gpu 0 1 \
       --name go-training-"$1"-predictor
@@ -117,9 +120,14 @@ else
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
 fi
 
-if [ -n "${WARMSTART_CKPT:-}" ]; then
+if [ -n "${WARMSTART_MODEL:-}" ] || [ -n "${WARMSTART_TF_WEIGHTS:-}" ]; then
+  if [ -z "${WARMSTART_MODEL:-}" ] || [ -z "${WARMSTART_TF_WEIGHTS:-}" ]; then
+    echo "Error: both --warmstart-model and --warmstart-tf-weights must both"\
+         "be specified for warmstarting."
+    exit 1
+  fi
   USE_WARMSTART=1
-  TRAIN_FLAGS="--copy-initial-model --initial-weights $WARMSTART_CKPT"
+  TRAIN_FLAGS="--copy-initial-model --initial-weights $WARMSTART_TF_WEIGHTS"
 else
   USE_WARMSTART=0
   TRAIN_FLAGS=""
