@@ -51,7 +51,7 @@ else
           # Warmstart model is a victim, so we search $VICTIM_MODELS_DIR for the
           # victim model.
           VICTIM_MODELS_DIR=/"$VOLUME_NAME"/victims
-          INITIAL_WEIGHTS_BASENAME=$(basename $INITIAL_WEIGHTS)
+          INITIAL_WEIGHTS_BASENAME=$(basename "$INITIAL_WEIGHTS")
           POSSIBLE_MODEL_NAMES=(\
               "kata1-$INITIAL_WEIGHTS_BASENAME.txt.gz"
               "kata1-$INITIAL_WEIGHTS_BASENAME.bin.gz"
