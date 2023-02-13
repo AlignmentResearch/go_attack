@@ -10,7 +10,7 @@ while [ -n "${1-}" ]; do
     # For predictor training, this flag should not be specified since the
     # curriculum script will handle copying the victim models for the predictor.
     --copy-initial-model) COPY_INITIAL_MODEL=1; ;;
-    # Name of directory of TF weights for warmstarting.
+    # Path to directory of TF weights for warmstarting.
     --initial-weights) INITIAL_WEIGHTS=$2; shift ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
