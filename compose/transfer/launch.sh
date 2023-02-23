@@ -73,6 +73,7 @@ function build_images() {
 }
 
 GPUS_STR=${DEFAULT_GPUS_STR}
+export LEELA_VISITS=40000
 export KATAGO_CONFIG=${DEFAULT_KATAGO_CONFIG}
 export KATAGO_MODEL=
 export KATAGO_VICTIM_MODEL=
@@ -87,6 +88,7 @@ while true; do
     --katago-config) KATAGO_CONFIG=$2; shift ;;
     --katago-model) KATAGO_MODEL=$2; shift ;;
     --katago-victim-model) KATAGO_VICTIM_MODEL=$2; shift ;;
+    --leela-visits) LEELA_VISITS=$2; shift ;;
     -l|--label) LABEL=$2; shift ;;
     -o|--output-dir) HOST_BASE_OUTPUT_DIR=$2; shift ;;
     -n|--num-games) NUM_GAMES_TOTAL=$2; shift ;;

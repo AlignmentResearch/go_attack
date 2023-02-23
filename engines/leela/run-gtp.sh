@@ -14,6 +14,7 @@ while [[ "$#" -gt 0 ]]; do
   case $1 in
     -d|--debug) FAST=1 ;;
     -h|--help) usage; exit 0 ;;
+    --visits) VISITS=$2; shift ;;
     -v|--verbose) VERBOSE=1 ;;
     *) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
   esac
@@ -32,7 +33,7 @@ else
   # level. We'll guess that 40k visits is sufficient.
   FLAGS+="\
     --timelimit 0 \
-    --visits 40000 \
+    --visits ${VISITS} \
   "
 fi
 if [[ -z "${VERBOSE}" ]]; then

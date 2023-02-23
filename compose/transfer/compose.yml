@@ -46,7 +46,7 @@ services:
         read_only: ${ARE_SHARED_FILES_READ_ONLY:-false}
     command: >
       sh -c "
-        socat TCP4-LISTEN:80,reuseaddr EXEC:'./run-gtp.sh --verbose' \
+        socat TCP4-LISTEN:80,reuseaddr EXEC:\"./run-gtp.sh --verbose --visits ${LEELA_VISITS}\" \
         2>&1 | tee --append /outputs/victim.log
       "
     deploy:
