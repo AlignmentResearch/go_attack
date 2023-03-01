@@ -4,7 +4,7 @@ This repository contains code for studying the adversarial robustness of KataGo.
 
 Read about our research here: https://arxiv.org/abs/2211.00241.
 
-And view our website here: https://goattack.far.ai/.
+View our website here: https://goattack.far.ai/.
 
 To run our adversary with Sabaki, see [this guide](sabaki/README.md).
 
@@ -57,6 +57,10 @@ parameters of the run (
     batch size,
     where to look for other config files
 ).
+
+## Website and analysis notebooks.
+
+See [AlignmentResearch/KataGoVisualizer](https://github.com/AlignmentResearch/KataGoVisualizer).
 
 # Baseline attacks
 
