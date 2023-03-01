@@ -6,8 +6,13 @@ cd ${SCRIPT_DIR}
 GIT_ROOT=$(git rev-parse --show-toplevel)
 cd ${GIT_ROOT}
 
+# Get which submodule to use (raw or custom)
+KATAGO_TYPE=$1; shift
+
+# Build and run the docker image
+# Manually change the assigned gpu devices as needed.
 docker run \
     --gpus device=5 \
     -v ${GIT_ROOT}/sabaki/models:/models \
     -it $(docker build -f compose/cpp/Dockerfile -q .) \
-    /engines/KataGo-custom/cpp/katago $@
+    /engines/KataGo-$KATAGO_TYPE/cpp/katago $@

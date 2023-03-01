@@ -53,7 +53,7 @@ cyclic-adv-s349m-v600-vm-cp505-v1-s
 gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/cyclic-adv-s349284096-d87808728.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg
 time_settings 0 1 0
 
-# Pass-trick adversary
+# Pass-adversary
 pass-adv-s34m-v600-vs-cp505-v1-s
 /Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
 gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/pass-adv-s34090496-d8262123.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg 
@@ -75,10 +75,15 @@ time_settings 0 1 0
 ### Internal notes
 Also see https://github.com/AlignmentResearch/KataGoVisualizer/blob/3216f9b5bebaf1377dc1e320294abcc0f65bd8bd/notebooks/notebooks/paper/estimate-flops-adv.ipynb for locations of adversaries on the nas.
 
+The following config enables playing against an adversary (or victim) over ssh.
+To do this on a machine M without /nas/ access,
+you need to clone the go-attack repo on M,
+download the adversary and victim models on M,
+and make sure docker works on M.
 ```
 # Cyclic-adversary over ssh
 ssh-cyclic-adv-s545m-v600-vm-cp505-v1-s
 ssh
-rnn -tt 'bash -l -c "/nas/ucb/tony/go-attack/gtp-host/go_attack/sabaki/scripts/docker-katago-custom.sh gtp -model /models/adv/cyclic-adv-s545065216-d136760487.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg"'
+rnn -tt 'bash -l -c "/nas/ucb/tony/go-attack/gtp-host/go_attack/sabaki/scripts/docker-katago.sh custom gtp -model /models/adv/cyclic-adv-s545065216-d136760487.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg -config /go_attack/configs/compute/1gpu.cfg"'
 time_settings 0 1 0
 ```
