@@ -1,0 +1,9 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/engines/KataGo-custom/cpp",
+    "cmake.configureArgs": [
+        "-DUSE_BACKEND=CUDA",
+        "-DUSE_TCMALLOC=1",
+        "-DNO_GIT_REVISION=1",
+        "-DBUILD_DEBUG=1"
+    ],
+}
