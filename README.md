@@ -2,20 +2,34 @@
 
 This repository contains code for studying the adversarial robustness of KataGo.
 
-Links:
-* [Paper on arXiv](https://arxiv.org/abs/2211.00241)
-* [Website](https://goattack.alignmentfund.org/)
+Read about our research here: https://arxiv.org/abs/2211.00241.
+
+And view our website here: https://goattack.far.ai/.
+
+To run our adversary with Sabaki, see [this guide](sabaki/README.md).
+
+# Development / testing information
+
+To clone this repository,
+run one of the following commands
+```
+# Via https
+git clone --recurse-submodules https://github.com/AlignmentResearch/go_attack.git 
+
+# Via ssh
+git clone --recurse-submodules git@github.com:AlignmentResearch/go_attack.git
+```
 
 ## Git submodule: KataGo-custom
 
-Modifications to KataGo *are not* tracked in this repository and should instead be made to the [HumanCompatibleAI/KataGo-custom](https://github.com/HumanCompatibleAI/KataGo-custom) repository. We use code from KataGo-custom in this repository via Git submodules.
+Modifications to KataGo *are not* tracked in this repository and should instead be made to the [AlignmentResearch/KataGo-custom](https://github.com/AlignmentResearch/KataGo-custom) repository. We use code from KataGo-custom in this repository via Git submodules.
 
 KataGo-custom has the following significant branches:
 
 - `KataGo-custom/stable` contains our changes to the stable version of KataGo.
 - `KataGo-custom/master` tracks https://github.com/lightvector/KataGo.
 
-# Development / testing
+## Other setup
 
 You can run `pip install -e .[dev]` inside the project root directory to install all necessary dependencies.
 
@@ -43,31 +57,6 @@ parameters of the run (
     batch size,
     where to look for other config files
 ).
-
-# Helpful notebooks
-
-- [notebooks/sgf-explorer.ipynb](notebooks/sgf-explorer.ipynb) loads self/victim-play games into a pandas dataframe and lets you do some data analysis. One thing I use this file for is to pick out specific games I then load into a visualizer.
-
-# Prerequisite & Dependencies
-
-- **Summary**: For this project, we use **Docker** and **Git** to set up the dependencies and environment.
-- **Docker image**: HumanCompatibleAI/go_attack:latest
-- **GitHub repo**:
-    - Project code: https://github.com/HumanCompatibleAI/go_attack
-    - Agent code: https://github.com/HumanCompatibleAI/KataGo-custom
-    - Controller code: https://github.com/HumanCompatibleAI/gogui
-- **Setting up**
-    - Download the repo
-        - `git clone --recurse-submodules https://github.com/HumanCompatibleAI/go_attack.git`
-        - `cd go_attack`
-    - Build C++ and Python Docker containers, and run the C++ container. A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory inside the container.
-        - `docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp`
-        - `docker build . -f compose/python/Dockerfile -t humancompatibleai/goattack:python`
-        - `docker run --gpus all -v ~/go_attack:/go_attack -it humancompatibleai/goattack:cpp`
-    - Download model weights
-        - `cd /go_attack/configs/katago && wget -i model_list.txt -P /go_attack/victim-models`
-    - Test if the installation is successful
-        - `cd /engines/KataGo-custom/cpp/ && ./katago benchmark -model /go_attack/victim-models/g170-b40c256x2-s5095420928-d1229425124.bin.gz -config /go_attack/configs/katago/baseline_attack.cfg`
 
 # Baseline attacks
 
