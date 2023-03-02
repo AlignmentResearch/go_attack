@@ -13,7 +13,7 @@ To run our adversary with Sabaki, see [this guide](sabaki/README.md).
 To clone this repository,
 run one of the following commands
 ```
-# Via https
+# Via HTTPS
 git clone --recurse-submodules https://github.com/AlignmentResearch/go_attack.git 
 
 # Via ssh
