@@ -9,8 +9,8 @@ cd ${GIT_ROOT}
 # Get which submodule to use (raw or custom)
 KATAGO_TYPE=$1; shift
 
-# Build and run the docker image
-# Manually change the assigned gpu devices as needed.
+# Build and run the Docker image
+# Manually change the assigned GPU devices as needed.
 docker run \
     --gpus device=5 \
     -v ${GIT_ROOT}/sabaki/models:/models \
