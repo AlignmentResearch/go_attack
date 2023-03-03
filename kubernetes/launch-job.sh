@@ -143,6 +143,7 @@ ctl job run --container \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME $USE_GATING" \
     "/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM" \
     --high-priority \
+    --shared-host-dir-slow-tolerant \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
@@ -166,6 +167,7 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME $USE_WARMSTART" \
       --gpu 1 \
+      --shared-host-dir-slow-tolerant \
       --name go-train-"$1"-extra \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
 fi
