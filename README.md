@@ -16,25 +16,21 @@ run one of the following commands
 # Via HTTPS
 git clone --recurse-submodules https://github.com/AlignmentResearch/go_attack.git 
 
-# Via ssh
+# Via SSH
 git clone --recurse-submodules git@github.com:AlignmentResearch/go_attack.git
 ```
-
-## Git submodule: KataGo-custom
-
-Modifications to KataGo *are not* tracked in this repository and should instead be made to the [AlignmentResearch/KataGo-custom](https://github.com/AlignmentResearch/KataGo-custom) repository. We use code from KataGo-custom in this repository via Git submodules.
-
-KataGo-custom has the following significant branches:
-
-- `KataGo-custom/stable` contains our changes to the stable version of KataGo.
-- `KataGo-custom/master` tracks https://github.com/lightvector/KataGo.
-
-## Other setup
 
 You can run `pip install -e .[dev]` inside the project root directory to install all necessary dependencies.
 
 To run a pre-commit script before each commit, run `pre-commit install` (`pre-commit` should already have been installed in the previous step).
 You may also want to run `pre-commit install` from `engines/KataGo-custom` to install that repository's respective commit hook.
+
+## Git submodules
+
+Modifications to KataGo *are not* tracked in this repository and should instead be made to the [AlignmentResearch/KataGo-custom](https://github.com/AlignmentResearch/KataGo-custom) repository. We use code from KataGo-custom in this repository via a Git submodule.
+
+- [engines/KataGo-custom](engines/KataGo-custom) tracks the `stable` branch of the `KataGo-custom` repository.
+- [engines/KataGo-raw](engines/KataGo-raw) tracks the `master` branch of https://github.com/lightvector/KataGo.
 
 ## Individual containers
 
@@ -44,6 +40,12 @@ More specifically:
 2. The Python training portion of KataGo runs in the container defined at [compose/python/Dockerfile](compose/python/Dockerfile).
 
 The Dockerfiles contain instructions for how to build them individually. This is useful if you want to test just one of the docker containers.
+
+A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory inside the container.
+To run a docker container, you can use a command like
+```
+docker run --gpus all -v ~/go_attack:/go_attack -it humancompatibleai/goattack:cpp
+```
 
 ## Docker compose
 
