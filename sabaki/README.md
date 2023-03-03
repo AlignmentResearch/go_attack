@@ -74,11 +74,11 @@ time_settings 0 1 0
 ```
 
 ## Internal notes
-The following config enables playing against an adversary (or victim) over ssh.
-To do this on a machine M without /nas/ access,
-you need to clone the go-attack repo on M,
+The following config enables playing against an adversary (or victim) over SSH.
+To do this on a machine M without `/nas/` access,
+you need to clone the `go_attack` repo on M,
 download the adversary and victim models on M,
-and make sure docker works on M.
+and make sure Docker works on M.
 ```
 # Cyclic-adversary over ssh
 ssh-cyclic-adv-s545m-v600-vm-cp505-v1-s
