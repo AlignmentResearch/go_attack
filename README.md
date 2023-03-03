@@ -58,7 +58,7 @@ parameters of the run (
     where to look for other config files
 ).
 
-## Website and analysis notebooks.
+## Website and analysis notebooks
 
 See [AlignmentResearch/KataGoVisualizer](https://github.com/AlignmentResearch/KataGoVisualizer).
 
