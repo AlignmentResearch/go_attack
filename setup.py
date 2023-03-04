@@ -41,7 +41,7 @@ setup(
     description="Research code attacking Go AI systems",
     long_description=get_readme(),
     long_description_content_type="text/markdown",
-    author="Center for Human-Compatible AI",
+    author="FAR AI et al",
     python_requires=">=3.8.0",
     packages=find_packages("src"),
     package_dir={"": "src"},
@@ -80,7 +80,7 @@ setup(
         ],
         "test": TESTS_REQUIRE,
     },
-    url="https://github.com/HumanCompatibleAI/go_attack",
+    url="https://github.com/AlignmentResearch/go_attack",
     license="MIT",
     classifiers=[
         # Trove classifiers
