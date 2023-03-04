@@ -9,7 +9,7 @@ CP127_NAME=kata1-b20c256x2-s5303129600-d1228401921
 /go_attack/kubernetes/log-git-commit.sh "$OUTPUT_DIR"
 
 python3 go_attack/scripts/baseline_attack.py \
-  --config go_attack/configs/gtp-base.cfg \
+  --config go_attack/configs/gtp-1gpu.cfg \
   --models /shared/victims/"$CP505_NAME".bin.gz \
     /shared/victims/"$CP127_NAME".bin.gz \
   --num-games 150 \
