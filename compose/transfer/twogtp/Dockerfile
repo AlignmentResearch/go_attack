@@ -14,7 +14,7 @@ RUN apt-get update --quiet \
   wget \
   zip
 
-RUN git clone --depth=1 --branch=v0.0.0 https://github.com/HumanCompatibleAI/gogui
+RUN git clone --depth=1 --branch=v0.0.0 https://github.com/AlignmentResearch/gogui
 WORKDIR gogui
 
 # Code changes to these gogui installation commands likely should be copied to

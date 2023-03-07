@@ -14,7 +14,7 @@ To clone this repository,
 run one of the following commands
 ```
 # Via HTTPS
-git clone --recurse-submodules https://github.com/AlignmentResearch/go_attack.git 
+git clone --recurse-submodules https://github.com/AlignmentResearch/go_attack.git
 
 # Via SSH
 git clone --recurse-submodules git@github.com:AlignmentResearch/go_attack.git
