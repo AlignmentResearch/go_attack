@@ -94,6 +94,7 @@ ctl job run --container \
   ${GAMES_PER_REPLICA}
   $*" \
   --high-priority \
+  --shared-host-dir-slow-tolerant \
   --gpu 1 \
   --gpu-type NVIDIA-A100-SXM4-80GB,NVIDIA-A100-SXM4-40GB,NVIDIA-RTX-A6000 \
   --name go-match-"$PREFIX" \
