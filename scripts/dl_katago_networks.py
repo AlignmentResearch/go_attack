@@ -13,12 +13,15 @@ from tqdm.auto import tqdm
 
 @dataclasses.dataclass
 class Config:
-    download_dir: str = "/nas/ucb/tony/go-attack/katago-networks"
+    """Configuration for the script."""
+
+    download_dir: str = "/nas/ucb/k8/go-attack/katago-networks"
 
     dry_run: bool = False
 
 
 def get_links() -> pd.Series:
+    """Parses the network table from https://katagotraining.org/networks/."""
     r = requests.get("https://katagotraining.org/networks/")
     soup = BeautifulSoup(r.content, "html.parser")
 
@@ -35,6 +38,10 @@ def get_links() -> pd.Series:
 
 
 def main(cfg: Config):
+    """
+    Downloads KataGo networks from https://katagotraining.org/networks/.
+    Only downloads networks that have not already been downloaded.
+    """
     links = get_links()
 
     # Filter out models that have already been downloaded
@@ -60,7 +67,7 @@ def main(cfg: Config):
                     f.write(chunk)
 
         # The KataGo server has a rate limit of 20r/m
-        # Per https://github.com/katago/katago-server/blob/master/compose/production/nginx/default.conf.template
+        # Per https://github.com/katago/katago-server/blob/master/compose/production/nginx/default.conf.template # noqa: E501
         # So we will wait 3 seconds between each download
         time.sleep(3)
 
