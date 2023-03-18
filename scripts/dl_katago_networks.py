@@ -38,9 +38,12 @@ def get_links() -> pd.Series:
 
 
 def main(cfg: Config):
-    """
-    Downloads KataGo networks from https://katagotraining.org/networks/.
+    """Downloads KataGo networks from https://katagotraining.org/networks/.
+
     Only downloads networks that have not already been downloaded.
+
+    Args:
+        cfg: Configuration for the script.
     """
     links = get_links()
 
