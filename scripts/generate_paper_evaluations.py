@@ -441,6 +441,7 @@ def generate_katago_ckpt_sweep_evaluation(
     # Fetch victims from victim_dir newer than victim_start
     create_devbox_fn = create_dummy_devbox if use_local_checkpoints else create_devbox
     with create_devbox_fn() as devbox:
+        # TODO: Make this work on devboxes...
         victim_paths = victim_dir.glob("*.bin.gz")
         victims: List[str] = [
             p.name
