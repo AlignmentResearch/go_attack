@@ -17,7 +17,7 @@ import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import IO, Any, Iterable, Mapping, Sequence, Union
+from typing import IO, Any, Iterable, List, Mapping, Sequence, Union
 
 import numpy as np
 import yaml
@@ -222,7 +222,9 @@ def write_victims(
         write_bot(
             f=f,
             bot_index=bot_index_offset + i,
-            bot_path=f"/shared/victims/{victim['filename']}",
+            bot_path=f"/shared/victims/{victim['filename']}"
+            if "path" not in victim
+            else victim["path"],
             bot_name=victim["name"],
             num_visits=victim["visits"],
             bot_algorithm="MCTS",
@@ -414,6 +416,106 @@ def generate_training_checkpoint_sweep_evaluation(
     print(f"\nExperiment: {job_description}\nCommand:\n{command}\n")
 
 
+def generate_katago_ckpt_sweep_evaluation(
+    parameters: Mapping[str, Any],
+    config_dir: Path,
+    repo_root: Path,
+    use_local_checkpoints: bool,
+) -> None:
+    """Evaluate our adversary against different KataGo checkpoints."""
+    parameters_key = "katago_ckpt_sweep"
+    if parameters_key not in parameters:
+        return
+    parameters = parameters[parameters_key]
+
+    def get_drows(s: str) -> int:
+        """
+        Accepted formats:
+            'kata1-b40c256-s11840935168-d2898845681'
+            'kata1-b40c256-s11840935168-d2898845681.bin.gz'
+        """
+        return int(s.rstrip(".bin.gz").split("-d")[-1])
+
+    victim_dir = Path(parameters["victim_dir"])
+    victim_start_drows: int = get_drows(parameters["victim_start"])
+    # Fetch victims from victim_dir newer than victim_start
+    create_devbox_fn = create_dummy_devbox if use_local_checkpoints else create_devbox
+    with create_devbox_fn() as devbox:
+        victim_paths = victim_dir.glob("*.bin.gz")
+        victims: List[str] = [
+            p.name
+            for p in victim_paths
+            if "kata1-b18c384nbt-uec" not in p.name
+            and get_drows(p.name) >= victim_start_drows
+        ]
+
+        # Sort victims by drows
+        victims.sort(key=get_drows)
+
+    evaluation_config_dir = config_dir / "katago_ckpt_sweep_evaluation"
+    evaluation_config_dir.mkdir(parents=True, exist_ok=True)
+
+    # Each victim checkpoint costs GPU memory, so we cannot give every
+    # checkpoint to a job if the number of checkpoints is high.
+    # Instead, we split the checkpoints up among several jobs.
+    n_victims_per_gpu: int = parameters["n_victims_per_gpu"]
+
+    # Write adversary config
+    adversary_config = evaluation_config_dir / "adversary.cfg"
+    with open(adversary_config, "w") as f:
+        f.write("logSearchInfo = false\n")
+        write_adversaries(
+            f=f,
+            adversaries=[
+                {
+                    "path": parameters["adversary_path"],
+                    "algorithm": parameters["adversary_algorithm"],
+                    "visits": parameters["adversary_visits"],
+                }
+            ],
+        )
+
+    # Write victim configs
+    job_commands = []
+    job_description: str = "evaluate adversary against several KataGo checkpoints"
+    for idx_start in range(0, len(victims), n_victims_per_gpu):
+        idx_end = min(idx_start + n_victims_per_gpu, len(victims))
+        job_name = f"victims-{idx_start}-to-{idx_end - 1}"
+        job_config = evaluation_config_dir / f"{job_name}.cfg"
+
+        with open(job_config, "w") as f:
+            job_victims = victims[idx_start:idx_end]
+            num_games = len(job_victims) * parameters["num_games_per_matchup"]
+            usage_string = get_usage_string(
+                repo_root=repo_root,
+                job_description=job_description,
+                job_name=job_name,
+                default_num_gpus=1,
+                num_games=num_games,
+                configs=[adversary_config, job_config],
+            )
+            f.write(str_to_comment(usage_string.usage_string))
+            job_commands.append(usage_string.command)
+
+            f.write(f"numGamesTotal = {num_games}\n")
+            f.write(f"numBots = {len(job_victims) + 1}\n")
+            write_victims(
+                f=f,
+                victims=[
+                    {
+                        "path": victim_dir / victim,
+                        "name": victim.lstrip("kata1-").rstrip(".bin.gz"),
+                        "visits": parameters["victim_visits"],
+                    }
+                    for victim in job_victims
+                ],
+                bot_index_offset=1,
+            )
+
+    command = "\n".join(job_commands)
+    print(f"\nExperiment: {job_description}\nCommand:\n{command}\n")
+
+
 def generate_victim_visit_sweep_evaluation(
     parameters: Mapping[str, Any],
     config_dir: Path,
@@ -568,6 +670,12 @@ def main():
         repo_root=repo_root,
     )
     generate_training_checkpoint_sweep_evaluation(
+        evaluation_parameters,
+        config_dir=config_dir,
+        repo_root=repo_root,
+        use_local_checkpoints=args.use_local_training_checkpoints,
+    )
+    generate_katago_ckpt_sweep_evaluation(
         evaluation_parameters,
         config_dir=config_dir,
         repo_root=repo_root,
