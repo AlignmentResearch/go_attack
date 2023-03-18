@@ -75,7 +75,7 @@ training_checkpoint_sweep:
 
 # Experiment: evaluate adversary vs. KataGo checkpoints.
 katago_ckpt_sweep:
-  num_games_per_matchup: 100
+  num_games_per_matchup: 50
   # Adversary config
   adversary_algorithm: AMCTS
   adversary_visits: 600
@@ -83,12 +83,12 @@ katago_ckpt_sweep:
     /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models\
     /t0-s545065216-d136760487/model.bin.gz"  # cyclic-adv-s545m
   # Victim config
-  victim_visits: 1600
+  victim_visits: 200
   victim_dir: /nas/ucb/tony/go-attack/katago-networks
   # We evaluate victims newer or equal to this checkpoint.
   # We compute victim order using the d value
   victim_start: kata1-b40c256-s11840935168-d2898845681  # cp505
-  n_victims_per_gpu: 8  # "b40 nets already take 3913 MB." - ttseng
+  n_victims_per_gpu: 6  # "b40 nets already take 3913 MB." - ttseng
 
 # Experiment: evaluate adversary vs. victim with varying victim visits.
 victim_visit_sweep:
