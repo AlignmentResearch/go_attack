@@ -445,7 +445,7 @@ def generate_katago_ckpt_sweep_evaluation(
         victims: List[str] = [
             p.name
             for p in victim_paths
-            if "kata1-b18c384nbt-uec" not in p.name
+            if "nbt" not in p.name  # nbt is network version 11, we don't support it yet
             and get_drows(p.name) >= victim_start_drows
         ]
 
