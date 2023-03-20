@@ -657,6 +657,11 @@ def main():
         action="store_true",
         help="Fetch training checkpoints via local filesystem, not Hofvarpnir devbox",
     )
+    parser.add_argument(
+        "--skip-training-checkpoint-sweep",
+        action="store_true",
+        help="Skip generating the training checkpoint sweep evaluation",
+    )
     args = parser.parse_args()
 
     config_dir = args.output_dir
@@ -670,12 +675,13 @@ def main():
         config_dir=config_dir,
         repo_root=repo_root,
     )
-    generate_training_checkpoint_sweep_evaluation(
-        evaluation_parameters,
-        config_dir=config_dir,
-        repo_root=repo_root,
-        use_local_checkpoints=args.use_local_training_checkpoints,
-    )
+    if not args.skip_training_checkpoint_sweep:
+        generate_training_checkpoint_sweep_evaluation(
+            evaluation_parameters,
+            config_dir=config_dir,
+            repo_root=repo_root,
+            use_local_checkpoints=args.use_local_training_checkpoints,
+        )
     generate_katago_ckpt_sweep_evaluation(
         evaluation_parameters,
         config_dir=config_dir,
