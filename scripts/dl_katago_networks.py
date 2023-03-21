@@ -50,8 +50,8 @@ def main(cfg: Config):
     # Filter out models that have already been downloaded
     links = links[
         ~links.index.isin(
-            x.name.rstrip(".bin.gz")
-            for x in pathlib.Path(cfg.download_dir).glob("*.bin.gz")
+            x.name.rstrip(".bin.gz").rstrip(".txt.gz")
+            for x in pathlib.Path(cfg.download_dir).glob("*.gz")
         )
     ]
 
