@@ -9,8 +9,8 @@ DEFAULT_NUM_GPUS=1
 usage() {
   echo "Schedules a job that runs \`match\`."
   echo
-  echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] [--use-weka] PREFIX"
-  echo "          [--EXTRA_MATCH_FLAGS]"
+  echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] [--use-weka] [--subdir SUBDIR] PREFIX"
+  echo "           [--EXTRA_MATCH_FLAGS]"
   echo
   echo "positional arguments:"
   echo "  PREFIX     Identifying label used for the name of the job and the name"
@@ -27,6 +27,8 @@ usage() {
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
   echo "    volume."
+  echo "  -s, --subdir SUBDIR"
+  echo "    Subdirectory of the output directory to store the results in."
   echo
   echo "Optional arguments should be specified before positional arguments."
   echo
@@ -44,6 +46,7 @@ while true; do
     -h|--help) usage; exit 0 ;;
     -g|--gpus) NUM_GPUS=$2; shift ;;
     -n|--games) NUM_GAMES=$2; shift ;;
+    -s|--subdir) SUBDIR=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
     *) break ;;
   esac
@@ -90,7 +93,7 @@ ctl job run --container \
   $VOLUME_FLAGS \
   --command "bash -x
   /go_attack/kubernetes/match.sh
-  /shared/match/${RUN_NAME}
+  /shared/match/${SUBDIR}/${RUN_NAME}
   ${GAMES_PER_REPLICA}
   $*" \
   --high-priority \
