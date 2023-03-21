@@ -84,11 +84,11 @@ katago_ckpt_sweep:
     /t0-s545065216-d136760487/model.bin.gz"  # cyclic-adv-s545m
   # Victim config
   victim_visits: 1
-  victim_dir: /nas/ucb/tony/go-attack/katago-networks
+  victim_dir: /nas/ucb/k8/go-attack/katago-networks
   # We evaluate victims newer or equal to this checkpoint.
   # We compute victim order using the d value
   victim_start: kata1-b40c256-s11840935168-d2898845681  # cp505
-  n_victims_per_gpu: 8  # "b40 nets already take 3913 MB." - ttseng
+  n_victims_per_gpu: 9  # "b40 nets already take 3913 MB." - ttseng
 
 # Experiment: evaluate adversary vs. victim with varying victim visits.
 victim_visit_sweep:

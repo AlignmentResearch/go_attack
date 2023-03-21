@@ -433,8 +433,9 @@ def generate_katago_ckpt_sweep_evaluation(
         Accepted formats:
             'kata1-b40c256-s11840935168-d2898845681'
             'kata1-b40c256-s11840935168-d2898845681.bin.gz'
+            'kata1-b6c96-s83588096-d12203675.txt.gz'
         """
-        return int(s.rstrip(".bin.gz").split("-d")[-1])
+        return int(s.rstrip(".bin.gz").rstrip(".txt.gz").split("-d")[-1])
 
     victim_dir = Path(parameters["victim_dir"])
     victim_start_drows: int = get_drows(parameters["victim_start"])
@@ -442,7 +443,7 @@ def generate_katago_ckpt_sweep_evaluation(
     create_devbox_fn = create_dummy_devbox if use_local_checkpoints else create_devbox
     with create_devbox_fn() as devbox:
         # TODO: Make this work on devboxes...
-        victim_paths = victim_dir.glob("*.bin.gz")
+        victim_paths = victim_dir.glob("*.gz")
         victims: List[str] = [
             p.name
             for p in victim_paths
