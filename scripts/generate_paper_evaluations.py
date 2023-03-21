@@ -428,6 +428,11 @@ def generate_katago_ckpt_sweep_evaluation(
         return
     parameters = parameters[parameters_key]
 
+    def adjust_path(p: str) -> str:
+        if use_local_checkpoints:
+            return p.replace("/nas/ucb/k8/go-attack/", "/shared/")
+        return p
+
     def get_drows(s: str) -> int:
         """
         Accepted formats:
@@ -470,7 +475,7 @@ def generate_katago_ckpt_sweep_evaluation(
             f=f,
             adversaries=[
                 {
-                    "path": parameters["adversary_path"],
+                    "path": adjust_path(parameters["adversary_path"]),
                     "algorithm": parameters["adversary_algorithm"],
                     "visits": parameters["adversary_visits"],
                 }
@@ -505,7 +510,7 @@ def generate_katago_ckpt_sweep_evaluation(
                 f=f,
                 victims=[
                     {
-                        "path": victim_dir / victim,
+                        "path": adjust_path(str(victim_dir / victim)),
                         "name": victim.lstrip("kata1-").rstrip(".bin.gz"),
                         "visits": parameters["victim_visits"],
                     }
