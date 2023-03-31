@@ -30,7 +30,7 @@ while true; do
 
   if [ "$ITERATION" -eq 1 ]; then
     WARMSTART_FLAGS="--copy-initial-model --initial-weights $INITIAL_VICTIM_WEIGHTS"
-  elif [ "$ITERATION" > 1 ]; then
+  elif [ "$ITERATION" -gt 1 ]; then
     # Warmstart from the victim of the previous iteration, which is the
     # latest trained adversary from two iterations ago.
     WARMSTART_ITERATION_DIR="$RUN_DIR"/iteration-$((ITERATION - 2))

@@ -25,7 +25,7 @@ while true; do
   else
     CONFIG=/go_attack/configs/iterated-training/alternate-experiment.cfg
   fi
-  /go_attack/kubernetes/victimplay.sh --config "$CONFIG" "WARMSTART_FLAG" \
+  /go_attack/kubernetes/victimplay.sh --config "$CONFIG" "$WARMSTART_FLAG" \
     "$RUN_NAME"/iteration-"$ITERATION" "$VOLUME_NAME" &
 
   ITERATION_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/iteration-"$ITERATION"
