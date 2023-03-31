@@ -1,10 +1,11 @@
-#!/bin/sh -eu
+#!/bin/bash -eu
 
 # The command line flags have same meaning as in from kubernetes/train.sh.
-WARMSTART_WEIGHTS_FLAG=
+WARMSTART_FLAGS=
 while [ -n "${1-}" ]; do
   case $1 in
-    --initial-weights) WARMSTART_WEIGHTS_FLAG="$1 $2"; shift ;;
+    --copy-initial-model) WARMSTART_FLAGS+="$1" ;;
+    --initial-weights) WARMSTART_FLAGS+="$1 $2"; shift ;;
     -*) echo "Unknown parameter passed: $1"; exit 1 ;;
     *) break ;;
   esac
@@ -28,17 +29,17 @@ while true; do
   echo "Starting iteration $ITERATION"
 
   if [ "$ITERATION" -eq 1 ]; then
-    WARMSTART_WEIGHTS_FLAG="--initial-weights $INITIAL_VICTIM_WEIGHTS"
+    WARMSTART_FLAGS="--copy-initial-model --initial-weights $INITIAL_VICTIM_WEIGHTS"
   elif [ "$ITERATION" > 1 ]; then
     # Warmstart from the victim of the previous iteration, which is the
     # latest trained adversary from two iterations ago.
     WARMSTART_ITERATION_DIR="$RUN_DIR"/iteration-$((ITERATION - 2))
     LATEST_MODEL=$(ls -v "$WARMSTART_ITERATION_DIR"/models | tail --lines 1)
-    WARMSTART_WEIGHTS_FLAG="--initial-weights $WARMSTART_ITERATION_DIR/models/$LATEST_MODEL"
+    WARMSTART_FLAGS="--copy-initial-model --initial-weights $WARMSTART_ITERATION_DIR/models/$LATEST_MODEL"
   fi
 
   /go_attack/kubernetes/train.sh \
-    --copy-initial-model $WARMSTART_FLAGS $RUN_NAME/iteration-"$ITERATION" \
+    $WARMSTART_FLAGS $RUN_NAME/iteration-"$ITERATION" \
     "$VOLUME_NAME" "$LR_SCALE" &
 
   ITERATION_DIR=/"$RUN_DIR"/iteration-"$ITERATION"

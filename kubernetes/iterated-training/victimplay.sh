@@ -1,4 +1,4 @@
-#!/bin/sh -eu
+#!/bin/bash -eu
 
 # The command line flags have same meaning as in from kubernetes/victimplay.sh.
 while [ -n "${1-}" ]; do

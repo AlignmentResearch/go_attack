@@ -187,10 +187,10 @@ ctl job run --container \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
     --command "$VICTIMPLAY_CMD" \
-    "EVALUTE_LOOP_CMD" \
-    "TRAIN_CMD" \
-    "SHUFFLE_AND_EXPORT_CMD" \
-    "CURRICULUM_CMD" \
+    "$EVALUATE_LOOP_CMD" \
+    "$TRAIN_CMD" \
+    "$SHUFFLE_AND_EXPORT_CMD" \
+    "$CURRICULUM_CMD" \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \

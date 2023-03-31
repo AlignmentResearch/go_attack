@@ -1,4 +1,4 @@
-#!/bin/sh -eu
+#!/bin/bash -eu
 # Common functions shared among iterated training scripts.
 
 # Checks if the curriculum has finished for the run in directory $1. If it has

@@ -1,4 +1,4 @@
-#!/bin/sh -eu
+#!/bin/bash -eu
 RUN_NAME="$1"
 VOLUME_NAME="$2"
 CURRICULUM_FILE="$3"
