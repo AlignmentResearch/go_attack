@@ -4,8 +4,8 @@
 WARMSTART_FLAGS=
 while [ -n "${1-}" ]; do
   case $1 in
-    --copy-initial-model) WARMSTART_FLAGS+="$1" ;;
-    --initial-weights) WARMSTART_FLAGS+="$1 $2"; shift ;;
+    --copy-initial-model) WARMSTART_FLAGS+=" $1" ;;
+    --initial-weights) WARMSTART_FLAGS+=" $1 $2"; shift ;;
     -*) echo "Unknown parameter passed: $1"; exit 1 ;;
     *) break ;;
   esac
