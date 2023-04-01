@@ -19,10 +19,8 @@ while true; do
   while ! is_curriculum_complete "$ITERATION_DIR"; do
     sleep 10
   done
-  echo "Finished iteration $ITERATION"
-  echo "TT DEBUGGING: jobs before $(jobs -p)"
+  echo "Finished iteration $ITERATION, killing processes $(jobs -p)"
   # Kill background shuffle and export processes
   # shellcheck disable=SC2046
   kill $(jobs -p)
-  echo "TT DEBUGGING: jobs after $(jobs -p)"
 done

@@ -34,11 +34,9 @@ while true; do
     assert_process_has_not_errored "$VICTIMPLAY_PID"
     sleep 10
   done
-  echo "Finished iteration $ITERATION"
-  echo "TT DEBUGGING: jobs before $(jobs -p)"
+  echo "Finished iteration $ITERATION, killing process $(jobs -p)"
   # shellcheck disable=SC2046
   kill $(jobs -p)
-  echo "TT DEBUGGING: jobs after  $(jobs -p)"
   # All iterations besides the first are warmstarted with the victim of the
   # previous iteration.
   WARMSTART_FLAG="--warmstart"
