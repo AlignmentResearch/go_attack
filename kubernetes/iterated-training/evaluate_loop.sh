@@ -11,7 +11,7 @@ while true; do
   ITERATION_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/iteration-"$ITERATION"
   /engines/KataGo-custom/cpp/evaluate_loop.sh \
     "$ITERATION_DIR" "$ITERATION_DIR"/eval &
-  EVALUATE_PID=$1
+  EVALUATE_PID=$!
 
   while ! is_curriculum_complete "$ITERATION_DIR"; do
     assert_process_has_not_errored "$EVALUATE_PID"
