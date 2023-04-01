@@ -1,8 +1,9 @@
 #!/bin/bash -eu
+
+source "$(dirname "$0")"/common.sh
+
 RUN_NAME="$1"
 VOLUME_NAME="$2"
-
-source $(dirname $0)/common.sh
 
 ITERATION=-1
 while true; do
@@ -15,12 +16,13 @@ while true; do
     "$VOLUME_NAME" "$USE_GATING"
 
   ITERATION_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/iteration-"$ITERATION"
-  while ! is_curriculum_complete $ITERATION_DIR; do
+  while ! is_curriculum_complete "$ITERATION_DIR"; do
     sleep 10
   done
   echo "Finished iteration $ITERATION"
-  echo "TT DEBUGGING: jobs before " $(jobs -p)
+  echo "TT DEBUGGING: jobs before $(jobs -p)"
   # Kill background shuffle and export processes
+  # shellcheck disable=SC2046
   kill $(jobs -p)
-  echo "TT DEBUGGING: jobs after " $(jobs -p)
+  echo "TT DEBUGGING: jobs after $(jobs -p)"
 done

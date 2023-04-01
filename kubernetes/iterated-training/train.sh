@@ -1,5 +1,7 @@
 #!/bin/bash -eu
 
+source "$(dirname "$0")"/common.sh
+
 # The command line flags have same meaning as in from kubernetes/train.sh.
 WARMSTART_FLAGS=
 while [ -n "${1-}" ]; do
@@ -21,7 +23,6 @@ LR_SCALE="$3"
 INITIAL_VICTIM_WEIGHTS=$4
 
 RUN_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/
-source $(dirname $0)/common.sh
 
 ITERATION=-1
 while true; do
@@ -34,22 +35,25 @@ while true; do
     # Warmstart from the victim of the previous iteration, which is the
     # latest trained adversary from two iterations ago.
     WARMSTART_ITERATION_DIR="$RUN_DIR"/iteration-$((ITERATION - 2))
+    # shellcheck disable=SC2012
     LATEST_MODEL=$(ls -v "$WARMSTART_ITERATION_DIR"/models | tail --lines 1)
     WARMSTART_FLAGS="--copy-initial-model --initial-weights $WARMSTART_ITERATION_DIR/models/$LATEST_MODEL"
   fi
 
+  # shellcheck disable=SC2086
   /go_attack/kubernetes/train.sh \
-    $WARMSTART_FLAGS $RUN_NAME/iteration-"$ITERATION" \
+    $WARMSTART_FLAGS "$RUN_NAME"/iteration-"$ITERATION" \
     "$VOLUME_NAME" "$LR_SCALE" &
   TRAIN_PID=$!
 
   ITERATION_DIR=/"$RUN_DIR"/iteration-"$ITERATION"
-  while ! is_curriculum_complete $ITERATION_DIR; do
+  while ! is_curriculum_complete "$ITERATION_DIR"; do
     assert_process_has_not_errored "$TRAIN_PID"
     sleep 10
   done
   echo "Finished iteration $ITERATION"
-  echo "TT DEBUGGING: jobs before " $(jobs -p)
+  echo "TT DEBUGGING: jobs before $(jobs -p)"
+  # shellcheck disable=SC2046
   kill $(jobs -p)
-  echo "TT DEBUGGING: jobs after " $(jobs -p)
+  echo "TT DEBUGGING: jobs after $(jobs -p)"
 done
