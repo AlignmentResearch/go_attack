@@ -31,7 +31,8 @@ is_curriculum_complete() {
     false
     return
   fi
-  CURRICULUM_LOGS=$(ls -v curriculum-*.log)
+  # shellcheck disable=SC2010
+  CURRICULUM_LOGS=$(ls -v "$CURRICULUM_LOG_DIR" | grep "^curriculum-.*\.log")
   if [ -z "$CURRICULUM_LOGS" ]; then
     false
     return
