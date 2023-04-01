@@ -27,9 +27,11 @@ while true; do
   fi
   /go_attack/kubernetes/victimplay.sh --config "$CONFIG" "$WARMSTART_FLAG" \
     "$RUN_NAME"/iteration-"$ITERATION" "$VOLUME_NAME" &
+  VICTIMPLAY_PID=$!
 
   ITERATION_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/iteration-"$ITERATION"
   while ! is_curriculum_complete $ITERATION_DIR; do
+    assert_process_has_not_errored "$VICTIMPLAY_PID"
     sleep 10
   done
   echo "Finished iteration $ITERATION"
