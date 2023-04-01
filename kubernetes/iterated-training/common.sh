@@ -40,6 +40,6 @@ is_curriculum_complete() {
   LATEST_CURRICULUM_LOG=$(echo "$CURRICULUM_LOGS" | tail --lines 1)
   LATEST_CURRICULUM_LOG="$CURRICULUM_LOG_DIR"/"$LATEST_CURRICULUM_LOG"
   LAST_LOG_LINE=$(tail --lines 1 "$LATEST_CURRICULUM_LOG")
-  [[ $LAST_LOG_LINE == "Curriculum is done"* ]]
+  [[ $LAST_LOG_LINE == "Curriculum finished"* ]]
   return
 }
