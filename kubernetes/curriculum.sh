@@ -15,7 +15,7 @@ done
 RUN_NAME="$1"
 VOLUME_NAME="$2"
 CURRICULUM_FILE="$3"
-INPUT_MODELS_DIR=${INPUT_MODELS_DIR:/"$VOLUME_NAME"/victims}
+INPUT_MODELS_DIR=${INPUT_MODELS_DIR:-/"$VOLUME_NAME"/victims}
 python /engines/KataGo-custom/python/curriculum.py \
     -selfplay-dir=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/ \
     -input-models-dir="$INPUT_MODELS_DIR" \
