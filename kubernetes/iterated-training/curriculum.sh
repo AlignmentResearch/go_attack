@@ -17,11 +17,11 @@ while true; do
   echo "Starting iteration $ITERATION"
   ITERATION_DIR="$RUN_DIR"/iteration-"$ITERATION"
   # Skip completed iterations (this may occur if the curriculum process is relaunched)
-  if is_curriculum_complete "$ITERATION_DIR"; then
+  if is_curriculum_done "$ITERATION_DIR"; then
     continue
   fi
 
-  run_until_curriculum_complete "$ITERATION_DIR" \
+  run_until_curriculum_done "$ITERATION_DIR" \
     /go_attack/kubernetes/curriculum.sh --input-models-dir "$INPUT_MODELS_DIR" \
     "$RUN_NAME"/iteration-"$ITERATION" "$VOLUME_NAME" \
     "$ITERATION_CURRICULUM_FILE"

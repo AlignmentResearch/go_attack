@@ -25,7 +25,7 @@ assert_process_has_not_errored() {
 # Checks if the curriculum has finished for the run in directory $1. If it has
 # finished, the function returns exit code 0, otherwise it returns a non-zero
 # exit code.
-is_curriculum_complete() {
+is_curriculum_done() {
   local CURRICULUM_LOG_DIR="$1"/selfplay
   if [ ! -d "$CURRICULUM_LOG_DIR" ]; then
     false
@@ -56,9 +56,9 @@ run_until_curriculum_done() {
   # use setsid to give the command its own process group. Then we can kill that
   # process group to kill the command along with all its child processes.
   setsid "$COMMAND" &
-  local COMMAND_PID=$1
+  local COMMAND_PID=$!
 
-  while ! is_curriculum_complete "$RUN_DIR"; do
+  while ! is_curriculum_done "$RUN_DIR"; do
     assert_process_has_not_errored "$COMMAND_PID"
     sleep 10
   done
