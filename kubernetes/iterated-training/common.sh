@@ -50,12 +50,11 @@ is_curriculum_done() {
 run_until_curriculum_done() {
   local RUN_DIR=$1
   shift
-  local COMMAND="$@"
 
   # To make sure we also kill any child processes when we run the command, we
   # use setsid to give the command its own process group. Then we can kill that
   # process group to kill the command along with all its child processes.
-  setsid "$COMMAND" &
+  setsid "$@" &
   local COMMAND_PID=$!
 
   while ! is_curriculum_done "$RUN_DIR"; do
