@@ -40,18 +40,9 @@ while true; do
     WARMSTART_FLAGS="--copy-initial-model --initial-weights $WARMSTART_ITERATION_DIR/models/$LATEST_MODEL"
   fi
 
-  # shellcheck disable=SC2086
-  /go_attack/kubernetes/train.sh \
-    $WARMSTART_FLAGS "$RUN_NAME"/iteration-"$ITERATION" \
-    "$VOLUME_NAME" "$LR_SCALE" &
-  TRAIN_PID=$!
-
   ITERATION_DIR=/"$RUN_DIR"/iteration-"$ITERATION"
-  while ! is_curriculum_complete "$ITERATION_DIR"; do
-    assert_process_has_not_errored "$TRAIN_PID"
-    sleep 10
-  done
-  echo "Finished iteration $ITERATION, killing process $(jobs -p)"
-  # shellcheck disable=SC2046
-  kill $(jobs -p)
+  # shellcheck disable=SC2086
+  run_until_curriculum_done "$ITERATION_DIR" \
+    /go_attack/kubernetes/train.sh $WARMSTART_FLAGS \
+    "$RUN_NAME"/iteration-"$ITERATION" "$VOLUME_NAME" "$LR_SCALE"
 done

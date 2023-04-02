@@ -8,16 +8,9 @@ ITERATION=-1
 while true; do
   ITERATION=$((ITERATION + 1))
   echo "Starting iteration $ITERATION"
-  ITERATION_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/iteration-"$ITERATION"
-  /engines/KataGo-custom/cpp/evaluate_loop.sh \
-    "$ITERATION_DIR" "$ITERATION_DIR"/eval &
-  EVALUATE_PID=$!
 
-  while ! is_curriculum_complete "$ITERATION_DIR"; do
-    assert_process_has_not_errored "$EVALUATE_PID"
-    sleep 10
-  done
-  echo "Finished iteration $ITERATION, killing process $(jobs -p)"
-  # shellcheck disable=SC2046
-  kill $(jobs -p)
+  ITERATION_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/iteration-"$ITERATION"
+  run_until_curriculum_done "$ITERATION_DIR" \
+    /engines/KataGo-custom/cpp/evaluate_loop.sh "$ITERATION_DIR" \
+    "$ITERATION_DIR"/eval
 done

@@ -21,11 +21,10 @@ while true; do
     continue
   fi
 
-  python /engines/KataGo-custom/python/curriculum.py \
-      -selfplay-dir="$ITERATION_DIR"/selfplay/ \
-      -input-models-dir="$INPUT_MODELS_DIR" \
-      -output-models-dir=/"$ITERATION_DIR"/victims \
-      -config-json-file="$ITERATION_CURRICULUM_FILE"
+  run_until_curriculum_complete "$ITERATION_DIR" \
+    /go_attack/kubernetes/curriculum.sh --input-models-dir "$INPUT_MODELS_DIR" \
+    "$RUN_NAME"/iteration-"$ITERATION" "$VOLUME_NAME" \
+    "$ITERATION_CURRICULUM_FILE"
   echo "Finished iteration $ITERATION"
 
   # For the next iteration, we set INPUT_MODELS_DIR and the curriculum to point
