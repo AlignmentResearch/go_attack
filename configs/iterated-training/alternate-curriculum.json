@@ -2,7 +2,7 @@
     {
         "_comment": "This curriculum is used on every other iteration of iteration training. The contents of the name field are ignored in iterated adversarial training, except for the initial iteration, which doesn't use this curriculum config.",
         "name": "",
-        "max_visits_victim": 2,
-        "win_rate": 0.11
+        "max_visits_victim": 600,
+        "win_rate": 0.9
     }
 ]
