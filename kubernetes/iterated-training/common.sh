@@ -31,15 +31,18 @@ is_curriculum_done() {
     false
     return
   fi
+  local CURRICULUM_LOGS
   # shellcheck disable=SC2010
-  local CURRICULUM_LOGS=$(ls -v "$CURRICULUM_LOG_DIR" | grep "^curriculum-.*\.log")
+  CURRICULUM_LOGS=$(ls -v "$CURRICULUM_LOG_DIR" | grep "^curriculum-.*\.log")
   if [ -z "$CURRICULUM_LOGS" ]; then
     false
     return
   fi
-  local LATEST_CURRICULUM_LOG=$(echo "$CURRICULUM_LOGS" | tail --lines 1)
+  local LATEST_CURRICULUM_LOG
+  LATEST_CURRICULUM_LOG=$(echo "$CURRICULUM_LOGS" | tail --lines 1)
   LATEST_CURRICULUM_LOG="$CURRICULUM_LOG_DIR"/"$LATEST_CURRICULUM_LOG"
-  local LAST_LOG_LINE=$(tail --lines 1 "$LATEST_CURRICULUM_LOG")
+  local LAST_LOG_LINE
+  LAST_LOG_LINE=$(tail --lines 1 "$LATEST_CURRICULUM_LOG")
   [[ $LAST_LOG_LINE == "Curriculum finished"* ]]
   return
 }
