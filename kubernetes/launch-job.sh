@@ -74,11 +74,12 @@ usage() {
   echo "In iterated adversarial training, after the curriculum CURRICULUM"
   echo "finishes, the run restarts with the latest adversary and"
   echo "victim networks swapped. The curriculum is switched to"
-  echo "ALTERNATE_CURRICULUM and the victimplay config is switched from"
-  echo "active-experiment.cfg to iterated-training/alternate-experiment.cfg."
-  echo "This repeats indefinitely with the curriculum and config switching each"
-  echo "iteration. The \"name\" fields in the curricula are ignored except in"
-  echo "the first iteration."
+  echo "ALTERNATE_CURRICULUM, the victimplay config is switched from"
+  echo "active-experiment.cfg to iterated-training/alternate-experiment.cfg,"
+  echo "and the evaluate-loop config is switched from match-1gpu.cfg to"
+  echo "iterated-training/alternate-match-1gpu.cfg. This repeats indefinitely"
+  echo "with the curriculum and config switching each iteration. The \"name\""
+  echo "fields in the curricula are ignored except in the first iteration."
 }
 
 CURRICULUM=${DEFAULT_CURRICULUM}

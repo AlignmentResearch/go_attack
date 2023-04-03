@@ -6,7 +6,7 @@
     },
     {
         "name": "kata1-b40c256-s11840935168-d2898845681.bin.gz",
-        "max_visits_victim": 600,
+        "max_visits_victim": 300,
         "win_rate": 0.75
     }
 ]
