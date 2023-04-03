@@ -12,9 +12,10 @@ DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
-  echo "          [--iterated-training] [--curriculum CURRICULUM]"
+  echo "          [--iterated-training] [alternate-iteration-first]"
+  echo "          [--curriculum CURRICULUM]"
   echo "          [--alternate-curriculum ALTERNATE_CURRICULUM] [--gating]"
-  echo "          [--lr-scale LR_SCALE] [--predictor] "
+  echo "          [--lr-scale LR_SCALE] [--predictor]"
   echo "          [--predictor-warmstart-ckpt CHECKPOINT] [--resume TIMESTAMP]"
   echo "          [--warmstart-ckpt CHECKPOINT] [--victim-ckpt CHECKPOINT]"
   echo "          [--use-weka] PREFIX"
@@ -32,6 +33,9 @@ usage() {
   echo "    default: twice the minimum number of GPUs."
   echo "  --iterated-training"
   echo "    Perform iterated adversarial training."
+  echo "  --alternate-iteration-first"
+  echo "    Only for iterated training. Use alternate configs on even"
+  echo "    (zero-indexed) iterations instead of odd iterations."
   echo "  -c CURRICULUM, --curriculum CURRICULUM"
   echo "    Path to curriculum JSON file to use for victimplay."
   echo "    default: ${DEFAULT_CURRICULUM}"
@@ -82,6 +86,7 @@ usage() {
   echo "fields in the curricula are ignored except in the first iteration."
 }
 
+ALTERNATE_ITERATION_FIRST=0
 CURRICULUM=${DEFAULT_CURRICULUM}
 ALTERNATE_CURRICULUM=${DEFAULT_ALTERNATE_CURRICULUM}
 LR_SCALE=${DEFAULT_LR_SCALE}
@@ -94,6 +99,7 @@ while [ -n "${1-}" ]; do
     -g|--victimplay-gpus) MIN_VICTIMPLAY_GPUS=$2; shift ;;
     -m|--victimplay-max-gpus) MAX_VICTIMPLAY_GPUS=$2; shift ;;
     --iterated-training) USE_ITERATED_TRAINING=1 ;;
+    --alternate-iteration-first) ALTERNATE_ITERATION_FIRST=1; ;;
     -c|--curriculum) CURRICULUM=$2; shift ;;
     --alternate-curriculum) ALTERNATE_CURRICULUM=$2; shift ;;
     --gating) USE_GATING=1 ;;
@@ -166,11 +172,11 @@ if [ -n "${USE_ITERATED_TRAINING:-}" ]; then
     echo "--victim-ckpt must be specified for iterated training."
     exit 1
   fi
-  VICTIMPLAY_CMD="/go_attack/kubernetes/iterated-training/victimplay.sh $VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME"
-  EVALUATE_LOOP_CMD="/go_attack/kubernetes/iterated-training/evaluate_loop.sh $RUN_NAME $VOLUME_NAME"
+  VICTIMPLAY_CMD="/go_attack/kubernetes/iterated-training/victimplay.sh $VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME $ALTERNATE_ITERATION_FIRST"
+  EVALUATE_LOOP_CMD="/go_attack/kubernetes/iterated-training/evaluate_loop.sh $RUN_NAME $VOLUME_NAME $ALTERNATE_ITERATION_FIRST"
   TRAIN_CMD="/go_attack/kubernetes/iterated-training/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE $VICTIM_CKPT"
   SHUFFLE_AND_EXPORT_CMD="/go_attack/kubernetes/iterated-training/shuffle-and-export.sh $RUN_NAME $VOLUME_NAME"
-  CURRICULUM_CMD="/go_attack/kubernetes/iterated-training/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM $ALTERNATE_CURRICULUM"
+  CURRICULUM_CMD="/go_attack/kubernetes/iterated-training/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM $ALTERNATE_CURRICULUM $ALTERNATE_ITERATION_FIRST"
 else
   VICTIMPLAY_CMD+="$VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME"
   EVALUATE_LOOP_CMD="/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval"

@@ -3,13 +3,14 @@ source "$(dirname "$0")"/common.sh
 
 RUN_NAME="$1"
 VOLUME_NAME="$2"
+ALTERNATE_ITERATION_FIRST="$3"
 
 ITERATION=-1
 while true; do
   ITERATION=$((ITERATION + 1))
   echo "Starting iteration $ITERATION"
 
-  if [ $((ITERATION % 2)) -eq 0 ]; then
+  if [ $((ITERATION % 2)) -eq "$ALTERNATE_ITERATION_FIRST" ]; then
     CONFIG=/go_attack/configs/match-1gpu.cfg
   else
     CONFIG=/go_attack/configs/iterated-training/alternate-match-1gpu.cfg
