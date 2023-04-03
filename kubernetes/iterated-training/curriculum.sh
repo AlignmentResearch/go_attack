@@ -16,7 +16,7 @@ while true; do
   ITERATION=$((ITERATION + 1))
   echo "Starting iteration $ITERATION"
   ITERATION_DIR="$RUN_DIR"/iteration-"$ITERATION"
-  # Skip completed iterations (this may occur if the curriculum process is relaunched)
+  # Skip completed iterations (needed if the curriculum process was relaunched).
   if is_curriculum_done "$ITERATION_DIR"; then
     continue
   fi

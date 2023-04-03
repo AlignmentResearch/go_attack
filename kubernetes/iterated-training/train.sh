@@ -2,8 +2,8 @@
 
 source "$(dirname "$0")"/common.sh
 
-# The command line flags have same meaning as in from kubernetes/train.sh.
 WARMSTART_FLAGS=
+# The command line flags have same meaning as in from kubernetes/train.sh.
 while [ -n "${1-}" ]; do
   case $1 in
     --copy-initial-model) WARMSTART_FLAGS+=" $1" ;;
