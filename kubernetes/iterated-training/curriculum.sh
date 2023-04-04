@@ -16,10 +16,6 @@ while true; do
   ITERATION=$((ITERATION + 1))
   echo "Starting iteration $ITERATION"
   ITERATION_DIR="$RUN_DIR"/iteration-"$ITERATION"
-  # Skip completed iterations (needed if the curriculum process was relaunched).
-  if is_curriculum_done "$ITERATION_DIR"; then
-    continue
-  fi
 
   if [ $((ITERATION % 2)) -eq "$ALTERNATE_ITERATION_FIRST" ]; then
     BASE_CURRICULUM_FILE="$CURRICULUM_FILE"
