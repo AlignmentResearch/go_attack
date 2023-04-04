@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
 # Flags must be specified before positional arguments.

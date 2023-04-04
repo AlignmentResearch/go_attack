@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 CONFIG=/go_attack/configs/active-experiment.cfg
 while [ -n "${1-}" ]; do
