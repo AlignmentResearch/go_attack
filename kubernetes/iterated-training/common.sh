@@ -70,5 +70,5 @@ run_until_curriculum_done() {
     fi
     sleep 15
   done
-  kill -- -"$COMMAND_PID"
+  kill -- -"$COMMAND_PID" || true
 }
