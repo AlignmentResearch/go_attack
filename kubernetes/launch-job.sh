@@ -12,7 +12,7 @@ DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
 usage() {
   echo "Usage: $0 [--victimplay-gpus GPUS] [--victimplay-max-gpus MAX_GPUS]"
-  echo "          [--iterated-training] [alternate-iteration-first]"
+  echo "          [--iterated-training] [--alternate-iteration-first]"
   echo "          [--curriculum CURRICULUM]"
   echo "          [--alternate-curriculum ALTERNATE_CURRICULUM] [--gating]"
   echo "          [--lr-scale LR_SCALE] [--predictor]"
