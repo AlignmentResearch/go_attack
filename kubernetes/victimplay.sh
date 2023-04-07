@@ -14,5 +14,6 @@ mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"
     -output-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/ \
     -models-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/models/ \
     -nn-victim-path /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/victims/ \
+    -config /go_attack/configs/amcts/victimplay.cfg \
     -config /go_attack/configs/active-experiment.cfg \
     -config /go_attack/configs/compute/1gpu.cfg
