@@ -69,7 +69,7 @@ usage() {
   echo "  --victim-ckpt CHECKPOINT"
   echo "    Only for and is required for iterated training. Path to the TF"
   echo "    weights directory for the last victim (i.e., the bot not"
-  echo "    being trained) in the initial iteration's curriculum (CURRICULUM",
+  echo "    being trained) in the initial iteration's curriculum (CURRICULUM,"
   echo "    or ALTERNATE_CURRICULUM if --alternate-iteration-first is set)."
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
