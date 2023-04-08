@@ -28,16 +28,17 @@ if [ -z "$INITIAL_WEIGHTS" ]; then
     MODEL_KIND=b6c96
 else
     echo "Using initial weights: $INITIAL_WEIGHTS"
-    # shellcheck disable=SC2001
-    MODEL_KIND=$(echo "$INITIAL_WEIGHTS" | sed "s/.*\(b[0-9]\+c[0-9]\+\).*/\1/")
+    # The train script will use the model kind specified by the warmstarted
+    # model's config. MODEL_KIND is ignored.
+    MODEL_KIND="unused"
 
     if [ ! -d "$INITIAL_WEIGHTS" ]; then
         echo "Error: initial weights do not exist: $INITIAL_WEIGHTS"
         exit 1
     fi
-    mkdir -p "$EXPERIMENT_DIR"/train/t0
+    mkdir -p "$EXPERIMENT_DIR"/train/t0/initial_weights
     cp "$INITIAL_WEIGHTS"/saved_model/model.config.json "$EXPERIMENT_DIR"/train/t0/model.config.json
-    cp -r "$INITIAL_WEIGHTS"/saved_model/variables "$EXPERIMENT_DIR"/train/t0/initial_weights
+    cp -r "$INITIAL_WEIGHTS"/saved_model/variables/* "$EXPERIMENT_DIR"/train/t0/initial_weights
 
     if [ -n "${COPY_INITIAL_MODEL:-}" ] &&
        [ ! -f "$EXPERIMENT_DIR"/done-copying-warmstart-model ]; then
@@ -83,5 +84,4 @@ else
     fi
 fi
 
-echo "Model kind: $MODEL_KIND"
 ./selfplay/train.sh "$EXPERIMENT_DIR" t0 "$MODEL_KIND" 256 main -disable-vtimeloss -lr-scale "$LR_SCALE" -max-train-bucket-per-new-data 4
