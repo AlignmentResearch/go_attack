@@ -35,9 +35,9 @@ else
         echo "Error: initial weights do not exist: $INITIAL_WEIGHTS"
         exit 1
     fi
-    mkdir -p "$EXPERIMENT_DIR"/train/t0
+    mkdir -p "$EXPERIMENT_DIR"/train/t0/initial_weights
     cp "$INITIAL_WEIGHTS"/saved_model/model.config.json "$EXPERIMENT_DIR"/train/t0/model.config.json
-    cp -r "$INITIAL_WEIGHTS"/saved_model/variables "$EXPERIMENT_DIR"/train/t0/initial_weights
+    cp -r "$INITIAL_WEIGHTS"/saved_model/variables/* "$EXPERIMENT_DIR"/train/t0/initial_weights
 
     if [ -n "${COPY_INITIAL_MODEL:-}" ] &&
        [ ! -f "$EXPERIMENT_DIR"/done-copying-warmstart-model ]; then
