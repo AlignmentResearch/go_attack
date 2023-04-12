@@ -73,8 +73,13 @@ else
       fi
       echo "Using initial model: $INITIAL_MODEL"
       MODEL_EXTENSION=${INITIAL_MODEL: -6} # bin.gz or txt.gz
-      mkdir -p "$EXPERIMENT_DIR"/models/t0-s0-d0
-      cp "$INITIAL_MODEL" "$EXPERIMENT_DIR"/models/t0-s0-d0/model."$MODEL_EXTENSION"
+      TARGET_DIR="$EXPERIMENT_DIR"/models/t0-s0-d0
+      mkdir -p "$TARGET_DIR"/saved_model
+      cp "$INITIAL_MODEL" "$TARGET_DIR"/model."$MODEL_EXTENSION"
+      # Copying the saved_model files isn't strictly necessary, but we copy them
+      # in case we want to warmstart from this t0-s0-d0/ in a different run.
+      cp "$INITIAL_WEIGHTS"/saved_model/model.config.json "$TARGET_DIR"/saved_model
+      cp -r "$INITIAL_WEIGHTS"/saved_model/variables "$TARGET_DIR"/saved_model
       touch "$EXPERIMENT_DIR"/done-copying-warmstart-model
     fi
 fi
