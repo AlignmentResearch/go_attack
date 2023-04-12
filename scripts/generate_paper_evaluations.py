@@ -13,7 +13,6 @@ import math
 import os
 import re
 import subprocess
-import time
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -70,62 +69,6 @@ class Devbox:
             map(lambda line: line.decode("ascii").rstrip(), self.from_devbox),
         )
         return "\n".join(output_lines)
-
-
-@contextmanager
-def create_devbox():
-    """Yields a Devbox and handles its setup and teardown."""
-    devbox_name = f"{get_user()}-devbox-gen-evals"
-    subprocess.run(
-        [
-            "ctl",
-            "devbox",
-            "run",
-            "--gpu",
-            "0",
-            "--cpu",
-            "1",
-            "--name",
-            devbox_name,
-            "--shared-host-dir",
-            "/nas/ucb/k8/go-attack",
-            "--shared-host-dir-mount",
-            "/shared",
-        ],
-        check=True,
-        stdout=subprocess.DEVNULL,
-    )
-
-    try:
-        print("Waiting for devbox to start...")
-        while True:
-            output = subprocess.run(
-                ["ctl", "job", "list"],
-                capture_output=True,
-                check=True,
-            ).stdout.decode("ascii")
-            if any(
-                devbox_name in line and "Running" in line for line in output.split("\n")
-            ):
-                break
-            time.sleep(1)
-
-        proc = subprocess.Popen(
-            ["ctl", "devbox", "ssh", "--name", devbox_name],
-            bufsize=0,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-        )
-        yield Devbox(to_devbox=proc.stdin, from_devbox=proc.stdout)
-        proc.terminate()
-    finally:
-        print("Deleting devbox...")
-        subprocess.run(
-            ["ctl", "devbox", "del", "--name", devbox_name],
-            check=True,
-            stdout=subprocess.DEVNULL,
-        )
 
 
 @contextmanager
@@ -309,7 +252,6 @@ def generate_training_checkpoint_sweep_evaluation(
     parameters: Mapping[str, Any],
     config_dir: Path,
     repo_root: Path,
-    use_local_checkpoints: bool,
 ) -> None:
     """Generates experiment config for training checkpoint sweep."""
     parameters_key = "training_checkpoint_sweep"
@@ -331,9 +273,12 @@ def generate_training_checkpoint_sweep_evaluation(
     main_checkpoint_path = Path(common_parameters["main_adversary"]["path"])
     checkpoints_path = Path(parameters["checkpoints_path"])
     assert checkpoints_path in main_checkpoint_path.parents
-    create_devbox_fn = create_dummy_devbox if use_local_checkpoints else create_devbox
-    with create_devbox_fn() as devbox:
-        num_checkpoints = int(devbox.run(f"ls {checkpoints_path} | wc -l"))
+    with create_dummy_devbox() as devbox:
+        full_checkpoints_path = str(checkpoints_path).replace(
+            "/shared/",
+            "/nas/ucb/k8/go-attack/",
+        )
+        num_checkpoints = int(devbox.run(f"ls {full_checkpoints_path} | wc -l"))
         indices_to_evaluate = np.unique(
             np.linspace(
                 0,
@@ -343,7 +288,7 @@ def generate_training_checkpoint_sweep_evaluation(
             .round()
             .astype(int),
         )
-        checkpoints = devbox.run(f"ls -v {checkpoints_path}").split("\n")
+        checkpoints = devbox.run(f"ls -v {full_checkpoints_path}").split("\n")
         checkpoints_to_evaluate = [checkpoints[i] for i in indices_to_evaluate]
         main_checkpoint = main_checkpoint_path.parent.name
         if main_checkpoint not in checkpoints_to_evaluate:
@@ -420,7 +365,7 @@ def generate_katago_ckpt_sweep_evaluation(
     parameters: Mapping[str, Any],
     config_dir: Path,
     repo_root: Path,
-    use_local_checkpoints: bool,
+    run_on_chai: bool = True,
 ) -> None:
     """Evaluate our adversary against different KataGo checkpoints."""
     parameters_key = "katago_ckpt_sweep"
@@ -429,9 +374,9 @@ def generate_katago_ckpt_sweep_evaluation(
     parameters = parameters[parameters_key]
 
     def adjust_path(p: str) -> str:
-        if use_local_checkpoints:
-            return p.replace("/nas/ucb/k8/go-attack/", "/shared/")
-        return p
+        if run_on_chai:
+            return p
+        return p.replace("/nas/ucb/k8/go-attack/", "/shared/")
 
     def get_drows(s: str) -> int:
         """Get the drows from a checkpoint path.
@@ -450,20 +395,18 @@ def generate_katago_ckpt_sweep_evaluation(
 
     victim_dir = Path(parameters["victim_dir"])
     victim_start_drows: int = get_drows(parameters["victim_start"])
-    # Fetch victims from victim_dir newer than victim_start
-    create_devbox_fn = create_dummy_devbox if use_local_checkpoints else create_devbox
-    with create_devbox_fn() as _:
-        # TODO: Make this work on devboxes...
-        victim_paths = victim_dir.glob("*.gz")
-        victims: List[str] = [
-            p.name
-            for p in victim_paths
-            if "nbt" not in p.name  # nbt is network version 11, we don't support it yet
-            and get_drows(p.name) >= victim_start_drows
-        ]
 
-        # Sort victims by drows
-        victims.sort(key=get_drows)
+    # Fetch victims from victim_dir newer than victim_start
+    victim_paths = victim_dir.glob("*.gz")
+    victims: List[str] = [
+        p.name
+        for p in victim_paths
+        if "nbt" not in p.name  # nbt is network version 11, we don't support it yet
+        and get_drows(p.name) >= victim_start_drows
+    ]
+
+    # Sort victims by drows
+    victims.sort(key=get_drows)
 
     evaluation_config_dir = config_dir / "katago_ckpt_sweep_evaluation"
     evaluation_config_dir.mkdir(parents=True, exist_ok=True)
@@ -650,7 +593,9 @@ def main():
     repo_root = Path(os.path.dirname(os.path.realpath(__file__))).parents[0]
 
     parser = argparse.ArgumentParser(
-        description="Generates config files for the main experiments in paper",
+        description="Generates config files for the main experiments in paper. "
+        "Should be run from a place where /nas/ucb is mounted at /nas/ucb "
+        "(e.g. on a CHAI machine or the Hofvarpnir login node).",
     )
     parser.add_argument(
         "parameter_file",
@@ -665,14 +610,11 @@ def main():
         default=repo_root / "configs" / "generated_evaluations",
     )
     parser.add_argument(
-        "--use-local-training-checkpoints",
+        "--run-on-chai",
         action="store_true",
-        help="Fetch training checkpoints via local filesystem, not Hofvarpnir devbox",
-    )
-    parser.add_argument(
-        "--skip-training-checkpoint-sweep",
-        action="store_true",
-        help="Skip generating the training checkpoint sweep evaluation",
+        help="Generate experiments to run on a CHAI machine "
+        "(rnn, gan, dqn, ddpg, gail, etc.). "
+        "Has no effect for some experiments.",
     )
     args = parser.parse_args()
 
@@ -687,18 +629,16 @@ def main():
         config_dir=config_dir,
         repo_root=repo_root,
     )
-    if not args.skip_training_checkpoint_sweep:
-        generate_training_checkpoint_sweep_evaluation(
-            evaluation_parameters,
-            config_dir=config_dir,
-            repo_root=repo_root,
-            use_local_checkpoints=args.use_local_training_checkpoints,
-        )
+    generate_training_checkpoint_sweep_evaluation(
+        evaluation_parameters,
+        config_dir=config_dir,
+        repo_root=repo_root,
+    )
     generate_katago_ckpt_sweep_evaluation(
         evaluation_parameters,
         config_dir=config_dir,
         repo_root=repo_root,
-        use_local_checkpoints=args.use_local_training_checkpoints,
+        run_on_chai=args.run_on_chai,
     )
     generate_victim_visit_sweep_evaluation(
         evaluation_parameters,
