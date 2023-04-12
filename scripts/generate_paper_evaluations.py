@@ -434,11 +434,17 @@ def generate_katago_ckpt_sweep_evaluation(
         return p
 
     def get_drows(s: str) -> int:
-        """
-        Accepted formats:
-            'kata1-b40c256-s11840935168-d2898845681'
-            'kata1-b40c256-s11840935168-d2898845681.bin.gz'
-            'kata1-b6c96-s83588096-d12203675.txt.gz'
+        """Get the drows from a checkpoint path.
+
+        Args:
+            s: The name of the model
+                Accepted formats:
+                'kata1-b40c256-s11840935168-d2898845681'
+                'kata1-b40c256-s11840935168-d2898845681.bin.gz'
+                'kata1-b6c96-s83588096-d12203675.txt.gz'
+
+        Returns:
+            The drows of the checkpoint
         """
         return int(s.rstrip(".bin.gz").rstrip(".txt.gz").split("-d")[-1])
 
@@ -446,7 +452,7 @@ def generate_katago_ckpt_sweep_evaluation(
     victim_start_drows: int = get_drows(parameters["victim_start"])
     # Fetch victims from victim_dir newer than victim_start
     create_devbox_fn = create_dummy_devbox if use_local_checkpoints else create_devbox
-    with create_devbox_fn() as devbox:
+    with create_devbox_fn() as _:
         # TODO: Make this work on devboxes...
         victim_paths = victim_dir.glob("*.gz")
         victims: List[str] = [
@@ -478,7 +484,7 @@ def generate_katago_ckpt_sweep_evaluation(
                     "path": adjust_path(parameters["adversary_path"]),
                     "algorithm": parameters["adversary_algorithm"],
                     "visits": parameters["adversary_visits"],
-                }
+                },
             ],
         )
 
