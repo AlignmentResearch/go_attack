@@ -69,6 +69,9 @@ def main(cfg: Config):
             # files being corrupted if the download is interrupted.
             real_path = pathlib.Path(cfg.download_dir) / link.split("/")[-1]
             temp_path = real_path.parent / f".{real_path.name}.tmp"
+
+            # Note that we don't use append mode here because we want to
+            # overwrite the file if it already exists.
             with open(temp_path, "wb") as f:
                 for chunk in r.iter_content(chunk_size=2**20):  # 1MB chunks
                     f.write(chunk)
