@@ -7,7 +7,6 @@ import src.go_attack  # pytype: disable=import-error
 TESTS_REQUIRE = [
     "black[jupyter]",
     "coverage",
-    "codecov",
     "codespell",
     "darglint",
     "flake8",
