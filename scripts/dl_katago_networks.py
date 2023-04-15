@@ -65,9 +65,16 @@ def main(cfg: Config):
         # Stream the download so we don't have to load the whole file into memory
         with requests.get(link, stream=True) as r:
             r.raise_for_status()
-            with open(pathlib.Path(cfg.download_dir) / link.split("/")[-1], "wb") as f:
+            # We write to a temporary file first so we don't have to worry about
+            # files being corrupted if the download is interrupted.
+            real_path = pathlib.Path(cfg.download_dir) / link.split("/")[-1]
+            temp_path = real_path.parent / f".{real_path.name}.tmp"
+            with open(temp_path, "wb") as f:
                 for chunk in r.iter_content(chunk_size=2**20):  # 1MB chunks
                     f.write(chunk)
+
+        # Move the temporary file to the real path
+        temp_path.rename(real_path)
 
         # The KataGo server has a rate limit of 20r/m
         # Per https://github.com/katago/katago-server/blob/master/compose/production/nginx/default.conf.template # noqa: E501
