@@ -36,6 +36,7 @@ main_adversary_evaluation:
 
 # Experiment: evaluate several adversary checkpoints throughout training.
 training_checkpoint_sweep:
+  # Path to all models from the training run.
   checkpoints_path: "/nas/ucb/k8/go-attack/victimplay\
     /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models"
   adversary_algorithm: AMCTS-S
