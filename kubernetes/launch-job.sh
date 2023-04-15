@@ -180,7 +180,7 @@ if [ -n "${USE_ITERATED_TRAINING:-}" ]; then
   SHUFFLE_AND_EXPORT_CMD="/go_attack/kubernetes/iterated-training/shuffle-and-export.sh $RUN_NAME $VOLUME_NAME"
   CURRICULUM_CMD="/go_attack/kubernetes/iterated-training/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM $ALTERNATE_CURRICULUM $ALTERNATE_ITERATION_FIRST"
 else
-  VICTIMPLAY_CMD+="$VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME"
+  VICTIMPLAY_CMD+=" $VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME"
   EVALUATE_LOOP_CMD="/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval"
   TRAIN_CMD="/go_attack/kubernetes/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE"
   SHUFFLE_AND_EXPORT_CMD="/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME $USE_GATING"
