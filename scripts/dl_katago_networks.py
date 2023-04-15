@@ -7,7 +7,7 @@ import time
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from simple_parsing import ArgumentParser
+from simple_parsing import ArgumentParser, DashVariant
 from tqdm.auto import tqdm
 
 
@@ -77,7 +77,7 @@ def main(cfg: Config):
 
 if __name__ == "__main__":
     # Parse config
-    parser = ArgumentParser()
+    parser = ArgumentParser(add_option_string_dash_variants=DashVariant.DASH)
     parser.add_arguments(Config, dest="cfg")
     args = parser.parse_args()
     cfg: Config = args.cfg
