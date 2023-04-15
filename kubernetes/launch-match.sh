@@ -10,7 +10,7 @@ usage() {
   echo "Schedules a job that runs \`match\`."
   echo
   echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] [--use-weka] [--subdir SUBDIR] PREFIX"
-  echo "           [--EXTRA_MATCH_FLAGS]"
+  echo "          [--EXTRA_MATCH_FLAGS]"
   echo
   echo "positional arguments:"
   echo "  PREFIX     Identifying label used for the name of the job and the name"

@@ -614,7 +614,7 @@ def main():
         action="store_true",
         help="Generate experiments to run on a CHAI machine "
         "(rnn, gan, dqn, ddpg, gail, etc.). "
-        "Has no effect for some experiments.",
+        "This flag is not implemented for some experiments.",
     )
     args = parser.parse_args()
 
