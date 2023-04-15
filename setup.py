@@ -50,7 +50,7 @@ setup(
         "docker",
         "matplotlib",
         "numpy",
-        "pandas",
+        "pandas[html]",
         "pynvml",
         "scipy",
         "seaborn",
