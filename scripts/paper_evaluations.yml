@@ -81,9 +81,11 @@ katago_ckpt_sweep:
   victim_visits: 32
   victim_dir: /nas/ucb/k8/go-attack/katago-networks
   # We evaluate victims newer or equal to this checkpoint.
-  # We compute victim order using the d value
+  # We compute victim order using the d value.
   victim_start: kata1-b40c256-s11840935168-d2898845681 # cp505
-  n_victims_per_gpu: 8 # Pick the max number of victims that can fit on a GPU
+  # Pick the max number of victims that can fit on a GPU.
+  # A b40 net uses about 4GB of GPU memory.
+  n_victims_per_gpu: 8
 
 # Experiment: evaluate adversary vs. victim with varying victim visits.
 victim_visit_sweep:
