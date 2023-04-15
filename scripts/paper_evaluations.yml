@@ -6,9 +6,9 @@
 # The main adversary we want to evaluate.
 ---
 main_adversary:
-  path: "/shared/victimplay\
+  path: "/nas/ucb/k8/go-attack/victimplay\
     /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models\
-    /t0-s497721856-d125043118/model.bin.gz"
+    /t0-s545065216-d136760487/model.bin.gz" # cyclic-adv-s545m
 
 # Experiment: Evaluate `main_adversary` against several victims.
 main_adversary_evaluation:
@@ -36,9 +36,7 @@ main_adversary_evaluation:
 
 # Experiment: evaluate several adversary checkpoints throughout training.
 training_checkpoint_sweep:
-  # Path to all models from the training run. This must be available on
-  # /nas/ucb/k8/go-attack (written as /shared below).
-  checkpoints_path: "/shared/victimplay\
+  checkpoints_path: "/nas/ucb/k8/go-attack/victimplay\
     /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models"
   adversary_algorithm: AMCTS-S
   adversary_visits: 600
@@ -79,16 +77,13 @@ katago_ckpt_sweep:
   # Adversary config
   adversary_algorithm: AMCTS
   adversary_visits: 600
-  adversary_path: "/nas/ucb/k8/go-attack/victimplay\
-    /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models\
-    /t0-s545065216-d136760487/model.bin.gz"  # cyclic-adv-s545m
   # Victim config
   victim_visits: 32
   victim_dir: /nas/ucb/k8/go-attack/katago-networks
   # We evaluate victims newer or equal to this checkpoint.
   # We compute victim order using the d value
-  victim_start: kata1-b40c256-s11840935168-d2898845681  # cp505
-  n_victims_per_gpu: 8  # "b40 nets already take 3913 MB." - ttseng
+  victim_start: kata1-b40c256-s11840935168-d2898845681 # cp505
+  n_victims_per_gpu: 8 # Pick the max number of victims that can fit on a GPU
 
 # Experiment: evaluate adversary vs. victim with varying victim visits.
 victim_visit_sweep:

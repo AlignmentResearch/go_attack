@@ -35,6 +35,11 @@ class UsageString:
     command: str
 
 
+def adjust_nas_path(p: str) -> str:
+    """Adjusts a path for certain container jobs."""
+    return p.replace("/nas/ucb/k8/go-attack/", "/shared/")
+
+
 class Devbox:
     """Allows executing commands on a running devbox."""
 
@@ -238,7 +243,9 @@ def generate_main_adversary_evaluation(
             adversaries=[
                 {
                     "algorithm": "AMCTS-S",
-                    "path": common_parameters["main_adversary"]["path"],
+                    "path": adjust_nas_path(
+                        common_parameters["main_adversary"]["path"],
+                    ),
                     "visits": parameters["adversary_visits"],
                 },
             ],
@@ -274,10 +281,7 @@ def generate_training_checkpoint_sweep_evaluation(
     checkpoints_path = Path(parameters["checkpoints_path"])
     assert checkpoints_path in main_checkpoint_path.parents
     with create_dummy_devbox() as devbox:
-        full_checkpoints_path = str(checkpoints_path).replace(
-            "/shared/",
-            "/nas/ucb/k8/go-attack/",
-        )
+        full_checkpoints_path = str(checkpoints_path)
         num_checkpoints = int(devbox.run(f"ls {full_checkpoints_path} | wc -l"))
         indices_to_evaluate = np.unique(
             np.linspace(
@@ -346,7 +350,7 @@ def generate_training_checkpoint_sweep_evaluation(
                     {
                         "algorithm": parameters["adversary_algorithm"],
                         "path": (
-                            Path(parameters["checkpoints_path"])
+                            Path(adjust_nas_path(parameters["checkpoints_path"]))
                             / checkpoint
                             / "model.bin.gz"
                         ),
@@ -368,15 +372,17 @@ def generate_katago_ckpt_sweep_evaluation(
     run_on_chai: bool = True,
 ) -> None:
     """Evaluate our adversary against different KataGo checkpoints."""
+    common_parameters = parameters
+
     parameters_key = "katago_ckpt_sweep"
     if parameters_key not in parameters:
         return
     parameters = parameters[parameters_key]
 
-    def adjust_path(p: str) -> str:
+    def adjust_nas_path_custom(s: str) -> str:
         if run_on_chai:
-            return p
-        return p.replace("/nas/ucb/k8/go-attack/", "/shared/")
+            return s
+        return adjust_nas_path(s)
 
     def get_drows(s: str) -> int:
         """Get the drows from a checkpoint path.
@@ -424,7 +430,9 @@ def generate_katago_ckpt_sweep_evaluation(
             f=f,
             adversaries=[
                 {
-                    "path": adjust_path(parameters["adversary_path"]),
+                    "path": adjust_nas_path_custom(
+                        common_parameters["main_adversary"]["path"],
+                    ),
                     "algorithm": parameters["adversary_algorithm"],
                     "visits": parameters["adversary_visits"],
                 },
@@ -459,7 +467,7 @@ def generate_katago_ckpt_sweep_evaluation(
                 f=f,
                 victims=[
                     {
-                        "path": adjust_path(str(victim_dir / victim)),
+                        "path": adjust_nas_path(str(victim_dir / victim)),
                         "name": victim.lstrip("kata1-").rstrip(".bin.gz"),
                         "visits": parameters["victim_visits"],
                     }
@@ -528,7 +536,9 @@ def generate_victim_visit_sweep_evaluation(
                 adversaries=[
                     {
                         "algorithm": algorithm,
-                        "path": common_parameters["main_adversary"]["path"],
+                        "path": adjust_nas_path(
+                            common_parameters["main_adversary"]["path"],
+                        ),
                         "visits": parameters["adversary_visits"],
                     },
                 ],
@@ -578,7 +588,9 @@ def generate_adversary_visit_sweep_evaluation(
             adversaries=[
                 {
                     "algorithm": parameters["adversary_algorithm"],
-                    "path": common_parameters["main_adversary"]["path"],
+                    "path": adjust_nas_path(
+                        common_parameters["main_adversary"]["path"],
+                    ),
                     "visits": visits,
                 }
                 for visits in adversary_visits
