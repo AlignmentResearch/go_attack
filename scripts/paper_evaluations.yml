@@ -87,7 +87,7 @@ katago_ckpt_sweep:
   # Pick the max number of victims that can fit on a GPU.
   # A b40 net uses about 4GB of GPU memory.
   # TODO: Calculate how much a b60 net uses
-  # (and how much a b18 net uses) if we decide to evaluate against b18 nets.
+  # (and how much a b18 net uses if we decide to evaluate against b18 nets).
   n_victims_per_gpu: 8
 
 # Experiment: evaluate adversary vs. victim with varying victim visits.
