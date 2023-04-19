@@ -127,14 +127,17 @@ WORKDIR /
 # Install Python packages
 RUN python3 -m pip install --upgrade pip
 
+# Copy over python files and install them.
 RUN mkdir -p /go_attack/src
-COPY ./kubernetes/ /go_attack/kubernetes
-COPY ./scripts/ /go_attack/scripts
 COPY ./src/go_attack /go_attack/src/go_attack
 COPY ./setup.py /go_attack/setup.py
 COPY README.md /go_attack/README.md
 # Silence annoying pip warning about running it as root inside the container
 RUN pip install -e /go_attack --root-user-action=ignore
+
+# Copy over other files
+COPY ./kubernetes/ /go_attack/kubernetes
+COPY ./scripts/ /go_attack/scripts
 
 COPY ./engines/KataGo-custom/cpp/evaluate_loop.sh /engines/KataGo-custom/cpp/evaluate_loop.sh
 COPY ./engines/KataGo-raw/cpp/configs /engines/KataGo-raw/cpp/configs
