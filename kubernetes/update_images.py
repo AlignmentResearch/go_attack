@@ -72,6 +72,7 @@ def main():
                 path=rootdir,
                 dockerfile=f"compose/{prereq}/Dockerfile",
                 tag=f"{REPO_NAME}:{prereq}",
+                network_mode="host",
                 buildargs=BUILD_ARGS,
             )
         print(f"Building {REPO_NAME}:{tag}")
@@ -79,6 +80,7 @@ def main():
             path=rootdir,
             dockerfile=f"compose/{image_type}/Dockerfile",
             tag=image_name,
+            network_mode="host",
             buildargs=BUILD_ARGS,
         )
         # Pylance can't quite figure out the type of build_result; see
