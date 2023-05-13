@@ -442,14 +442,18 @@ def generate_katago_ckpt_sweep_evaluation(
     # Write victim configs
     job_commands = []
     job_description: str = "evaluate adversary against several KataGo checkpoints"
-    for idx_start in range(0, len(victims), n_victims_per_gpu):
-        idx_end = min(idx_start + n_victims_per_gpu, len(victims))
+
+    victim_visits: list[int] = parameters["victim_visits"]
+    victim_x_visits = list(itertools.product(victims, victim_visits))
+
+    for idx_start in range(0, len(victim_x_visits), n_victims_per_gpu):
+        idx_end = min(idx_start + n_victims_per_gpu, len(victim_x_visits))
         job_name = f"victims-{idx_start}-to-{idx_end - 1}"
         job_config = evaluation_config_dir / f"{job_name}.cfg"
 
         with open(job_config, "w") as f:
-            job_victims = victims[idx_start:idx_end]
-            num_games = len(job_victims) * parameters["num_games_per_matchup"]
+            job_victim_x_visits = victim_x_visits[idx_start:idx_end]
+            num_games = len(job_victim_x_visits) * parameters["num_games_per_matchup"]
             usage_string = get_usage_string(
                 repo_root=repo_root,
                 job_description=job_description,
@@ -462,16 +466,16 @@ def generate_katago_ckpt_sweep_evaluation(
             job_commands.append(usage_string.command)
 
             f.write(f"numGamesTotal = {num_games}\n")
-            f.write(f"numBots = {len(job_victims) + 1}\n")
+            f.write(f"numBots = {len(job_victim_x_visits) + 1}\n")
             write_victims(
                 f=f,
                 victims=[
                     {
                         "path": adjust_nas_path(str(victim_dir / victim)),
-                        "name": victim.lstrip("kata1-").rstrip(".bin.gz"),
-                        "visits": parameters["victim_visits"],
+                        "name": victim.lstrip("kata1-").rstrip(".bin.gz") + f"-v{visits}",
+                        "visits": visits,
                     }
-                    for victim in job_victims
+                    for victim, visits in job_victim_x_visits
                 ],
                 bot_index_offset=1,
             )
