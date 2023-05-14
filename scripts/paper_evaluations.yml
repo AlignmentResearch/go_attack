@@ -74,7 +74,7 @@ training_checkpoint_sweep:
 
 # Experiment: evaluate adversary vs. KataGo checkpoints.
 katago_ckpt_sweep:
-  num_games_per_matchup: 500
+  num_games_per_matchup: 2000
   # Adversary config
   adversary_algorithm: AMCTS
   adversary_visits: 600
@@ -86,12 +86,12 @@ katago_ckpt_sweep:
   victim_dir: /nas/ucb/k8/go-attack/katago-networks
   # We evaluate victims newer or equal to this checkpoint.
   # We compute victim order using the d value.
-  victim_start: kata1-b60c320-s7010139136-d3130207575
+  victim_start: kata1-b60c320-s7289275904-d3202554817
   # Pick the max number of victims that can fit on a GPU.
   # A b40 net uses about 4GB of GPU memory.
   # TODO: Calculate how much a b60 net uses
   # (and how much a b18 net uses if we decide to evaluate against b18 nets).
-  n_victims_per_gpu: 8
+  n_victims_per_gpu: 2
 
 # Experiment: evaluate adversary vs. victim with varying victim visits.
 victim_visit_sweep:
