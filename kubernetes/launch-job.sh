@@ -74,6 +74,9 @@ usage() {
   echo "  -w, --use-weka"
   echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
   echo "    volume."
+  echo "  --local-run"
+  echo "    Run locally instead of via Kubernetes. Has the effect of launching"
+  echo "    containers using docker instead of using ctl."
   echo
   echo "Optional arguments should be specified before positional arguments."
   echo
@@ -94,6 +97,7 @@ ALTERNATE_CURRICULUM=${DEFAULT_ALTERNATE_CURRICULUM}
 LR_SCALE=${DEFAULT_LR_SCALE}
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
 USE_GATING=0
+LOCAL_RUN=0
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while [ -n "${1-}" ]; do
   case $1 in
@@ -112,6 +116,7 @@ while [ -n "${1-}" ]; do
     --warmstart-ckpt) WARMSTART_CKPT=$2; shift ;;
     --victim-ckpt) VICTIM_CKPT=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
+    --local-run) export LOCAL_RUN=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
@@ -136,6 +141,14 @@ VOLUME_NAME="shared"
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images "cpp python"
 
+ctl_job_run() {
+  if [ -n "${LOCAL_RUN:-}" ]; then
+    python "$GIT_ROOT"/kubernetes/ctl_job_run_wrapper.py --local-run "$@"
+  else
+    "$GIT_ROOT"/kubernetes/ctl_job_run_wrapper.py "$@"
+  fi
+}
+
 if [ -n "${USE_PREDICTOR:-}" ]; then
   if [ -n "${USE_ITERATED_TRAINING:-}" ]; then
     echo "Using predictor networks with iterated training is not yet"\
@@ -147,7 +160,7 @@ if [ -n "${USE_PREDICTOR:-}" ]; then
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay-predictor.sh"
 
   # shellcheck disable=SC2215,SC2086,SC2089,SC2090
-  ctl job run --container \
+  ctl_job_run --container \
       "$PYTHON_IMAGE" \
       "$PYTHON_IMAGE" \
       $VOLUME_FLAGS \
@@ -188,7 +201,7 @@ else
 fi
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
-ctl job run --container \
+ctl_job_run --container \
     "$CPP_IMAGE" \
     "$CPP_IMAGE" \
     "$PYTHON_IMAGE" \
@@ -203,14 +216,15 @@ ctl job run --container \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
-    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
+    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1 \
+    --gpu-collo-allowed 0 1 1 0 0
 
 if [ "$USE_GATING" -eq 1 ]; then
   if [ -n "${USE_ITERATED_TRAINING:-}" ]; then
     echo "Using gating with iterated training is not yet implemented."
     exit 1
   fi
-  ctl job run --container \
+  ctl_job_run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
       --command "/go_attack/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
@@ -223,7 +237,7 @@ fi
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
   # shellcheck disable=SC2086
-  ctl job run --container \
+  ctl_job_run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD" \
