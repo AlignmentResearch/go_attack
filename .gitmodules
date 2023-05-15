@@ -7,3 +7,6 @@
 [submodule "engines/KataGo-raw"]
 	path = engines/KataGo-raw
 	url = git@github.com:lightvector/KataGo.git
+[submodule "engines/KataGo-tensorflow"]
+	path = engines/KataGo-tensorflow
+	url = https://github.com/AlignmentResearch/KataGo-custom
