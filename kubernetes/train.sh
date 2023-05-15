@@ -1,5 +1,5 @@
 #!/bin/bash -e
-cd /engines/KataGo-custom/python
+cd /engines/KataGo-tensorflow/python
 
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
 # Flags must be specified before positional arguments.
