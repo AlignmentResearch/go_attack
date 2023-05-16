@@ -85,9 +85,8 @@ katago_ckpt_sweep:
   # We compute victim order using the d value.
   victim_start: kata1-b40c256-s11840935168-d2898845681 # cp505
   # Pick the max number of victims that can fit on a GPU.
-  # A b40 net uses 2.2 GB of GPU memory and a b60 net uses 3.1 GB. Upfront costs
-  # including a b6 adversary are 1.8GB. (These numbers drop to 2.1GB, 2.9GB, and
-  # 1.6GB on KataGo v1.12.4. Also, a b18nbt net uses 2.1GB on v1.12.4.)
+  # A b40 net uses 2.1 GB of GPU memory, a b60 net uses 2.9 GB, and a b18nbt net
+  # uses 2.1GB. Upfront costs including a b6 adversary are 1.6GB.
   n_victims_per_gpu: 8
 
 # Experiment: evaluate adversary vs. victim with varying victim visits.
