@@ -27,6 +27,7 @@ usage() {
   echo "optional arguments:"
   echo "  -g GPUS, --victimplay-gpus GPUS"
   echo "    Minimum number of GPUs to use for victimplay."
+  echo "    Setting to -1 will only launch extra victimplay jobs."
   echo "    default: ${DEFAULT_NUM_VICTIMPLAY_GPUS}"
   echo "  -m GPUS, --victimplay-max-gpus GPUS"
   echo "    Maximum number of GPUs to use for victimplay."
@@ -200,6 +201,22 @@ else
   CURRICULUM_CMD="/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM"
 fi
 
+EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
+if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
+  # shellcheck disable=SC2086
+  ctl_job_run --container \
+      "$CPP_IMAGE" \
+      $VOLUME_FLAGS \
+      --command "$VICTIMPLAY_CMD" \
+      --gpu 1 \
+      --name go-train-"$1"-extra \
+      --replicas "${EXTRA_VICTIMPLAY_GPUS}"
+  if [ $MIN_VICTIMPLAY_GPUS -eq -1 ]; then
+    echo "Running extra victimplay jobs only."
+    exit 0
+  fi
+fi
+
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
 ctl_job_run --container \
     "$CPP_IMAGE" \
@@ -232,16 +249,4 @@ if [ "$USE_GATING" -eq 1 ]; then
       --gpu 1 \
       --name go-train-"$1"-gate \
       --replicas 1
-fi
-
-EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
-if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
-  # shellcheck disable=SC2086
-  ctl_job_run --container \
-      "$CPP_IMAGE" \
-      $VOLUME_FLAGS \
-      --command "$VICTIMPLAY_CMD" \
-      --gpu 1 \
-      --name go-train-"$1"-extra \
-      --replicas "${EXTRA_VICTIMPLAY_GPUS}"
 fi
