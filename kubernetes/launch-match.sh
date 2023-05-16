@@ -98,6 +98,7 @@ ctl job run --container \
   $*" \
   --high-priority \
   --gpu 1 \
-  --name go-match-"$PREFIX" \
+  --gpu-type NVIDIA-A100-SXM4-80GB,NVIDIA-A100-SXM4-40GB,NVIDIA-RTX-A6000 \
+  --name go-m-"$PREFIX" \
   --replicas "${NUM_GPUS}"
 exit 0
