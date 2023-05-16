@@ -27,7 +27,7 @@ usage() {
   echo "optional arguments:"
   echo "  -g GPUS, --victimplay-gpus GPUS"
   echo "    Minimum number of GPUs to use for victimplay."
-  echo "    Setting to -1 will only launch extra victimplay jobs."
+  echo "    Setting to 0 will only launch extra victimplay jobs."
   echo "    default: ${DEFAULT_NUM_VICTIMPLAY_GPUS}"
   echo "  -m GPUS, --victimplay-max-gpus GPUS"
   echo "    Maximum number of GPUs to use for victimplay."
@@ -211,7 +211,7 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
       --gpu 1 \
       --name go-train-"$1"-extra \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
-  if [ $MIN_VICTIMPLAY_GPUS -eq -1 ]; then
+  if [ $MIN_VICTIMPLAY_GPUS -eq 0 ]; then
     echo "Running extra victimplay jobs only."
     exit 0
   fi
