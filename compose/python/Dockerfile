@@ -63,6 +63,12 @@ RUN git init . \
   && git config user.name dummy_name \
   && git config user.email dummy@email.com \
   && git commit -m "Dummy commit"
+WORKDIR /engines/KataGo-tensorflow
+RUN git init . \
+  && git add . \
+  && git config user.name dummy_name \
+  && git config user.email dummy@email.com \
+  && git commit -m "Dummy commit"
 WORKDIR /engines/KataGo-custom
 RUN git init . \
   && git add . \
