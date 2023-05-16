@@ -12,6 +12,8 @@ from simple_parsing.wrappers.field_wrapper import DashVariant
 
 @dataclasses.dataclass
 class CtlWrapperArgs:
+    """Arguments for the ctl wrapper."""
+
     name: str
 
     container: Tuple[str, ...]
@@ -36,6 +38,7 @@ class CtlWrapperArgs:
     # TODO: Implement a flag to specify which GPUs are available
 
     def __post_init__(self):
+        """Check parsed arguments."""
         assert (
             len(self.container)
             == len(self.command)
@@ -56,7 +59,6 @@ class CtlWrapperArgs:
 
     def launch_ctl(self):
         """Launches the job using ctl."""
-
         args = [
             "ctl",
             "job",
@@ -82,15 +84,20 @@ class CtlWrapperArgs:
         subprocess.run(args)
 
     def get_gpu_indices(self) -> List[List[int]]:
-        """
-        Returns a list of gpu indices for each command,
-        duplicated as specified by replicas.
+        """Returns a list of gpu indices for each command.
+
+        Commands are duplicated as specified by replicas.
+
+        Returns:
+            List of gpu indices for each command.
         """
         gpu_indices: List[List[int]] = []
         min_unused_idx: int = 0
         collo_idx: int = -1
-        for (job_gpus, job_replicas, collo_allowed,) in zip(
-            self.gpu, self.replicas, self.gpu_collo_allowed or [0] * len(self.gpu)
+        for job_gpus, job_replicas, collo_allowed in zip(
+            self.gpu,
+            self.replicas,
+            self.gpu_collo_allowed or [0] * len(self.gpu),
         ):
             for _ in range(job_replicas):
                 if job_gpus == 0:
@@ -104,7 +111,7 @@ class CtlWrapperArgs:
                     min_unused_idx += 1
                 else:
                     gpu_indices.append(
-                        list(range(min_unused_idx, min_unused_idx + job_gpus))
+                        list(range(min_unused_idx, min_unused_idx + job_gpus)),
                     )
                     min_unused_idx += job_gpus
 
@@ -112,15 +119,15 @@ class CtlWrapperArgs:
 
     def launch_local(self):
         """Launches a job using docker."""
-
-        # Get docker client
-        client = docker.from_env()
+        client = docker.from_env()  # Get docker client
 
         # Launch the jobs!
         gpu_indices = self.get_gpu_indices()
         job_idx: int = 0
         for container, command, replicas in zip(
-            self.container, self.command, self.replicas
+            self.container,
+            self.command,
+            self.replicas,
         ):
             for ridx in range(replicas):
                 job_gpu_indices = gpu_indices[job_idx]
@@ -147,7 +154,7 @@ class CtlWrapperArgs:
                             driver="nvidia",
                             capabilities=[["gpu"]],
                             device_ids=[str(x) for x in job_gpu_indices],
-                        )
+                        ),
                     ]
                     if job_gpu_indices != []
                     else None,
