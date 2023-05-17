@@ -1,5 +1,5 @@
 #!/bin/bash -e
-cd /engines/KataGo-custom/python
+cd /engines/KataGo-tensorflow/python
 RUN_NAME="$1"
 DIRECTORY="$2"
 VOLUME_NAME="$3"
