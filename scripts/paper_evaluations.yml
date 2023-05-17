@@ -74,15 +74,13 @@ training_checkpoint_sweep:
 
 # Experiment: evaluate adversary vs. KataGo checkpoints.
 katago_ckpt_sweep:
-  num_games_per_matchup: 50
+  num_games_per_matchup: 500
   # Adversary config
   adversary_algorithm: AMCTS
   adversary_visits: 600
   # Victim config
   victim_visits:
     - 1
-    - 32
-    - 200
   net_sizes:
     - b60
   victim_dir: /nas/ucb/k8/go-attack/katago-networks
