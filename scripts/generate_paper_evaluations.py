@@ -473,7 +473,8 @@ def generate_katago_ckpt_sweep_evaluation(
                 victims=[
                     {
                         "path": adjust_nas_path(str(victim_dir / victim)),
-                        "name": victim.lstrip("kata1-").rstrip(".bin.gz") + f"-v{visits}",
+                        "name": victim.lstrip("kata1-").rstrip(".bin.gz")
+                        + f"-v{visits}",
                         "visits": visits,
                     }
                     for victim, visits in job_victim_x_visits
