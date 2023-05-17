@@ -9,4 +9,4 @@
 	url = git@github.com:lightvector/KataGo.git
 [submodule "engines/KataGo-tensorflow"]
 	path = engines/KataGo-tensorflow
-	url = https://github.com/AlignmentResearch/KataGo-custom
+	url = git@github.com:AlignmentResearch/KataGo-custom.git
