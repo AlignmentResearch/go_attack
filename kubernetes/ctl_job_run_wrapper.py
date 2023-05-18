@@ -140,6 +140,7 @@ class CtlWrapperArgs:
                 client.containers.run(
                     image=container,
                     command=command,
+                    name=f"{self.name}-r{ridx}",
                     detach=True,
                     # Volumes
                     volumes={

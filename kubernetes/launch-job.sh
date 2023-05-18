@@ -18,7 +18,7 @@ usage() {
   echo "          [--lr-scale LR_SCALE] [--predictor]"
   echo "          [--predictor-warmstart-ckpt CHECKPOINT] [--resume TIMESTAMP]"
   echo "          [--warmstart-ckpt CHECKPOINT] [--victim-ckpt CHECKPOINT]"
-  echo "          [--use-weka] [--local-run] PREFIX"
+  echo "          [--use-weka] [--local-run] [--only-launch-curriculum] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -78,6 +78,9 @@ usage() {
   echo "  --local-run"
   echo "    Run locally instead of via Kubernetes. Has the effect of launching"
   echo "    containers using docker instead of using ctl."
+  echo "  --only-launch-curriculum"
+  echo "    Only launches the curriculum and exits. Useful for editing the"
+  echo "    curriculum for an existing run."
   echo
   echo "Optional arguments should be specified before positional arguments."
   echo
@@ -117,6 +120,7 @@ while [ -n "${1-}" ]; do
     --victim-ckpt) VICTIM_CKPT=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
     --local-run) LOCAL_RUN=1 ;;
+    --only-launch-curriculum) ONLY_LAUNCH_CURRICULUM=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
@@ -198,6 +202,19 @@ else
   TRAIN_CMD="/go_attack/kubernetes/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE"
   SHUFFLE_AND_EXPORT_CMD="/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME $USE_GATING"
   CURRICULUM_CMD="/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM"
+fi
+
+if [ -n "${ONLY_LAUNCH_CURRICULUM:-}" ]; then
+  echo "Launching curriculum only."
+  ctl_job_run --container \
+      "$PYTHON_IMAGE" \
+      $VOLUME_FLAGS \
+      --command "$CURRICULUM_CMD" \
+      --high-priority \
+      --gpu 0 \
+      --name go-curric-"$1" \
+      --replicas 1
+  exit 0
 fi
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
