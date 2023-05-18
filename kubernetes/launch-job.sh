@@ -18,7 +18,8 @@ usage() {
   echo "          [--lr-scale LR_SCALE] [--predictor]"
   echo "          [--predictor-warmstart-ckpt CHECKPOINT] [--resume TIMESTAMP]"
   echo "          [--warmstart-ckpt CHECKPOINT] [--victim-ckpt CHECKPOINT]"
-  echo "          [--use-weka] [--local-run] [--only-launch-curriculum] PREFIX"
+  echo "          [--use-weka] [--local-run] [--only-launch-curriculum]"
+  echo "          [--extra-victimplay-high-priority] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -81,6 +82,9 @@ usage() {
   echo "  --only-launch-curriculum"
   echo "    Only launches the curriculum and exits. Useful for editing the"
   echo "    curriculum for an existing run."
+  echo "  --extra-victimplay-high-priority"
+  echo "    Launches extra victimplay jobs with --high-priority on hofvarpnir."
+  echo "    Has no effect in --local-run mode."
   echo
   echo "Optional arguments should be specified before positional arguments."
   echo
@@ -121,6 +125,7 @@ while [ -n "${1-}" ]; do
     -w|--use-weka) export USE_WEKA=1 ;;
     --local-run) LOCAL_RUN=1 ;;
     --only-launch-curriculum) ONLY_LAUNCH_CURRICULUM=1 ;;
+    --extra-victimplay-high-priority) EXTRA_VICTIMPLAY_HIGH_PRIORITY=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
@@ -219,14 +224,23 @@ fi
 
 EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
 if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
+  EXTRA_VICTIMPLAY_HP_FLAG=""
+  EXTRA_VICTIMPLAY_JOB_NAME="go-train-$1-extra"
+  if [ -n "${EXTRA_VICTIMPLAY_HIGH_PRIORITY:-}" ]; then
+    EXTRA_VICTIMPLAY_HP_FLAG="--high-priority"
+    EXTRA_VICTIMPLAY_JOB_NAME+="-hp"  # So that it doesn't conflict with the non-HP job.
+  fi
+
   # shellcheck disable=SC2086
   ctl_job_run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD" \
       --gpu 1 \
-      --name go-train-"$1"-extra \
-      --replicas "${EXTRA_VICTIMPLAY_GPUS}"
+      --name "$EXTRA_VICTIMPLAY_JOB_NAME" \
+      --replicas "${EXTRA_VICTIMPLAY_GPUS}" \
+      $EXTRA_VICTIMPLAY_HP_FLAG
+
   if [ $MIN_VICTIMPLAY_GPUS -eq 0 ]; then
     echo "Running extra victimplay jobs only."
     exit 0
