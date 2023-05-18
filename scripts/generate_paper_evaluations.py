@@ -432,7 +432,8 @@ def generate_katago_ckpt_sweep_evaluation(
             adversaries=[
                 {
                     "path": adjust_nas_path_custom(
-                        common_parameters["main_adversary"]["path"],
+                        parameters["adversary_path"]
+                        or common_parameters["main_adversary"]["path"],
                     ),
                     "algorithm": parameters["adversary_algorithm"],
                     "visits": parameters["adversary_visits"],
