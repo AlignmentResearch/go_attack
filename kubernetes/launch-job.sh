@@ -18,7 +18,7 @@ usage() {
   echo "          [--lr-scale LR_SCALE] [--predictor]"
   echo "          [--predictor-warmstart-ckpt CHECKPOINT] [--resume TIMESTAMP]"
   echo "          [--warmstart-ckpt CHECKPOINT] [--victim-ckpt CHECKPOINT]"
-  echo "          [--use-weka] PREFIX"
+  echo "          [--use-weka] [--local-run] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -98,7 +98,6 @@ ALTERNATE_CURRICULUM=${DEFAULT_ALTERNATE_CURRICULUM}
 LR_SCALE=${DEFAULT_LR_SCALE}
 MIN_VICTIMPLAY_GPUS=${DEFAULT_NUM_VICTIMPLAY_GPUS}
 USE_GATING=0
-LOCAL_RUN=0
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
 while [ -n "${1-}" ]; do
   case $1 in
@@ -117,7 +116,7 @@ while [ -n "${1-}" ]; do
     --warmstart-ckpt) WARMSTART_CKPT=$2; shift ;;
     --victim-ckpt) VICTIM_CKPT=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
-    --local-run) export LOCAL_RUN=1 ;;
+    --local-run) LOCAL_RUN=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
@@ -146,7 +145,7 @@ ctl_job_run() {
   if [ -n "${LOCAL_RUN:-}" ]; then
     python "$GIT_ROOT"/kubernetes/ctl_job_run_wrapper.py --local-run "$@"
   else
-    "$GIT_ROOT"/kubernetes/ctl_job_run_wrapper.py "$@"
+    python "$GIT_ROOT"/kubernetes/ctl_job_run_wrapper.py "$@"
   fi
 }
 

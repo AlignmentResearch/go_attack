@@ -64,7 +64,7 @@ class CtlWrapperArgs:
             "job",
             "run",
             "--name",
-            self.name,
+            self.name[-38:],  # Limit job name to 38 characters for DNS reasons
             "--shared-host-dir",
             self.shared_host_dir,
             "--shared-host-dir-mount",
