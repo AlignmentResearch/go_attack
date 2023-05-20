@@ -263,8 +263,7 @@ ctl_job_run --container \
     --high-priority \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
-    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1 \
-    --gpu-collo-allowed 0 1 1 0 0
+    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
 if [ "$USE_GATING" -eq 1 ]; then
   if [ -n "${USE_ITERATED_TRAINING:-}" ]; then

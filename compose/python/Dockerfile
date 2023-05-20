@@ -40,6 +40,12 @@ RUN pip install --no-cache-dir --upgrade pip setuptools
 COPY ./compose/python/requirements.txt /downloads/requirements.txt
 RUN pip install --no-cache-dir -r /downloads/requirements.txt
 
+# Set entrypoint
+WORKDIR /
+COPY ./compose/python/entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
+
 FROM python-deps as prod
 # Copy over KataGo python files
 COPY ./engines/KataGo-raw/python /engines/KataGo-raw/python

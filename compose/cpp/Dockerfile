@@ -137,17 +137,21 @@ RUN pip install -e /go_attack --root-user-action=ignore
 
 # Copy over other files
 COPY ./scripts/ /go_attack/scripts
-
 COPY ./engines/KataGo-custom/cpp/evaluate_loop.sh /engines/KataGo-custom/cpp/evaluate_loop.sh
 COPY ./engines/KataGo-raw/cpp/configs /engines/KataGo-raw/cpp/configs
 
+# Set entrypoint
+COPY ./compose/cpp/entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["./entrypoint.sh"]
 
-
+# Debug image
 FROM runtime-deps as debug
 COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
 COPY ./kubernetes/ /go_attack/kubernetes
 COPY ./configs /go_attack/configs
 
+# Production image
 FROM runtime-deps as prod
 COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
 COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago

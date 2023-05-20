@@ -1,18 +1,12 @@
 [
     {
-        "_comment": "b60-s7702m-v32",
+        "_comment": "b60-s7702m-v64",
         "name": "kata1-b60c320-s7701878528-d3323518127.bin.gz",
-        "max_visits_victim": 32,
+        "max_visits_victim": 64,
         "win_rate": 0.75,
         "score_diff": null,
         "score_wo_komi_diff": null,
         "policy_loss": null
-    },
-    {
-        "_comment": "b60-s7702m-v64",
-        "name": "kata1-b60c320-s7701878528-d3323518127.bin.gz",
-        "max_visits_victim": 64,
-        "win_rate": 0.75
     },
     {
         "_comment": "b60-s7702m-v128",
