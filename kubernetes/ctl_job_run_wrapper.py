@@ -154,7 +154,7 @@ class CtlWrapperArgs:
                         docker.types.DeviceRequest(
                             driver="nvidia",
                             capabilities=[["gpu"]],
-                            device_ids=[str(x + 4) for x in job_gpu_indices],
+                            device_ids=[str(x) for x in job_gpu_indices],
                         ),
                     ]
                     if job_gpu_indices != []
