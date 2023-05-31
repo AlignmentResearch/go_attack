@@ -199,7 +199,9 @@ def write_adversaries(
             f=f,
             bot_index=bot_index_offset + i,
             bot_path=path,
-            bot_name=f"adv-s{get_adversary_steps(path)}-v{visits}-{algorithm}",
+            bot_name=adversary.get(
+                "name", f"adv-s{get_adversary_steps(path)}-v{visits}-{algorithm}"
+            ),
             num_visits=visits,
             bot_algorithm=algorithm,
         )
@@ -363,6 +365,114 @@ def generate_training_checkpoint_sweep_evaluation(
 
     command = "\n".join(job_commands)
     print(f"\nExperiment: {job_description}\nCommand:\n{command}\n")
+
+
+def generate_ft_training_checkpoint_sweep(
+    parameters: Mapping[str, Any],
+    config_dir: Path,
+    repo_root: Path,
+) -> None:
+    """Generates experiment config for training checkpoint sweep."""
+    parameters_key = "ft_training_checkpoint_sweep"
+    if parameters_key not in parameters:
+        return
+    common_parameters = parameters
+    parameters = parameters[parameters_key]
+
+    evaluation_config_dir = config_dir / "ft_training_checkpoint_sweep"
+    evaluation_config_dir.mkdir(parents=True, exist_ok=True)
+    victim_config = evaluation_config_dir / "victims.cfg"
+
+    # Write victim
+    victim_filename = parameters["victim_filename"]
+    victim_name = parameters["victim_name"]
+    victim_visits = parameters["victim_visits"]
+    with open(victim_config, "w") as f:
+        f.write("logSearchInfo = false\n")
+        write_victims(
+            f,
+            [
+                dict(
+                    filename=victim_filename,
+                    name=victim_name,
+                    visits=victim_visits,
+                )
+            ],
+        )
+
+    def get_n_steps(model_path: str) -> int:
+        return int(re.search("s([0-9]+)", model_path.split("/")[-1]).group(1))
+
+    # Fetch list of adversary checkpoint files
+    adv_checkpoints = []
+    cml_steps = []
+    for checkpoint_folder in parameters["adversary_checkpoint_folders"]:
+        with create_dummy_devbox() as devbox:
+            checkpoints = devbox.run(f"ls -v {checkpoint_folder}").split("\n")
+            adv_checkpoints.extend(
+                [os.path.join(checkpoint_folder, x) for x in checkpoints]
+            )
+
+            cur_steps = 0 if len(cml_steps) == 0 else cml_steps[-1]
+            cml_steps.extend([get_n_steps(x) + cur_steps for x in checkpoints])
+
+    num_checkpoints_to_evaluate = parameters["num_checkpoints_to_evaluate"]
+    # Sample checkpoints to evaluate, including first and last
+    indices_to_evaluate = np.unique(
+        np.linspace(
+            0,
+            len(adv_checkpoints) - 1,
+            num_checkpoints_to_evaluate,
+        )
+        .round()
+        .astype(int),
+    )
+    adv_checkpoints = [adv_checkpoints[i] for i in indices_to_evaluate]
+    cml_steps = [cml_steps[i] for i in indices_to_evaluate]
+
+    # Write configs
+    job_commands = []
+    job_description: str = "evaluate victim against several adversaries (1 per gpu)"
+    for i, (adv_path, cml_step) in enumerate(zip(adv_checkpoints, cml_steps)):
+        job_name = f"adv-{i}"
+        job_config = evaluation_config_dir / f"{job_name}.cfg"
+
+        with open(job_config, "w") as f:
+            num_games = parameters["num_games_per_checkpoint"]
+            usage_string = get_usage_string(
+                repo_root=repo_root,
+                job_description=job_description,
+                job_name=job_name,
+                default_num_gpus=1,
+                num_games=num_games,
+                configs=[victim_config, job_config],
+            )
+            f.write(str_to_comment(usage_string.usage_string))
+            job_commands.append(usage_string.command)
+
+            f.write(f"numGamesTotal = {num_games}\n")
+            f.write(f"numBots = 2\n")
+            write_adversaries(
+                f=f,
+                adversaries=[
+                    {
+                        "path": os.path.join(adjust_nas_path(adv_path), "model.bin.gz"),
+                        # os = original steps, cs = cumulative steps
+                        "name": f"adv-os{get_adversary_steps(adv_path)}-cs{cml_step}",
+                        "visits": parameters["adversary_visits"],
+                        "algorithm": parameters["adversary_algorithm"],
+                    }
+                ],
+                bot_index_offset=1,
+            )
+
+    print()
+    print(f"Experiment: {job_description}")
+    print()
+    print("Command:")
+    print(f"for i in {{0..{len(job_commands) - 1}}}; do ", end="")
+    print(job_commands[0].replace("adv-0", "adv-$i").strip(), end="")
+    print(" ; done")
 
 
 def generate_katago_ckpt_sweep_evaluation(
@@ -658,6 +768,11 @@ def main():
         repo_root=repo_root,
     )
     generate_adversary_visit_sweep_evaluation(
+        evaluation_parameters,
+        config_dir=config_dir,
+        repo_root=repo_root,
+    )
+    generate_ft_training_checkpoint_sweep(
         evaluation_parameters,
         config_dir=config_dir,
         repo_root=repo_root,
