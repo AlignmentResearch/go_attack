@@ -431,14 +431,20 @@ def generate_ft_training_checkpoint_sweep(
     cml_steps = [cml_steps[i] for i in indices_to_evaluate]
 
     # Write configs
+    n_advs_per_gpu: int = parameters["n_advs_per_gpu"]
     job_commands = []
-    job_description: str = "evaluate victim against several adversaries (1 per gpu)"
-    for i, (adv_path, cml_step) in enumerate(zip(adv_checkpoints, cml_steps)):
-        job_name = f"adv-{i}"
+    job_description: str = "evaluate victim against several adversaries"
+    for i, idx_start in enumerate(range(0, len(adv_checkpoints), n_advs_per_gpu)):
+        idx_end = min(idx_start + n_advs_per_gpu, len(adv_checkpoints))
+        job_name = f"{parameters['job_name_prefix']}-{i}"
         job_config = evaluation_config_dir / f"{job_name}.cfg"
 
         with open(job_config, "w") as f:
-            num_games = parameters["num_games_per_checkpoint"]
+            job_advs, job_cml_steps = (
+                adv_checkpoints[idx_start:idx_end],
+                cml_steps[idx_start:idx_end],
+            )
+            num_games = len(job_advs) * parameters["num_games_per_checkpoint"]
             usage_string = get_usage_string(
                 repo_root=repo_root,
                 job_description=job_description,
@@ -451,7 +457,7 @@ def generate_ft_training_checkpoint_sweep(
             job_commands.append(usage_string.command)
 
             f.write(f"numGamesTotal = {num_games}\n")
-            f.write(f"numBots = 2\n")
+            f.write(f"numBots = {len(job_advs) + 1}\n")
             write_adversaries(
                 f=f,
                 adversaries=[
@@ -462,6 +468,7 @@ def generate_ft_training_checkpoint_sweep(
                         "visits": parameters["adversary_visits"],
                         "algorithm": parameters["adversary_algorithm"],
                     }
+                    for adv_path, cml_step in zip(job_advs, job_cml_steps)
                 ],
                 bot_index_offset=1,
             )
@@ -471,7 +478,14 @@ def generate_ft_training_checkpoint_sweep(
     print()
     print("Command:")
     print(f"for i in {{0..{len(job_commands) - 1}}}; do ", end="")
-    print(job_commands[0].replace("adv-0", "adv-$i").strip(), end="")
+    print(
+        job_commands[0]
+        .replace(
+            f"{parameters['job_name_prefix']}-0", f"{parameters['job_name_prefix']}-$i"
+        )
+        .strip(),
+        end="",
+    )
     print(" ; done")
 
 

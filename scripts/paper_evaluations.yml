@@ -74,13 +74,15 @@ training_checkpoint_sweep:
 
 # Experiment: evaluate several finetune adversary checkpoints throughout training
 ft_training_checkpoint_sweep:
+  job_name_prefix: adv-v1
   # Victim configuration
   victim_filename: kata1-b60c320-s7701878528-d3323518127.bin.gz
   victim_name: b60-7702m
-  victim_visits: 4096
+  victim_visits: 1
   # Checkpoint folders
   num_checkpoints_to_evaluate: 40
-  num_games_per_checkpoint: 50
+  num_games_per_checkpoint: 200
+  n_advs_per_gpu: 4
   adversary_checkpoint_folders:
     - /nas/ucb/k8/go-attack/victimplay/ttseng-cyclic-vs-cp564-20230213-154321/models
     - /nas/ucb/k8/go-attack/victimplay/tony-cyc-adv-ft-vs-b60-s7702m-20230518-185923/models
