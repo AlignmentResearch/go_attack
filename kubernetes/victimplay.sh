@@ -13,4 +13,4 @@ mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 /engines/KataGo-raw/cpp/katago selfplay \
     -output-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/ \
     -models-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/models/ \
-    -config /go_attack/configs/selfplay1.cfg
+    -config /go_attack/engines/KataGo-raw/cpp/configs/training/selfplay1.cfg
