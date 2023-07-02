@@ -201,6 +201,7 @@ ctl job run --container \
     "$SHUFFLE_AND_EXPORT_CMD" \
     "$CURRICULUM_CMD" \
     --high-priority \
+    --memory 100Gi 16Gi 100Gi 100Gi 16Gi \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
@@ -228,6 +229,7 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD" \
       --gpu 1 \
+      --memory 100Gi \
       --name go-train-"$1"-extra \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
 fi
