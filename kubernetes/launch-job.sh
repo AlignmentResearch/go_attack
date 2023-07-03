@@ -142,6 +142,7 @@ ctl job run --container \
     "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME $USE_GATING" \
     --high-priority \
     --gpu 1 1 1 0 \
+    --memory 64Gi 16Gi 64Gi 64Gi \
     --name gt-"$1"-v \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1
 
@@ -164,6 +165,7 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD $RUN_NAME $VOLUME_NAME $USE_WARMSTART" \
       --gpu 1 \
+      --memory 64Gi \
       --name gt-"$1"-e \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
 fi

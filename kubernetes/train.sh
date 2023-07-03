@@ -23,6 +23,17 @@ VOLUME_NAME="$2"
 LR_SCALE="$3"
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
+if [ ! -e "$EXPERIMENT_DIR/selfplay/20220301-to-20220624" ]; then
+  mkdir -p "$EXPERIMENT_DIR"/selfplay
+  ln -s /shared/katago-training-data/20220301-to-20220624 "$EXPERIMENT_DIR"/selfplay/20220301-to-20220624
+fi
+if [ ! -d $EXPERIMENT_DIR/victims ]; then
+  mkdir -p "$EXPERIMENT_DIR"/victims_tmp
+  touch "$EXPERIMENT_DIR"/victims_tmp/victim.cfg
+  ln -s /shared/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz "$EXPERIMENT_DIR"/victims_tmp/
+  mv "$EXPERIMENT_DIR"/victims_tmp "$EXPERIMENT_DIR"/victims
+fi
+
 if [ -z "$INITIAL_WEIGHTS" ]; then
     echo "No initial weights specified, using random weights"
     MODEL_KIND=b6c96
