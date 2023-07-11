@@ -155,6 +155,7 @@ if [ -n "${USE_PREDICTOR:-}" ]; then
       "/go_attack/kubernetes/train.sh --initial-weights $PREDICTOR_WARMSTART_CKPT $RUN_NAME/predictor $VOLUME_NAME $LR_SCALE" \
       --high-priority \
       --gpu 0 1 \
+      --restart-on-failure \
       --name go-training-"$1"-predictor
 else
   PREDICTOR_FLAG=""
@@ -203,6 +204,7 @@ ctl job run --container \
     --high-priority \
     --memory 100Gi 16Gi 100Gi 100Gi 16Gi \
     --gpu 1 1 1 0 0 \
+    --restart-on-failure \
     --name gt-"$1"-v \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
@@ -217,6 +219,7 @@ if [ "$USE_GATING" -eq 1 ]; then
       --command "/go_attack/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
       --high-priority \
       --gpu 1 \
+      --restart-on-failure \
       --name gt-"$1"-g \
       --replicas 1
 fi
@@ -230,6 +233,7 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
       --command "$VICTIMPLAY_CMD" \
       --gpu 1 \
       --memory 100Gi \
+      --restart-on-failure \
       --name gt-"$1"-e \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
 fi
