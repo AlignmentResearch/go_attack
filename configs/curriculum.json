@@ -1,11 +1,16 @@
 [
     {
-        "name": "ttseng-iterated7-20230403-iteration-s5861888.bin.gz",
+        "name": "ttseng-iterated7-20230403-iteration-0-s5861888.bin.gz",
+        "max_visits_victim": 1,
+        "win_rate": 0.75
+    },
+    {
+        "name": "ttseng-iterated7-20230403-iteration-0-s5861888.bin.gz",
         "max_visits_victim": 32,
         "win_rate": 0.75
     },
     {
-        "name": "ttseng-iterated7-20230403-iteration-s5861888.bin.gz",
+        "name": "ttseng-iterated7-20230403-iteration-0-s5861888.bin.gz",
         "max_visits_victim": 300,
         "win_rate": 0.75
     }
