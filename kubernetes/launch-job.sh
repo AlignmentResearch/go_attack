@@ -202,7 +202,9 @@ ctl job run --container \
     "$CURRICULUM_CMD" \
     --high-priority \
     --gpu 1 1 1 0 0 \
-    --name go-train-"$1"-vital \
+    --memory 64Gi 16Gi 64Gi 64Gi 16Gi \
+    --restart-on-failure \
+    --name gt-"$1"-vital \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
 if [ "$USE_GATING" -eq 1 ]; then
@@ -228,6 +230,8 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD" \
       --gpu 1 \
-      --name go-train-"$1"-extra \
+      --memory 64Gi \
+      --restart-on-failure \
+      --name gt-"$1"-extra \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
 fi
