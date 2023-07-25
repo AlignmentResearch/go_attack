@@ -109,8 +109,8 @@ do
                 -config /go_attack/kubernetes/evaluate_loop_extra.cfg \
                 -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \
                 -override-config botName1="adv-$LATEST_MODEL_DIR" \
-                -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR" \
-                2>&1 | tee "$OUTPUT_DIR"/logs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR".log
+                -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$LATEST_MODEL_DIR" \
+                2>&1 | tee "$OUTPUT_DIR"/logs/"$LATEST_MODEL_DIR".log
 
             # Update the last step
             LAST_STEP="$STEP"
