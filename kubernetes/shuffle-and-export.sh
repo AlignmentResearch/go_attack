@@ -11,6 +11,6 @@ SELFPLAY_PROPORTION="$5"
 /go_attack/kubernetes/log-git-commit.sh /"$VOLUME_NAME"/train-only/"$DIRECTORY"
 
 mkdir -p /"$VOLUME_NAME"/train-only/"$DIRECTORY"
-/go-attack/scripts/get_mixed_adv_train_data.py -out-dir /"$VOLUME_NAME"/train-only/"$DIRECTORY"/selfplay -selfplay-proportion "$SELFPLAY_PROPORTION"
+/go_attack/kubernetes/get_mixed_adv_train_data.py -out-dir /"$VOLUME_NAME"/train-only/"$DIRECTORY"/selfplay -selfplay-proportion "$SELFPLAY_PROPORTION"
 ./selfplay/shuffle_and_export_loop.sh    "$RUN_NAME"    /"$VOLUME_NAME"/train-only/"$DIRECTORY"    /tmp    16    256    $USE_GATING -random-selection -min-rows 10000000
 sleep infinity
