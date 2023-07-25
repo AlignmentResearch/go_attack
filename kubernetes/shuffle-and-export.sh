@@ -10,5 +10,5 @@ USE_GATING="$4"
 /go_attack/kubernetes/log-git-commit.sh /"$VOLUME_NAME"/victimplay/"$DIRECTORY"
 
 mkdir -p /"$VOLUME_NAME"/victimplay/"$DIRECTORY"
-./selfplay/shuffle_and_export_loop.sh    "$RUN_NAME"    /"$VOLUME_NAME"/victimplay/"$DIRECTORY"    /tmp    16    256    $USE_GATING -min-rows 30000000
+./selfplay/shuffle_and_export_loop.sh    "$RUN_NAME"    /"$VOLUME_NAME"/victimplay/"$DIRECTORY"    /tmp    16    256    $USE_GATING -add-to-window 2790229817
 sleep infinity
