@@ -112,6 +112,7 @@ while [ -n "${1-}" ]; do
     --warmstart-ckpt) WARMSTART_CKPT=$2; shift ;;
     --victim-ckpt) VICTIM_CKPT=$2; shift ;;
     -w|--use-weka) export USE_WEKA=1 ;;
+    --selfplay-proportion) SELFPLAY_PROPORTION=$2; shift ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
@@ -181,29 +182,29 @@ if [ -n "${USE_ITERATED_TRAINING:-}" ]; then
   CURRICULUM_CMD="/go_attack/kubernetes/iterated-training/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM $ALTERNATE_CURRICULUM $ALTERNATE_ITERATION_FIRST"
 else
   VICTIMPLAY_CMD+=" $VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME"
-  EVALUATE_LOOP_CMD="/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval"
+  EVALUATE_LOOP_CMD="/engines/KataGo-custom/cpp/evaluate_loop_custom.sh $PREDICTOR_FLAG /$VOLUME_NAME/train-only/$RUN_NAME /$VOLUME_NAME/train-only/$RUN_NAME/eval"
   TRAIN_CMD="/go_attack/kubernetes/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE"
-  SHUFFLE_AND_EXPORT_CMD="/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME $USE_GATING"
+  SHUFFLE_AND_EXPORT_CMD="/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME $USE_GATING $SELFPLAY_PROPORTION"
   CURRICULUM_CMD="/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM"
 fi
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
 ctl job run --container \
     "$CPP_IMAGE" \
-    "$CPP_IMAGE" \
-    "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
-    --command "$VICTIMPLAY_CMD" \
+    --command \
     "$EVALUATE_LOOP_CMD" \
     "$TRAIN_CMD" \
     "$SHUFFLE_AND_EXPORT_CMD" \
-    "$CURRICULUM_CMD" \
     --high-priority \
-    --gpu 1 1 1 0 0 \
-    --name go-train-"$1"-vital \
-    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
+    --gpu 1 1 0 \
+    --memory 16Gi 64Gi 64Gi \
+    --name gtonly-"$1" \
+    --replicas 1 1 1
+
+exit 0
 
 if [ "$USE_GATING" -eq 1 ]; then
   if [ -n "${USE_ITERATED_TRAINING:-}" ]; then

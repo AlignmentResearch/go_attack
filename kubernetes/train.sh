@@ -22,7 +22,7 @@ RUN_NAME="$1"
 VOLUME_NAME="$2"
 LR_SCALE="$3"
 
-EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
+EXPERIMENT_DIR=/"$VOLUME_NAME"/train-only/"$RUN_NAME"
 if [ -z "$INITIAL_WEIGHTS" ]; then
     echo "No initial weights specified, using random weights"
     MODEL_KIND=b6c96
