@@ -184,11 +184,23 @@ else
   CURRICULUM_CMD="/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM"
 fi
 
+# launch curriculum separately to make it easier to swap out when a new katago
+# network drops
+ctl job run --container \
+    "$PYTHON_IMAGE" \
+    $VOLUME_FLAGS \
+    --command "$CURRICULUM_CMD" \
+    --memory 16Gi \
+    --restart-on-failure \
+    --high-priority \
+    --gpu 0 \
+    --name gt-"$1"-c \
+    --replicas 1
+
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
 ctl job run --container \
     "$CPP_IMAGE" \
     "$CPP_IMAGE" \
-    "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     "$PYTHON_IMAGE" \
     $VOLUME_FLAGS \
@@ -196,13 +208,12 @@ ctl job run --container \
     "$EVALUATE_LOOP_CMD" \
     "$TRAIN_CMD" \
     "$SHUFFLE_AND_EXPORT_CMD" \
-    "$CURRICULUM_CMD" \
     --high-priority \
     --restart-on-failure \
-    --memory 72Gi 16Gi 72Gi 96Gi 4Gi \
-    --gpu 1 1 1 0 0 \
+    --memory 72Gi 16Gi 72Gi 96Gi \
+    --gpu 1 1 1 0 \
     --name gt-"$1"-v \
-    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
+    --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1
 
 if [ "$USE_GATING" -eq 1 ]; then
   if [ -n "${USE_ITERATED_TRAINING:-}" ]; then

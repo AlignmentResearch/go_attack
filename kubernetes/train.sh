@@ -23,6 +23,15 @@ VOLUME_NAME="$2"
 LR_SCALE="$3"
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
+if [ ! -e "$EXPERIMENT_DIR/selfplay/preseed" ]; then
+  mkdir -p "$EXPERIMENT_DIR"/selfplay/preseed
+  ln -s /shared/nas-data/k8/victimplay/ttseng-avoid-pass-alive-coldstart-39-20221025-175949/selfplay "$EXPERIMENT_DIR"/selfplay/preseed/ttseng-avoid-pass-alive-coldstart-39-20221025-175949
+  ln -s /shared/nas-data/k8/victimplay/ttseng-cyclic-vs-cp564-20230213-154321/selfplay "$EXPERIMENT_DIR"/selfplay/preseed/ttseng-cyclic-vs-cp564-20230213-154321
+  ln -s /shared/nas-data/k8/victimplay/tony-cyc-adv-vs-b60-s7574m-20230515-174208/selfplay "$EXPERIMENT_DIR"/selfplay/preseed/tony-cyc-adv-vs-b60-s7574m-20230515-174208
+  ln -s /shared/nas-data/k8/victimplay/tony-cyc-adv-ft-vs-b60-s7702m-20230518-185923/selfplay "$EXPERIMENT_DIR"/selfplay/preseed/tony-cyc-adv-ft-vs-b60-s7702m-20230518-185923
+  ln -s /shared/nas-data/k8/victimplay/tony-cyc-adv-ft-vs-b60-s7702m-20230520-174057/selfplay "$EXPERIMENT_DIR"/selfplay/preseed/tony-cyc-adv-ft-vs-b60-s7702m-20230520-174057
+fi
+
 if [ -z "$INITIAL_WEIGHTS" ]; then
     echo "No initial weights specified, using random weights"
     MODEL_KIND=b6c96
