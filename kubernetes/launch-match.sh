@@ -98,6 +98,7 @@ ctl job run --container \
   $*" \
   --high-priority \
   --gpu 1 \
+  --memory 80Gi \
   --name go-match-"$PREFIX" \
   --replicas "${NUM_GPUS}"
 exit 0
