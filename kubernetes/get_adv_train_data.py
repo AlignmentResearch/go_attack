@@ -217,5 +217,7 @@ if __name__ == "__main__":
             # Joining two absolute paths `out_dir` and `f`:
             # https://stackoverflow.com/questions/50846049/join-two-absolute-paths
             symlink_dst = out_dir / f.relative_to(f.anchor)
+            if symlink_dst.exists():
+                continue
             symlink_dst.parent.mkdir(parents=True, exist_ok=True)
             symlink_dst.symlink_to(f)
