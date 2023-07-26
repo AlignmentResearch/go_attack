@@ -2,6 +2,12 @@
     {
         "_comment": "cp505@128",
         "name": "kata1-b40c256-s11840935168-d2898845681.bin.gz",
+        "max_visits_victim": 64,
+        "win_rate": 0.75
+    },
+    {
+        "_comment": "cp505@128",
+        "name": "kata1-b40c256-s11840935168-d2898845681.bin.gz",
         "max_visits_victim": 128,
         "win_rate": 0.75
     },
