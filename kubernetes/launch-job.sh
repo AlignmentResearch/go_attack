@@ -202,7 +202,7 @@ ctl job run --container \
     "$SHUFFLE_AND_EXPORT_CMD" \
     "$CURRICULUM_CMD" \
     --high-priority \
-    --memory 64Gi 16Gi 64Gi 64Gi 16Gi \
+    --memory 72Gi 16Gi 72Gi 96Gi 4Gi \
     --gpu 1 1 1 0 0 \
     --restart-on-failure \
     --name gt-"$1"-v \
@@ -232,7 +232,7 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD" \
       --gpu 1 \
-      --memory 64Gi \
+      --memory 72Gi \
       --restart-on-failure \
       --name gt-"$1"-e \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
