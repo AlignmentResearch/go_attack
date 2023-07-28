@@ -199,7 +199,7 @@ ctl job run --container \
     "$CURRICULUM_CMD" \
     --high-priority \
     --restart-on-failure \
-    --memory 72Gi 16Gi 72Gi 100Gi 4Gi \
+    --memory 72Gi 16Gi 72Gi 96Gi 4Gi \
     --gpu 1 1 1 0 0 \
     --name gt-"$1"-v \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
