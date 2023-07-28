@@ -123,6 +123,8 @@ MAX_VICTIMPLAY_GPUS=${MAX_VICTIMPLAY_GPUS:-$((2*MIN_VICTIMPLAY_GPUS))}
 ############################
 # Launching the experiment #
 ############################
+# Job names are prefixed with "gt", meaning "go-train", and suffixed with "-v"
+# (vital), "-e" (extra), "-g" (gating), "-p" (predictor).
 
 RUN_NAME="$1-${RESUME_TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
 echo "Run name: $RUN_NAME"
@@ -150,7 +152,7 @@ if [ -n "${USE_PREDICTOR:-}" ]; then
       "/go_attack/kubernetes/train.sh --initial-weights $PREDICTOR_WARMSTART_CKPT $RUN_NAME/predictor $VOLUME_NAME $LR_SCALE" \
       --high-priority \
       --gpu 0 1 \
-      --name go-training-"$1"-predictor
+      --name gt-"$1"-p
 else
   PREDICTOR_FLAG=""
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
@@ -197,7 +199,7 @@ ctl job run --container \
     "$CURRICULUM_CMD" \
     --high-priority \
     --gpu 1 1 1 0 0 \
-    --name go-train-"$1"-vital \
+    --name gt-"$1"-v \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
 if [ "$USE_GATING" -eq 1 ]; then
@@ -211,7 +213,7 @@ if [ "$USE_GATING" -eq 1 ]; then
       --command "/go_attack/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
       --high-priority \
       --gpu 1 \
-      --name go-train-"$1"-gate \
+      --name gt-"$1"-g \
       --replicas 1
 fi
 
@@ -223,6 +225,6 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD" \
       --gpu 1 \
-      --name go-train-"$1"-extra \
+      --name gt-"$1"-e \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
 fi

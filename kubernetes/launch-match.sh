@@ -83,6 +83,7 @@ else
   GAMES_PER_REPLICA=-1
 fi
 
+# Job name is prefixed with "gm", meaning "go-match".
 # shellcheck disable=SC2086
 ctl job run --container \
   "$CPP_IMAGE" \
@@ -94,6 +95,6 @@ ctl job run --container \
   $*" \
   --high-priority \
   --gpu 1 \
-  --name go-match-"$PREFIX" \
+  --name gm-"$PREFIX" \
   --replicas "${NUM_GPUS}"
 exit 0
