@@ -198,6 +198,8 @@ ctl job run --container \
     "$SHUFFLE_AND_EXPORT_CMD" \
     "$CURRICULUM_CMD" \
     --high-priority \
+    --restart-on-failure \
+    --memory 72Gi 16Gi 72Gi 100Gi 4Gi \
     --gpu 1 1 1 0 0 \
     --name gt-"$1"-v \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
@@ -224,6 +226,8 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD" \
+      --restart-on-failure \
+      --memory 72Gi \
       --gpu 1 \
       --name gt-"$1"-e \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
