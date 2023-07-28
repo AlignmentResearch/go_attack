@@ -9,7 +9,7 @@ DEFAULT_NUM_GPUS=1
 usage() {
   echo "Schedules a job that runs \`match\`."
   echo
-  echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] [--use-weka] [--subdir SUBDIR] PREFIX"
+  echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] [--subdir SUBDIR] PREFIX"
   echo "          [--EXTRA_MATCH_FLAGS]"
   echo
   echo "positional arguments:"
@@ -24,9 +24,6 @@ usage() {
   echo "    Number of match games to play. If not specified, then the number of"
   echo "    games will be the numGamesTotal specified in the \`match\` config"
   echo "    multiplied by the number of GPUs."
-  echo "  -w, --use-weka"
-  echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
-  echo "    volume."
   echo "  -s, --subdir SUBDIR"
   echo "    Subdirectory of the output directory to store the results in."
   echo
@@ -47,7 +44,6 @@ while true; do
     -g|--gpus) NUM_GPUS=$2; shift ;;
     -n|--games) NUM_GAMES=$2; shift ;;
     -s|--subdir) SUBDIR=$2; shift ;;
-    -w|--use-weka) export USE_WEKA=1 ;;
     *) break ;;
   esac
   shift
