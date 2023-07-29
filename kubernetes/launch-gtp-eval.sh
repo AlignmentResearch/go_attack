@@ -88,6 +88,7 @@ update_images cpp-and-twogtp
 # having games run sequentially quickly instead of games run in parallel slowly.
 # If we run slow games in parallel, we're likely to lose a lot of progress if
 # the job gets interrupted.
+# Job name is prefixed with "gg", meaning "go-gtp".
 # shellcheck disable=SC2086
 ctl job run --container \
   "$CPP_AND_TWOGTP_IMAGE" \
@@ -99,5 +100,5 @@ ctl job run --container \
   --high-priority \
   --gpu "$NUM_GPUS" \
   --cpu "$NUM_CPUS" \
-  --name "go-gtp-$1" \
+  --name "gg-$1" \
   --replicas 1
