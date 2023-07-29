@@ -4,6 +4,7 @@
 psutil
 requests_toolbelt
 scipy
+sgfmill
 torch
 
 # Helpful libraries
