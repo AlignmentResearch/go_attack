@@ -201,7 +201,7 @@ ctl job run --container \
     "$SHUFFLE_AND_EXPORT_CMD" \
     "$CURRICULUM_CMD" \
     --high-priority \
-    --memory 88Gi 16Gi 72Gi 96Gi 4Gi \
+    --memory 128Gi 16Gi 72Gi 96Gi 4Gi \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
@@ -216,7 +216,7 @@ if [ "$USE_GATING" -eq 1 ]; then
       $VOLUME_FLAGS \
       --command "/go_attack/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
       --high-priority \
-      --memory 32Gi \
+      --memory 128Gi \
       --gpu 1 \
       --name go-train-"$1"-gate \
       --replicas 1
@@ -230,7 +230,7 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD" \
       --gpu 1 \
-      --memory 88Gi \
+      --memory 128Gi \
       --name go-train-"$1"-extra \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
 fi
