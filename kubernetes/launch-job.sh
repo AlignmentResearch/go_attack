@@ -215,7 +215,7 @@ if [ "$USE_GATING" -eq 1 ]; then
       --command "/go_attack/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
       --high-priority \
       --restart-on-failure \
-      --memory 32Gi \
+      --memory 48Gi \
       --gpu 1 \
       --name gt-"$1"-g \
       --replicas 1
