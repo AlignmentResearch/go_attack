@@ -1,27 +1,17 @@
 [
     {
-        "name": "ttseng-cp505-advtrain-spp082-20230728-iteration-0-s61032960.bin.gz",
-        "max_visits_victim": 1,
+        "name": "ttseng-cp505-advtrain-spp082-20230728-iteration-0-s4066048.bin.gz",
+        "max_visits_victim": 32,
         "win_rate": 0.75
     },
     {
-        "name": "ttseng-cp505-advtrain-spp082-20230728-iteration-0-s61032960.bin.gz",
-        "max_visits_victim": 2,
+        "name": "ttseng-cp505-advtrain-spp082-20230728-iteration-0-s7845120.bin.gz",
+        "max_visits_victim": 32,
         "win_rate": 0.75
     },
     {
-        "name": "ttseng-cp505-advtrain-spp082-20230728-iteration-0-s61032960.bin.gz",
-        "max_visits_victim": 4,
-        "win_rate": 0.75
-    },
-    {
-        "name": "ttseng-cp505-advtrain-spp082-20230728-iteration-0-s61032960.bin.gz",
-        "max_visits_victim": 8,
-        "win_rate": 0.75
-    },
-    {
-        "name": "ttseng-cp505-advtrain-spp082-20230728-iteration-0-s61032960.bin.gz",
-        "max_visits_victim": 16,
+        "name": "ttseng-cp505-advtrain-spp082-20230728-iteration-0-s16113664.bin.gz",
+        "max_visits_victim": 32,
         "win_rate": 0.75
     },
     {
