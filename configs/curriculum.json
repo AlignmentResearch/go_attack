@@ -1,16 +1,6 @@
 [
     {
         "name": "ttseng-cp505-advtrain-spp082-20230728-s4066048.bin.gz",
-        "max_visits_victim": 32,
-        "win_rate": 0.75
-    },
-    {
-        "name": "ttseng-cp505-advtrain-spp082-20230728-s4066048.bin.gz",
-        "max_visits_victim": 64,
-        "win_rate": 0.75
-    },
-    {
-        "name": "ttseng-cp505-advtrain-spp082-20230728-s4066048.bin.gz",
         "max_visits_victim": 128,
         "win_rate": 0.75
     },
