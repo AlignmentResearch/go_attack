@@ -23,7 +23,7 @@ while [ -n "${USE_WARMSTART:-}" ] &&
 done
 
 mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay
-/engines/KataGo-custom/cpp/katago victimplay \
+/engines/KataGo-raw/cpp/katago victimplay \
     -output-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/ \
     -models-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/models/ \
     -nn-victim-path /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/victims/ \
@@ -31,6 +31,6 @@ mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay
     -config /go_attack/configs/compute/1gpu.cfg &
 PID="$!"
 while true; do
-  printf "%s:  %s\n" "$(date)" "$(pmap -x $PID | tail -n 1)" >> /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/memory-v113.txt
+  printf "%s:  %s\n" "$(date)" "$(pmap -x $PID | tail -n 1)" >> /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/memory-stable.txt
   sleep 60
 done
