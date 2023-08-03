@@ -143,12 +143,14 @@ def write_bot(
     extra_parameters: Iterable[Mapping[str, str]] = {},
 ) -> None:
     """Writes bot config parameters to file `f`."""
+    use_graph_search = bot_algorithm == "MCTS"
     f.write(
         f"""\
 nnModelFile{bot_index} = {bot_path}
 botName{bot_index} = {bot_name}
 maxVisits{bot_index} = {num_visits}
 searchAlgorithm{bot_index} = {bot_algorithm}
+useGraphSearch{bot_index} = {str(use_graph_search).lower()}
 """,
     )
     for param in extra_parameters:
