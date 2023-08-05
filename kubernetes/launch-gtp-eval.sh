@@ -104,5 +104,6 @@ ctl job run --container \
   --high-priority \
   --gpu "$NUM_GPUS" \
   --cpu "$NUM_CPUS" \
+  --memory 72Gi \
   --name "go-gtp-$1" \
   --replicas 1
