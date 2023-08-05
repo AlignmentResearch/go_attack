@@ -3,7 +3,7 @@
 DEFAULT_NUM_GPUS=4
 
 usage() {
-  echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] [--use-weka] PREFIX"
+  echo "Usage: $0 [--gpus GPUS] [--games NUM_GAMES] PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX     Identifying label used for the name of the job and the name"
@@ -13,9 +13,6 @@ usage() {
   echo "  -g GPUS, --gpus GPUS"
   echo "    Number of GPUs to use."
   echo "    default: ${DEFAULT_NUM_GPUS}"
-  echo "  -w, --use-weka"
-  echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
-  echo "    volume."
   echo
   echo "Optional arguments should be specified before positional arguments."
 }
@@ -26,7 +23,6 @@ while [ -n "${1-}" ]; do
   case $1 in
     -h|--help) usage; exit 0 ;;
     -g|--gpus) NUM_GPUS=$2; shift ;;
-    -w|--use-weka) export USE_WEKA=1 ;;
     *) break ;;
   esac
   shift
