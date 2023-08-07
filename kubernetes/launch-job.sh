@@ -202,7 +202,7 @@ ctl job run --container \
     "$SHUFFLE_AND_EXPORT_CMD" \
     "$CURRICULUM_CMD" \
     --high-priority \
-    --memory 128Gi 128Gi 72Gi 96Gi 4Gi \
+    --memory 256Gi 256Gi 72Gi 96Gi 4Gi \
     --gpu 1 1 1 0 0 \
     --name go-train-"$1"-vital \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
