@@ -140,9 +140,6 @@ COPY ./scripts/ /go_attack/scripts
 COPY ./engines/KataGo-custom/cpp/evaluate_loop.sh /engines/KataGo-custom/cpp/evaluate_loop.sh
 COPY ./engines/KataGo-raw/cpp/configs /engines/KataGo-raw/cpp/configs
 
-# Set entrypoint
-COPY ./compose/cpp/entrypoint.sh entrypoint.sh
-RUN chmod +x entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
 
 # Debug image
