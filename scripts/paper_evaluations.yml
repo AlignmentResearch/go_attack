@@ -74,20 +74,29 @@ training_checkpoint_sweep:
 
 # Experiment: evaluate adversary vs. KataGo checkpoints.
 katago_ckpt_sweep:
-  num_games_per_matchup: 50
+  # Set adversary_path to null to use the main adversary.
+  adversary_path: "/nas/ucb/k8/go-attack/victimplay/\
+    ttseng-cyclic-vs-cp564-20230213-154321/models/\
+    t0-s22887680-d6258166/model.bin.gz"  # cyclic-adv-ft-vs-b60-s7047m-s22m
+  num_games_per_matchup: 500
   # Adversary config
   adversary_algorithm: AMCTS
   adversary_visits: 600
   # Victim config
-  victim_visits: 32
+  victim_visits:
+    - 1
+    - 32
+    - 200
+  net_sizes:
+    - b60
   victim_dir: /nas/ucb/k8/go-attack/katago-networks
   # We evaluate victims newer or equal to this checkpoint.
   # We compute victim order using the d value.
-  victim_start: kata1-b40c256-s11840935168-d2898845681 # cp505
-  # Pick the max number of victims that can fit on a GPU.
-  # A b40 net uses about 4GB of GPU memory.
-  # TODO: Calculate how much a b60 net uses
-  # (and how much a b18 net uses if we decide to evaluate against b18 nets).
+  victim_start: kata1-b60c320-s7047906048-d3140270330
+  # The number of victims per GPU. Be careful not to exceed GPU memory limits.
+  # A b40 net uses 2.2 GB of GPU memory and a b60 net uses 3.1 GB. Upfront costs
+  # including a b6 adversary are 1.8GB. (These numbers drop to 2.1GB, 2.9GB, and
+  # 1.6GB on KataGo v1.12.4. Also, a b18nbt net uses 2.1GB on v1.12.4.)
   n_victims_per_gpu: 8
 
 # Experiment: evaluate adversary vs. victim with varying victim visits.
