@@ -31,7 +31,7 @@ class CtlWrapperArgs:
 
     # Wrapper only flags
     local_run: bool = False  # Run locally using docker instead of using ctl
-    gpu_collo_allowed: Optional[
+    gpu_colo_allowed: Optional[
         Tuple[int, ...]
     ] = None  # Which commands can be placed on the same GPU
 
@@ -46,9 +46,9 @@ class CtlWrapperArgs:
             == len(self.replicas)
         ), "All lists must be the same length"
 
-        if self.gpu_collo_allowed is not None:
-            assert len(self.gpu_collo_allowed) == len(self.gpu)
-            assert all(x in [0, 1] for x in self.gpu_collo_allowed)
+        if self.gpu_colo_allowed is not None:
+            assert len(self.gpu_colo_allowed) == len(self.gpu)
+            assert all(x in [0, 1] for x in self.gpu_colo_allowed)
 
     def launch(self):
         """Launches the job."""
@@ -97,7 +97,7 @@ class CtlWrapperArgs:
         for job_gpus, job_replicas, collo_allowed in zip(
             self.gpu,
             self.replicas,
-            self.gpu_collo_allowed or [0] * len(self.gpu),
+            self.gpu_colo_allowed or [0] * len(self.gpu),
         ):
             for _ in range(job_replicas):
                 if job_gpus == 0:
@@ -107,8 +107,8 @@ class CtlWrapperArgs:
                     assert job_replicas == 1
                     if collo_idx == -1:
                         collo_idx = min_unused_idx
+                        min_unused_idx += 1
                     gpu_indices.append([collo_idx])
-                    min_unused_idx += 1
                 else:
                     gpu_indices.append(
                         list(range(min_unused_idx, min_unused_idx + job_gpus)),
