@@ -407,7 +407,7 @@ def generate_katago_ckpt_sweep_evaluation(
     victims: List[str] = [
         p.name
         for p in victim_paths
-        and get_drows(p.name) >= victim_start_drows
+        if get_drows(p.name) >= victim_start_drows
         and any(sz_str in p.name for sz_str in parameters["net_sizes"])
     ]
 
