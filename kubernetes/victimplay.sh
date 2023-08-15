@@ -30,7 +30,9 @@ mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay
     -config "$CONFIG" \
     -config /go_attack/configs/compute/1gpu.cfg &
 PID="$!"
+
+ID=$(openssl rand -hex 4)
 while true; do
-  printf "%s:  %s\n" "$(date)" "$(pmap -x $PID | tail -n 1)" >> /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/memory-v113.txt
+  printf "%s:  %s\n" "$(date)" "$(pmap -x $PID | tail -n 1)" >> /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/memory-v113-"$ID".txt
   sleep 60
 done
