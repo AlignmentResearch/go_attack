@@ -8,6 +8,7 @@ if [ "$(git status --porcelain --untracked-files=no | wc -l)" -gt 0 ]; then
     exit 1
 fi
 
+USE_WEKA=1
 if [ -n "${USE_WEKA:-}" ]; then
   export VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
 else
