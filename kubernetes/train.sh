@@ -1,6 +1,7 @@
 #!/bin/bash -e
 cd /engines/KataGo-custom/python
 
+MODEL_KIND=b6c96
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
 # Flags must be specified before positional arguments.
 while [ -n "${1-}" ]; do
@@ -12,6 +13,7 @@ while [ -n "${1-}" ]; do
     --copy-initial-model) COPY_INITIAL_MODEL=1; ;;
     # Path to directory of TF weights for warmstarting.
     --initial-weights) INITIAL_WEIGHTS=$2; shift ;;
+    --model-kind) MODEL_KIND=$2; shift ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
@@ -25,7 +27,6 @@ LR_SCALE="$3"
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 if [ -z "$INITIAL_WEIGHTS" ]; then
     echo "No initial weights specified, using random weights"
-    MODEL_KIND=b6c96
 else
     echo "Using initial weights: $INITIAL_WEIGHTS"
     # The train script will use the model kind specified by the warmstarted
