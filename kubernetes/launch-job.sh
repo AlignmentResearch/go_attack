@@ -18,7 +18,7 @@ usage() {
   echo "          [--lr-scale LR_SCALE] [--predictor]"
   echo "          [--predictor-warmstart-ckpt CHECKPOINT] [--resume TIMESTAMP]"
   echo "          [--warmstart-ckpt CHECKPOINT] [--victim-ckpt CHECKPOINT]"
-  echo "          [--use-weka] PREFIX"
+  echo "          PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -56,8 +56,7 @@ usage() {
   echo "    Resume a previous run. If this flag is given, the PREFIX argument"
   echo "    must exactly be match the run to be resumed, and the TIMESTAMP"
   echo "    argument should match the timestamp attached to the name of the"
-  echo "    previous run's output directory. The use of the --use-weka flag"
-  echo "    must also exactly match that of the previous run."
+  echo "    previous run's output directory."
   echo "  --warmstart-ckpt CHECKPOINT"
   echo "    Path to checkpoint's TF weights directory to use for warmstarting"
   echo "    the adversary, e.g.,"
@@ -71,9 +70,6 @@ usage() {
   echo "    weights directory for the last victim (i.e., the bot not"
   echo "    being trained) in the initial iteration's curriculum (CURRICULUM,"
   echo "    or ALTERNATE_CURRICULUM if --alternate-iteration-first is set)."
-  echo "  -w, --use-weka"
-  echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
-  echo "    volume."
   echo
   echo "Optional arguments should be specified before positional arguments."
   echo
@@ -111,7 +107,6 @@ while [ -n "${1-}" ]; do
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
     --warmstart-ckpt) WARMSTART_CKPT=$2; shift ;;
     --victim-ckpt) VICTIM_CKPT=$2; shift ;;
-    -w|--use-weka) export USE_WEKA=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
@@ -128,6 +123,8 @@ MAX_VICTIMPLAY_GPUS=${MAX_VICTIMPLAY_GPUS:-$((2*MIN_VICTIMPLAY_GPUS))}
 ############################
 # Launching the experiment #
 ############################
+# Job names are prefixed with "gt", meaning "go-train", and suffixed with "-v"
+# (vital), "-e" (extra), "-g" (gating), "-p" (predictor).
 
 RUN_NAME="$1-${RESUME_TIMESTAMP:-$(date +%Y%m%d-%H%M%S)}"
 echo "Run name: $RUN_NAME"
@@ -155,7 +152,7 @@ if [ -n "${USE_PREDICTOR:-}" ]; then
       "/go_attack/kubernetes/train.sh --initial-weights $PREDICTOR_WARMSTART_CKPT $RUN_NAME/predictor $VOLUME_NAME $LR_SCALE" \
       --high-priority \
       --gpu 0 1 \
-      --name go-training-"$1"-predictor
+      --name gt-"$1"-p
 else
   PREDICTOR_FLAG=""
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
@@ -201,8 +198,10 @@ ctl job run --container \
     "$SHUFFLE_AND_EXPORT_CMD" \
     "$CURRICULUM_CMD" \
     --high-priority \
+    --restart-on-failure \
+    --memory 72Gi 16Gi 72Gi 96Gi 4Gi \
     --gpu 1 1 1 0 0 \
-    --name go-train-"$1"-vital \
+    --name gt-"$1"-v \
     --replicas "${MIN_VICTIMPLAY_GPUS}" 1 1 1 1
 
 if [ "$USE_GATING" -eq 1 ]; then
@@ -215,8 +214,10 @@ if [ "$USE_GATING" -eq 1 ]; then
       $VOLUME_FLAGS \
       --command "/go_attack/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
       --high-priority \
+      --restart-on-failure \
+      --memory 48Gi \
       --gpu 1 \
-      --name go-train-"$1"-gate \
+      --name gt-"$1"-g \
       --replicas 1
 fi
 
@@ -227,7 +228,9 @@ if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
       --command "$VICTIMPLAY_CMD" \
+      --restart-on-failure \
+      --memory 72Gi \
       --gpu 1 \
-      --name go-train-"$1"-extra \
+      --name gt-"$1"-e \
       --replicas "${EXTRA_VICTIMPLAY_GPUS}"
 fi
