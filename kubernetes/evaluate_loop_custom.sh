@@ -111,7 +111,6 @@ do
             if [ "$STEP" -gt "$LAST_STEP" ]; then
                 # https://stackoverflow.com/questions/12152626/how-can-i-remove-the-extension-of-a-filename-in-a-shell-script
                 VICTIM_NAME=$(echo "$VICTIM" | cut -f 1 -d '.')
-                EXTRA_CONFIG="numGamesTotal=200"
 
                 if [ -n "$PREDICTOR_DIR" ]; then
                     # https://stackoverflow.com/questions/4561895/how-to-recursively-find-the-latest-modified-file-in-a-directory
@@ -125,7 +124,6 @@ do
                     -config "$CONFIG" \
                     -config "$VICTIMS_DIR"/victim.cfg \
                     -config /go_attack/kubernetes/evaluate_loop_extra.cfg \
-                    -override-config "$EXTRA_CONFIG" \
                     -override-config nnModelFile0="$VICTIMS_DIR"/"$VICTIM" \
                     -override-config botName0="victim-$VICTIM_NAME" \
                     -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \

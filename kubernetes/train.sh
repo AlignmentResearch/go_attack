@@ -23,9 +23,70 @@ VOLUME_NAME="$2"
 LR_SCALE="$3"
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
-if [ ! -e "$EXPERIMENT_DIR/selfplay/20220301-to-20220624" ]; then
-  mkdir -p "$EXPERIMENT_DIR"/selfplay
-  ln -s /shared/katago-training-data/20220301-to-20220624 "$EXPERIMENT_DIR"/selfplay/20220301-to-20220624
+if [ ! -e "$EXPERIMENT_DIR/selfplay/prev-selfplay" ]; then
+  mkdir -p "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/katago-training-data/20220301-to-20220624 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/katago-20220301-to-20220624
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s0-d0 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s1069312-d108621833 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s2139392-d108716292 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s3067392-d108989510 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s4066048-d109192193 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s4992000-d109448047 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s5919488-d109695062 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s6846464-d110008854 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s7845120-d110174950 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s8843008-d110453096 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s9769728-d110671271 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s10838784-d110976447 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s11909632-d111164244 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s12977664-d111499426 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s14046464-d111673247 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s15044096-d111963943 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s16113664-d112216121 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s17114112-d112481685 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s18112512-d112719203 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s19038976-d112928359 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s19966720-d113183621 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s20963840-d113470477 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s22032896-d113718824 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s23030528-d113901055 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s24027648-d114193083 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s25025792-d114452501 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s25881088-d114745057 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s26809344-d114890123 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s27807232-d115179490 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s28946944-d115472217 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s30015488-d115744118 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s30872064-d115990848 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s31941888-d116156761 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s32940288-d116481152 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s33868288-d116725030 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s34865664-d116998994 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s35865088-d117212838 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s37005568-d117491164 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s37934080-d117741583 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s39002880-d117939685 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s40073216-d118291965 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s41000704-d118391965 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s41997824-d118716341 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s42996224-d118891702 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s43922176-d119149888 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s44850176-d119458264 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s45849344-d119720023 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s46846976-d119997107 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s47916288-d120246240 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s48984320-d120474993 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s49983488-d120672761 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s50981120-d120934797 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s51836416-d121200469 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s52978176-d121455102 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s54049024-d121731880 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s55046656-d121908729 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s56114432-d122222742 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s56969728-d122396736 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s57897984-d122713840 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s58967040-d123001552 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
+  ln -s /shared/victimplay/ttseng-cp505-advtrain-spp082-lr01-20230728-170008/iteration-0/selfplay/t0-s60035840-d123151552 "$EXPERIMENT_DIR"/selfplay/prev-selfplay/h1
 fi
 
 if [ -z "$INITIAL_WEIGHTS" ]; then
