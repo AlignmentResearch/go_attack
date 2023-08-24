@@ -73,68 +73,54 @@ if [ -z "$VICTIMS_DIR" ]; then
     VICTIMS_DIR="$BASE_DIR"/victims
 fi
 
-LAST_STEP=-1
-SLEEP_INTERVAL=30
-while true
-do
-    if [[ ! -d "$MODELS_DIR" || ! -d "$VICTIMS_DIR" ]]
-    then
-        echo "Waiting for $MODELS_DIR and $VICTIMS_DIR to exist..."
-        sleep 10
-        continue
-    fi
 
-    if [[ -z "$VICTIM_LIST" ]]
-    then
-        # https://stackoverflow.com/questions/1015678/get-most-recent-file-in-a-directory-on-linux
-        VICTIM_LIST=$(ls -Art "$VICTIMS_DIR" | grep "\.gz" | tail --lines 1)
-    fi
+if [[ -z "$VICTIM_LIST" ]]
+then
+    # https://stackoverflow.com/questions/1015678/get-most-recent-file-in-a-directory-on-linux
+    VICTIM_LIST=$(ls -Art "$VICTIMS_DIR" | grep "\.gz" | tail --lines 1)
+fi
 
-    # Split the string VICTIM_LIST into an array victim_array:
-    # https://stackoverflow.com/a/10586169/7086623
-    IFS=', ' read -r -a victim_array <<< "${VICTIM_LIST}"
+# Split the string VICTIM_LIST into an array victim_array:
+# https://stackoverflow.com/a/10586169/7086623
+IFS=', ' read -r -a victim_array <<< "${VICTIM_LIST}"
 
-    LATEST_MODEL_DIR=$(ls -v "$MODELS_DIR" | grep "\-s[0-9]\+" | tail --lines 1)
+ADVS=(
+  t0-s0-d0
+  t0-s3066112-d124048035
+  t0-s6133504-d124941582
+  t0-s9341696-d125652695
+  t0-s12336384-d126311809
+  t0-s15401728-d127103840
+  t0-s18324480-d127821626
+  t0-s21460736-d128614571
+  t0-s24597760-d129417424
+  t0-s27665408-d129999140
+  t0-s30445312-d130887052
+  t0-s33511168-d131534295
+)
 
-    if [[ -z "$LATEST_MODEL_DIR" || -z "$VICTIM_LIST" ]]; then
-        echo "Waiting for an adversary and a victim to exist..."
-        sleep $SLEEP_INTERVAL
-        continue
-    fi
+for VICTIM in "${victim_array[@]}"; do
+    for LATEST_MODEL_DIR in "${ADVS[@]}"; do
+        # https://stackoverflow.com/questions/12152626/how-can-i-remove-the-extension-of-a-filename-in-a-shell-script
+        VICTIM_NAME=$(echo "$VICTIM" | cut -f 1 -d '.')
 
-    for VICTIM in "${victim_array[@]}"; do
-        if [[ "$LATEST_MODEL_DIR" =~ -s([0-9]+) ]]; then
-            # The first capture group is the step number
-            STEP=${BASH_REMATCH[1]}
-
-            # Have we evaluated this model yet?
-            if [ "$STEP" -gt "$LAST_STEP" ]; then
-                # https://stackoverflow.com/questions/12152626/how-can-i-remove-the-extension-of-a-filename-in-a-shell-script
-                VICTIM_NAME=$(echo "$VICTIM" | cut -f 1 -d '.')
-
-                if [ -n "$PREDICTOR_DIR" ]; then
-                    # https://stackoverflow.com/questions/4561895/how-to-recursively-find-the-latest-modified-file-in-a-directory
-                    PREDICTOR=$(find $PREDICTOR_DIR -name *.bin.gz -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ")
-                    EXTRA_CONFIG+=",predictorPath=$PREDICTOR"
-                fi
-
-                # Run the evaluation
-                echo "Evaluating model $LATEST_MODEL_DIR against victim $VICTIM_NAME"
-                $KATAGO_BIN match \
-                    -config "$CONFIG" \
-                    -config "$VICTIMS_DIR"/victim.cfg \
-                    -config /go_attack/kubernetes/evaluate_loop_extra.cfg \
-                    -override-config nnModelFile0="$VICTIMS_DIR"/"$VICTIM" \
-                    -override-config botName0="victim-$VICTIM_NAME" \
-                    -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \
-                    -override-config botName1="adv-$LATEST_MODEL_DIR" \
-                    -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR" \
-                    2>&1 | tee "$OUTPUT_DIR"/logs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR".log
-
-                # Update the last step
-                LAST_STEP="$STEP"
-            fi
+        if [ -n "$PREDICTOR_DIR" ]; then
+            # https://stackoverflow.com/questions/4561895/how-to-recursively-find-the-latest-modified-file-in-a-directory
+            PREDICTOR=$(find $PREDICTOR_DIR -name *.bin.gz -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ")
+            EXTRA_CONFIG+=",predictorPath=$PREDICTOR"
         fi
+
+        # Run the evaluation
+        echo "Evaluating model $LATEST_MODEL_DIR against victim $VICTIM_NAME"
+        $KATAGO_BIN match \
+            -config "$CONFIG" \
+            -config "$VICTIMS_DIR"/victim.cfg \
+            -config /go_attack/kubernetes/evaluate_loop_extra.cfg \
+            -override-config nnModelFile0="$VICTIMS_DIR"/"$VICTIM" \
+            -override-config botName0="victim-$VICTIM_NAME" \
+            -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \
+            -override-config botName1="adv-$LATEST_MODEL_DIR" \
+            -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR" \
+            2>&1 | tee "$OUTPUT_DIR"/logs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR".log
     done
-    sleep $SLEEP_INTERVAL
 done
