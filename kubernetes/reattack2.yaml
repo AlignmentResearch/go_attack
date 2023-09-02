@@ -1,0 +1,114 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cyclic-reattack2
+  labels:
+    kueue.x-k8s.io/queue-name: interactive
+spec:
+  suspend: true # The job must start suspended; kueue will start it when it is admitted
+  template:
+    spec:
+      containers:
+      - command:
+        - /go_attack/kubernetes/victimplay.sh
+        - --warmstart
+        - tony-cyclic-reattack2-20230901
+        - shared
+        name: victimplay
+        image: humancompatibleai/goattack:???-cpp
+        resources:
+          limits:
+            cpu: 16
+            memory: 56Gi
+            nvidia.com/gpu: 1
+          requests:
+            cpu: 16
+            memory: 500Mi
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - mountPath: /shared
+          name: go-attack
+      - command:
+        - /engines/KataGo-custom/cpp/evaluate_loop.sh
+        - /shared/victimplay/tony-cyclic-reattack2-20230901
+        - /shared/victimplay/tony-cyclic-reattack2-20230901/eval
+        name: eval
+        image: humancompatibleai/goattack:???-cpp
+        resources:
+          limits:
+            cpu: "16"
+            memory: 16Gi
+            nvidia.com/gpu: "1"
+          requests:
+            cpu: "16"
+            memory: 500Mi
+            nvidia.com/gpu: "1"
+        volumeMounts:
+        - mountPath: /shared
+          name: go-attack
+      - command:
+        - /go_attack/kubernetes/train.sh
+        - --copy-initial-model
+        - --initial-weights
+        - /shared/victimplay/ttseng-cyclic-reattack-20230803/models/t0-s149878784-d173957317
+        - tony-cyclic-reattack2-20230901
+        - shared
+        - "1.0"
+        name: train
+        image: humancompatibleai/goattack:???-python
+        resources:
+          limits:
+            cpu: "16"
+            memory: 72Gi
+            nvidia.com/gpu: "1"
+          requests:
+            cpu: "16"
+            memory: 500Mi
+            nvidia.com/gpu: "1"
+        volumeMounts:
+        - mountPath: /shared
+          name: go-attack
+      - command:
+        - /go_attack/kubernetes/shuffle-and-export.sh
+        - tony-cyclic-reattack2-20230901
+        - tony-cyclic-reattack2-20230901
+        - shared
+        - "0"
+        name: shuffle
+        image: humancompatibleai/goattack:???-python
+        resources:
+          limits:
+            cpu: "16"
+            memory: 96Gi
+            nvidia.com/gpu: "0"
+          requests:
+            cpu: "16"
+            memory: 500Mi
+            nvidia.com/gpu: "0"
+        volumeMounts:
+        - mountPath: /shared
+          name: go-attack
+      - command:
+        - /go_attack/kubernetes/curriculum.sh
+        - tony-cyclic-reattack2-20230901
+        - shared
+        - /go_attack/configs/curriculum.json
+        name: curriculum
+        image: humancompatibleai/goattack:???-python
+        resources:
+          limits:
+            cpu: "16"
+            memory: 16Gi
+            nvidia.com/gpu: "0"
+          requests:
+            cpu: "16"
+            memory: 500Mi
+            nvidia.com/gpu: "0"
+        volumeMounts:
+        - mountPath: /shared
+          name: go-attack
+      restartPolicy: Never
+      volumes:
+      - name: go-attack
+        persistentVolumeClaim:
+          claimName: go-attack

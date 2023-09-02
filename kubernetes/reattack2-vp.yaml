@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: cyclic-reattack2-
+  labels:
+    kueue.x-k8s.io/queue-name: interactive
+spec:
+  suspend: true # The job must start suspended; kueue will start it when it is admitted
+  template:
+    spec:
+      containers:
+      - command:
+        - /go_attack/kubernetes/victimplay.sh
+        - --warmstart
+        - tony-cyclic-reattack2-20230901
+        - shared
+        name: victimplay
+        image: humancompatibleai/goattack:???-cpp
+        resources:
+          limits:
+            cpu: 16
+            memory: 56Gi
+            nvidia.com/gpu: 1
+          requests:
+            cpu: 16
+            memory: 500Mi
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - mountPath: /shared
+          name: go-attack
+      restartPolicy: Never
+      volumes:
+      - name: go-attack
+        persistentVolumeClaim:
+          claimName: go-attack
