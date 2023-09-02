@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  generateName: cyclic-reattack2-
+  generateName: cyclic-reattack2-vp-
   labels:
     kueue.x-k8s.io/queue-name: interactive
 spec:
