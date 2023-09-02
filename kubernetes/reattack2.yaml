@@ -15,7 +15,7 @@ spec:
         - tony-cyclic-reattack2-20230901
         - shared
         name: victimplay
-        image: humancompatibleai/goattack:739551e-cpp
+        image: humancompatibleai/goattack:f349e7e-cpp
         resources:
           limits:
             cpu: 16
@@ -33,7 +33,7 @@ spec:
         - /shared/victimplay/tony-cyclic-reattack2-20230901
         - /shared/victimplay/tony-cyclic-reattack2-20230901/eval
         name: eval
-        image: humancompatibleai/goattack:739551e-cpp
+        image: humancompatibleai/goattack:f349e7e-cpp
         resources:
           limits:
             cpu: "16"
@@ -55,7 +55,7 @@ spec:
         - shared
         - "1.0"
         name: train
-        image: humancompatibleai/goattack:739551e-python
+        image: humancompatibleai/goattack:f349e7e-python
         resources:
           limits:
             cpu: "16"
@@ -75,7 +75,7 @@ spec:
         - shared
         - "0"
         name: shuffle
-        image: humancompatibleai/goattack:739551e-python
+        image: humancompatibleai/goattack:f349e7e-python
         resources:
           limits:
             cpu: "16"
@@ -94,7 +94,7 @@ spec:
         - shared
         - /go_attack/configs/curriculum.json
         name: curriculum
-        image: humancompatibleai/goattack:739551e-python
+        image: humancompatibleai/goattack:f349e7e-python
         resources:
           limits:
             cpu: "16"
