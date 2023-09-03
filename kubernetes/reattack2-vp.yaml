@@ -8,6 +8,7 @@ spec:
   suspend: true # The job must start suspended; kueue will start it when it is admitted
   template:
     spec:
+      priorityClassName: low-batch
       containers:
       - command:
         - /go_attack/kubernetes/victimplay.sh
