@@ -3,12 +3,11 @@ kind: Job
 metadata:
   generateName: cyclic-reattack2-vp-
   labels:
-    kueue.x-k8s.io/queue-name: interactive
+    kueue.x-k8s.io/queue-name: preemptable-batch
 spec:
   suspend: true # The job must start suspended; kueue will start it when it is admitted
   template:
     spec:
-      priorityClassName: low-batch
       containers:
       - command:
         - /go_attack/kubernetes/victimplay.sh
