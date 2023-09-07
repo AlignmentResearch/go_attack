@@ -18,12 +18,12 @@ spec:
         image: humancompatibleai/goattack:f349e7e-cpp
         resources:
           limits:
-            cpu: 16
-            memory: 56Gi
+            cpu: 10
+            memory: 52Gi
             nvidia.com/gpu: 1
           requests:
-            cpu: 16
-            memory: 500Mi
+            cpu: 6
+            memory: 30Gi
             nvidia.com/gpu: 1
         volumeMounts:
         - mountPath: /shared
