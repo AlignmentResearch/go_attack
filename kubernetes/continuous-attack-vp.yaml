@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: continuous-attack-vp-
+  labels:
+    kueue.x-k8s.io/queue-name: preemptable-batch
+spec:
+  suspend: true # The job must start suspended kueue will start it when it is admitted
+  template:
+    spec:
+      priorityClassName: low-batch
+      containers:
+      - name: victimplay
+        command:
+        - /go_attack/kubernetes/victimplay.sh
+        - --warmstart
+        - ttseng-continuous-attack-230823
+        - shared
+        image: humancompatibleai/goattack:2f6a3ba-cpp
+        resources:
+          limits:
+            cpu: 10
+            memory: 52Gi
+            nvidia.com/gpu: 1
+          requests:
+            cpu: 6
+            memory: 30Gi
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - mountPath: /shared
+          name: go-attack
+      restartPolicy: Never
+      volumes:
+      - name: go-attack
+        persistentVolumeClaim:
+          claimName: go-attack
