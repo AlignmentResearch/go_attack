@@ -13,7 +13,7 @@ spec:
       - command:
         - /go_attack/kubernetes/victimplay.sh
         - --warmstart
-        - tony-cyclic-reattack2-20230901
+        - tony-cyclic-reattack2-20230918
         - shared
         name: victimplay
         image: humancompatibleai/goattack:f349e7e-cpp
@@ -31,8 +31,8 @@ spec:
           name: go-attack
       - command:
         - /engines/KataGo-custom/cpp/evaluate_loop.sh
-        - /shared/victimplay/tony-cyclic-reattack2-20230901
-        - /shared/victimplay/tony-cyclic-reattack2-20230901/eval
+        - /shared/victimplay/tony-cyclic-reattack2-20230918
+        - /shared/victimplay/tony-cyclic-reattack2-20230918/eval
         name: eval
         image: humancompatibleai/goattack:f349e7e-cpp
         resources:
@@ -52,7 +52,7 @@ spec:
         - --copy-initial-model
         - --initial-weights
         - /shared/victimplay/tony-cyclic-reattack2-20230901/models/t0-s250274048-d236345515
-        - tony-cyclic-reattack2-20230901
+        - tony-cyclic-reattack2-20230918
         - shared
         - "1.0"
         name: train
@@ -71,8 +71,8 @@ spec:
           name: go-attack
       - command:
         - /go_attack/kubernetes/shuffle-and-export.sh
-        - tony-cyclic-reattack2-20230901
-        - tony-cyclic-reattack2-20230901
+        - tony-cyclic-reattack2-20230918
+        - tony-cyclic-reattack2-20230918
         - shared
         - "0"
         name: shuffle
@@ -91,7 +91,7 @@ spec:
           name: go-attack
       - command:
         - /go_attack/kubernetes/curriculum.sh
-        - tony-cyclic-reattack2-20230901
+        - tony-cyclic-reattack2-20230918
         - shared
         - /go_attack/configs/curriculum.json
         name: curriculum

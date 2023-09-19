@@ -1,40 +1,5 @@
 [
     {
-        "name": "cp505-h2-s4065024-d124291741.bin.gz",
-        "max_visits_victim": 128,
-        "win_rate": 0.75
-    },
-    {
-        "name": "cp505-h2-s5063936-d124619911.bin.gz",
-        "max_visits_victim": 64,
-        "win_rate": 0.75
-    },
-    {
-        "name": "cp505-h2-s5063936-d124619911.bin.gz",
-        "max_visits_victim": 128,
-        "win_rate": 0.75
-    },
-    {
-        "name": "cp505-h2-s22387200-d128854386.bin.gz",
-        "max_visits_victim": 64,
-        "win_rate": 0.75
-    },
-    {
-        "name": "cp505-h2-s22387200-d128854386.bin.gz",
-        "max_visits_victim": 128,
-        "win_rate": 0.75
-    },
-    {
-        "name": "cp505-h2-s22387200-d128854386.bin.gz",
-        "max_visits_victim": 256,
-        "win_rate": 0.75
-    },
-    {
-        "name": "cp505-h2-s22387200-d128854386.bin.gz",
-        "max_visits_victim": 512,
-        "win_rate": 0.75
-    },
-    {
         "name": "cp505-h2-s22387200-d128854386.bin.gz",
         "max_visits_victim": 1024,
         "win_rate": 0.9

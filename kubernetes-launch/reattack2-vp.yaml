@@ -13,7 +13,7 @@ spec:
       - command:
         - /go_attack/kubernetes/victimplay.sh
         - --warmstart
-        - tony-cyclic-reattack2-20230901
+        - tony-cyclic-reattack2-20230918
         - shared
         name: victimplay
         image: humancompatibleai/goattack:f349e7e-cpp
