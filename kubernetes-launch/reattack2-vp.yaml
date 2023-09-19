@@ -16,7 +16,7 @@ spec:
         - tony-cyclic-reattack2-20230918
         - shared
         name: victimplay
-        image: humancompatibleai/goattack:f349e7e-cpp
+        image: humancompatibleai/goattack:620948a-cpp
         resources:
           limits:
             cpu: 10
