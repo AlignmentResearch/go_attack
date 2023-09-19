@@ -8,6 +8,7 @@ spec:
   suspend: true # The job must start suspended; kueue will start it when it is admitted
   template:
     spec:
+      priorityClassName: high-batch
       containers:
       - command:
         - /go_attack/kubernetes/victimplay.sh
@@ -50,7 +51,7 @@ spec:
         - /go_attack/kubernetes/train.sh
         - --copy-initial-model
         - --initial-weights
-        - /shared/victimplay/ttseng-cyclic-reattack-20230803/models/t0-s149878784-d173957317
+        - /shared/victimplay/tony-cyclic-reattack2-20230901/models/t0-s250274048-d236345515
         - tony-cyclic-reattack2-20230901
         - shared
         - "1.0"
