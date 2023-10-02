@@ -25,7 +25,7 @@ LR_SCALE="$3"
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 if [ ! -e "$EXPERIMENT_DIR/selfplay/prev-selfplay" ]; then
   mkdir -p "$EXPERIMENT_DIR"/selfplay
-  ln -s /shared/victimplay/ttseng-cyclic-reattack-20230803/selfplay "$EXPERIMENT_DIR"/selfplay/prev-selfplay
+  ln -s /shared/victimplay/tony-cyclic-reattack2-20230901/selfplay "$EXPERIMENT_DIR"/selfplay/prev-selfplay
 fi
 
 if [ -z "$INITIAL_WEIGHTS" ]; then
