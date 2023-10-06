@@ -6,7 +6,7 @@
 #
 # KataGo has been tested on CUDA 11.1 with CUDNN 8.0.4
 # See https://github.com/lightvector/KataGo/blob/master/Compiling.md.
-FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04 AS build-deps
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04 AS build-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
