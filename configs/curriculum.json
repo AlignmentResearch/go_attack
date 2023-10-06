@@ -1,10 +1,5 @@
 [
     {
-        "name": "cp505-h3-s4847360-d130349417.bin.gz",
-        "max_visits_victim": 128,
-        "win_rate": 0.75
-    },
-    {
         "name": "cp505-h3-s15898624-d133021460.bin.gz",
         "max_visits_victim": 64,
         "win_rate": 0.75
