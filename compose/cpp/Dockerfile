@@ -74,7 +74,7 @@ RUN cmake . -DUSE_BACKEND=CUDA -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1 -DBUILD_DEBU
 RUN make clean && make -j
 
 # Actual production image, without development headers.
-FROM nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu20.04 AS runtime-deps
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04 AS runtime-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
