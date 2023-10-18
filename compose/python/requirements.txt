@@ -1,11 +1,13 @@
 # tensorflow 1.15 comes with container
 
 # Libs needed by KataGo
+einops
 psutil
 requests_toolbelt
 scipy
 sgfmill
 torch
+transformers
 
 # Helpful libraries
 gpustat
