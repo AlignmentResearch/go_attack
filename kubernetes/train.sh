@@ -1,5 +1,5 @@
 #!/bin/bash -e
-cd /engines/KataGo-custom/python
+cd /engines/KataGo-tensorflow/python
 
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
 # Flags must be specified before positional arguments.
@@ -23,6 +23,11 @@ VOLUME_NAME="$2"
 LR_SCALE="$3"
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
+if [ ! -e "$EXPERIMENT_DIR/selfplay/prev-selfplay" ]; then
+    mkdir -p "$EXPERIMENT_DIR"/selfplay
+    ln -s /shared/victimplay/ttseng-avoid-pass-alive-coldstart-39-20221025-175949/selfplay "$EXPERIMENT_DIR"/selfplay/prev-selfplay
+fi
+
 if [ -z "$INITIAL_WEIGHTS" ]; then
     echo "No initial weights specified, using random weights"
     MODEL_KIND=vit
