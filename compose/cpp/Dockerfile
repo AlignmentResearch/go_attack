@@ -47,14 +47,14 @@ RUN apt-get update -q \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+RUN wget https://download.pytorch.org/libtorch/cu118/libtorch-cxx11-abi-shared-with-deps-2.0.1%2Bcu118.zip \
+  && unzip libtorch-cxx11-abi-shared-with-deps-2.0.1+cu118.zip -d /opt \
+  && rm libtorch-cxx11-abi-shared-with-deps-2.0.1+cu118.zip
+
 # Install cmake
 # Instructions from https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html
 RUN wget -qO- "https://cmake.org/files/v3.22/cmake-3.22.0-linux-x86_64.tar.gz" \
   | tar --strip-components=1 -xz -C /usr/local
-
-RUN wget https://download.pytorch.org/libtorch/cu118/libtorch-cxx11-abi-shared-with-deps-2.0.1%2Bcu118.zip \
-  && unzip libtorch-cxx11-abi-shared-with-deps-2.0.1+cu118.zip -d /opt \
-  && rm libtorch-cxx11-abi-shared-with-deps-2.0.1+cu118.zip
 
 # Copy over KataGo cpp files and compile.
 # See https://github.com/lightvector/KataGo/blob/master/Compiling.md.
@@ -124,6 +124,8 @@ RUN apt-get update -q \
   # Clean up
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build-deps /opt/libtorch /opt/libtorch
 
 # Reset working directory
 WORKDIR /
