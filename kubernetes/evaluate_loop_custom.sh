@@ -51,7 +51,7 @@ while [ -n "${1-}" ]; do
 done
 CONFIG=${CONFIG:-"$GO_ATTACK_ROOT"/configs/match-1gpu.cfg}
 
-NUM_POSITIONAL_ARGUMENTS=2
+NUM_POSITIONAL_ARGUMENTS=3
 if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
   echo "Wrong number of positional arguments. Expected ${NUM_POSITIONAL_ARGUMENTS}, got $#"
   echo "Positional arguments: $@"
@@ -62,6 +62,11 @@ fi
 BASE_DIR="$1"
 MODELS_DIR="$BASE_DIR"/models
 OUTPUT_DIR="$2"
+# Play against a KataGo network to make sure that the trained model is gaining
+# competence at playing Go.
+# This network should be manually changed periodically when the trained model
+# becomes stronger than it.
+COMPARISON_MODEL_PATH="$3"
 mkdir -p "$OUTPUT_DIR"/logs
 mkdir -p "$OUTPUT_DIR"/sgfs
 
@@ -96,6 +101,8 @@ do
             $KATAGO_BIN match \
                 -config "$CONFIG" \
                 -config "/go_attack/configs/eval.cfg" \
+                -override-config nnModelFile0="$COMPARISON_MODEL_PATH" \
+                -override-config botName0="$(basename ${COMPARISON_MODEL_PATH})" \
                 -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.pt \
                 -override-config botName1="$LATEST_MODEL_DIR" \
                 -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$LATEST_MODEL_DIR" \
