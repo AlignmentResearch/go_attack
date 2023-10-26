@@ -5,7 +5,8 @@ DIRECTORY="$2"
 VOLUME_NAME="$3"
 # 1 to enable gatekeeper, 0 to disable gatekeeper
 USE_GATING="$4"
-USE_TORCHSCRIPT=1
+# 1 to export TorchScript models, 0 to export standard KataGo models
+USE_TORCHSCRIPT="$5"
 
 # not related to shuffle-and-export but we want some process to log this
 /go_attack/kubernetes/log-git-commit.sh /"$VOLUME_NAME"/victimplay/"$DIRECTORY"
