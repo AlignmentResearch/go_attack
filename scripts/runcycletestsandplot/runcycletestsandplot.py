@@ -18,11 +18,10 @@ import sgfmill.sgf
 import sgfmill.boards
 import sgfmill.ascii_boards
 
-config = """
+BASE_CONFIG = """
 logDir = analysis_logs
 reportAnalysisWinratesAs = SIDETOMOVE
 numAnalysisThreads = 1
-numSearchThreadsPerAnalysisThread = 1
 nnMaxBatchSize = 16
 nnCacheSizePowerOfTwo = 18
 nnMutexPoolSizePowerOfTwo = 15
@@ -39,18 +38,18 @@ def sgfmill_to_str(coord):
 
 
 class KataGo:
-    def __init__(self, name, katago_path, config_path, model_path, override_config):
+    def __init__(self, name, katago_path, config_paths, model_path, override_config):
         self.name = name
         self.query_counter = 0
 
         command = [
             katago_path,
             "analysis",
-            "-config",
-            config_path,
             "-model",
             model_path,
         ]
+        for config in config_paths:
+            command += ["-config", str(config)]
         if override_config is not None:
             command += ["-override-config", override_config]
         katago = subprocess.Popen(
@@ -220,6 +219,13 @@ def main(temp_config_file):
         description="Evaluates and plots models correctness on cyclic-group situations."
     )
     parser.add_argument(
+        "--config",
+        help="KataGo config",
+        type=Path,
+        nargs="+",
+        default=[],
+    )
+    parser.add_argument(
         "--executable",
         help="Path to KataGo executable",
         type=Path,
@@ -231,12 +237,6 @@ def main(temp_config_file):
         type=Path,
         required=True,
         nargs="+",
-    )
-    parser.add_argument(
-        "--visits",
-        help="Number of visits to use for search",
-        type=int,
-        default=1600,
     )
     parser.add_argument(
         "--output-dir",
@@ -253,6 +253,13 @@ def main(temp_config_file):
         "--override-config",
         help="Extra KataGo config params",
         type=str,
+        default="",
+    )
+    parser.add_argument(
+        "--visits",
+        help="Number of visits to use for search",
+        type=int,
+        default=1600,
     )
     args = parser.parse_args()
 
@@ -272,9 +279,12 @@ def main(temp_config_file):
     for _, model_name in models:
         print(f"Model: {model_name}")
 
-    temp_config_file.write(f"{config}\n")
-    temp_config_file.write(f"maxVisits={args.visits}\n")
+    temp_config_file.write(BASE_CONFIG)
     temp_config_file.flush()
+    configs = [Path(temp_config_file.name)] + args.config
+    if len(args.override_config) > 0:
+        args.override_config += ","
+    args.override_config += f"maxVisits0={args.visits}"
 
     katagos = []
     for model_path, model_name in models:
@@ -282,7 +292,7 @@ def main(temp_config_file):
             KataGo(
                 model_name,
                 args.executable,
-                temp_config_file.name,
+                configs,
                 model_path,
                 args.override_config,
             )
