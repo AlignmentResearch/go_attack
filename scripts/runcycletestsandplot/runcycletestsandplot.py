@@ -1,3 +1,4 @@
+import argparse
 import collections
 import json
 import math
@@ -5,6 +6,8 @@ import os
 import sys
 import subprocess
 import time
+import tempfile
+from pathlib import Path
 from threading import Thread
 
 import matplotlib.pyplot as plt
@@ -15,11 +18,9 @@ import sgfmill.sgf
 import sgfmill.boards
 import sgfmill.ascii_boards
 
-plots_path = "generated_plots"
 config = """
 logDir = analysis_logs
 reportAnalysisWinratesAs = SIDETOMOVE
-maxVisits = 200
 numAnalysisThreads = 1
 numSearchThreadsPerAnalysisThread = 1
 nnMaxBatchSize = 16
@@ -197,26 +198,73 @@ def walk_game_tree(
         )
 
 
-if __name__ == "__main__":
-    os.makedirs(plots_path, exist_ok=True)
-    config_path = "analysis_config.cfg"
-    with open(config_path, "w") as f:
-        f.write(config)
-    models_path = "models"
-    sgfs_path = "sgfs"
+def main(temp_config_file):
+    """Runs the script.
+
+    Args:
+        temp_config_file: A writable temporary file for storing the KataGo config.
+    """
+
+    parser = argparse.ArgumentParser(
+        description="Evaluates and plots models correctness on cyclic-group situations."
+    )
+    parser.add_argument(
+        "--executable",
+        help="Path to KataGo executable",
+        type=Path,
+        default="/engines/KataGo-custom/cpp/katago",
+    )
+    parser.add_argument(
+        "--model",
+        help="Path to model or models directory",
+        type=Path,
+        required=True,
+        nargs="+",
+    )
+    parser.add_argument(
+        "--visits",
+        help="Number of visits to use for search",
+        type=int,
+        default=1600,
+    )
+    parser.add_argument(
+        "--output-dir",
+        help="Path to directory at which to output results",
+        type=Path,
+        default="generated_plots",
+    )
+    parser.add_argument(
+        "--output-scores",
+        help="Only output a correctness summary score rather than plots",
+        action="store_true",
+    )
+    args = parser.parse_args()
+
+    output_path = args.output_dir
+    os.makedirs(output_path, exist_ok=True)
+    sgfs_path = Path(__file__).parent / "sgfs"
     models = []
-    for model_path in sorted(os.listdir(models_path)):
-        models.append(
-            (
-                os.path.join(models_path, model_path),
-                model_path[len("kata1-b60c320-") : len("kata1-b60c320-") + 5],
-            )
-        )
-        print(f"Model: {model_path}")
+    for path in args.model:
+        if not path.exists():
+            raise ValueError(f"File does not exist: {path}")
+        if path.is_file():
+            models.append(path)
+            continue
+        for model_path in path.iterdir():
+            models.append(model_path)
+    models = [(str(path), path.name) for path in models]
+    for _, model_name in models:
+        print(f"Model: {model_name}")
+
+    temp_config_file.write(f"{config}\n")
+    temp_config_file.write(f"maxVisits={args.visits}\n")
+    temp_config_file.flush()
 
     katagos = []
     for model_path, model_name in models:
-        katagos.append(KataGo(model_name, "./katago", config_path, model_path))
+        katagos.append(
+            KataGo(model_name, args.executable, temp_config_file.name, model_path)
+        )
 
     def get_policy_and_search_mass(board_at_setup, response, moves):
         policy_mass = 0.0
@@ -304,7 +352,25 @@ if __name__ == "__main__":
         process_sgf_file(f"{sgfs_path}/{sgf_file}", process)
         series_names.append(sgf_file)
 
-    print(correct_policy_masses)
+    if args.output_scores:
+        with open(output_path / "cycle_scores.txt", "w") as f:
+            for data, label in [
+                (correct_policy_masses, "raw policy"),
+                (correct_search_masses, f"visits={args.visits}"),
+            ]:
+                scores = collections.defaultdict(list)
+                for sgf, sgf_scores in data.items():
+                    for model, score in sgf_scores.items():
+                        scores[model].append(score)
+
+                for model, model_scores in scores.items():
+                    average_score = sum(model_scores) / len(model_scores)
+                    f.write(f"{model} {label} score: {average_score}\n")
+
+        print("Done")
+        for katago in katagos:
+            katago.close()
+        return
 
     def plot_policy(plotfilename, ylabel, series_names, data):
         data = {
@@ -429,59 +495,59 @@ if __name__ == "__main__":
         key for key in series_names if key.startswith("race") and "already" not in key
     ]
     plot_policy(
-        os.path.join(plots_path, "race-raw.png"),
+        os.path.join(output_path, "race-raw.png"),
         "Correct Raw Policy",
         race_series_names,
         correct_policy_masses,
     )
     plot_policy(
-        os.path.join(plots_path, "race-search.png"),
+        os.path.join(output_path, "race-search.png"),
         "Correct Search Mass",
         race_series_names,
         correct_search_masses,
     )
     plot_winrate(
-        os.path.join(plots_path, "race-rawwinrate.png"),
+        os.path.join(output_path, "race-rawwinrate.png"),
         "Raw Winrate",
         race_series_names,
         raw_winrate,
     )
     plot_winrate(
-        os.path.join(plots_path, "race-searchwinrate.png"),
+        os.path.join(output_path, "race-searchwinrate.png"),
         "Search Winrate",
         race_series_names,
         search_winrate,
     )
 
     # raceeye_series_names = [key for key in series_names if key.startswith("raceeye") and "already" not in key]
-    # plot_policy(os.path.join(plots_path,"raceeye-raw.png"), "Correct Raw Policy", raceeye_series_names, correct_policy_masses)
-    # plot_policy(os.path.join(plots_path,"raceeye-search.png"), "Correct Search Mass", raceeye_series_names, correct_search_masses)
-    # plot_winrate(os.path.join(plots_path,"raceeye-rawwinrate.png"), "Raw Winrate", raceeye_series_names, raw_winrate)
-    # plot_winrate(os.path.join(plots_path,"raceeye-searchwinrate.png"), "Search Winrate", raceeye_series_names, search_winrate)
+    # plot_policy(os.path.join(output_path,"raceeye-raw.png"), "Correct Raw Policy", raceeye_series_names, correct_policy_masses)
+    # plot_policy(os.path.join(output_path,"raceeye-search.png"), "Correct Search Mass", raceeye_series_names, correct_search_masses)
+    # plot_winrate(os.path.join(output_path,"raceeye-rawwinrate.png"), "Raw Winrate", raceeye_series_names, raw_winrate)
+    # plot_winrate(os.path.join(output_path,"raceeye-searchwinrate.png"), "Search Winrate", raceeye_series_names, search_winrate)
 
     racealready_series_names = [
         key for key in series_names if key.startswith("race") and "already" in key
     ]
     plot_policy(
-        os.path.join(plots_path, "racealready-raw.png"),
+        os.path.join(output_path, "racealready-raw.png"),
         "Non-Wrong Raw Policy",
         racealready_series_names,
         correct_policy_masses,
     )
     plot_policy(
-        os.path.join(plots_path, "racealready-search.png"),
+        os.path.join(output_path, "racealready-search.png"),
         "Non-Wrong Search Mass",
         racealready_series_names,
         correct_search_masses,
     )
     plot_winrate(
-        os.path.join(plots_path, "racealready-rawwinrate.png"),
+        os.path.join(output_path, "racealready-rawwinrate.png"),
         "Raw Winrate",
         racealready_series_names,
         raw_winrate,
     )
     plot_winrate(
-        os.path.join(plots_path, "racealready-searchwinrate.png"),
+        os.path.join(output_path, "racealready-searchwinrate.png"),
         "Search Winrate",
         racealready_series_names,
         search_winrate,
@@ -489,93 +555,93 @@ if __name__ == "__main__":
 
     escape_series_names = [key for key in series_names if key.startswith("escape")]
     plot_policy(
-        os.path.join(plots_path, "escape-raw.png"),
+        os.path.join(output_path, "escape-raw.png"),
         "Correct Raw Policy",
         escape_series_names,
         correct_policy_masses,
     )
     plot_policy(
-        os.path.join(plots_path, "escape-search.png"),
+        os.path.join(output_path, "escape-search.png"),
         "Correct Search Mass",
         escape_series_names,
         correct_search_masses,
     )
     plot_winrate(
-        os.path.join(plots_path, "escape-rawwinrate.png"),
+        os.path.join(output_path, "escape-rawwinrate.png"),
         "Raw Winrate",
         escape_series_names,
         raw_winrate,
     )
     plot_winrate(
-        os.path.join(plots_path, "escape-searchwinrate.png"),
+        os.path.join(output_path, "escape-searchwinrate.png"),
         "Search Winrate",
         escape_series_names,
         search_winrate,
     )
 
     # escapeeye_series_names = [key for key in series_names if key.startswith("escapeeye") and "eye" in key]
-    # plot_policy(os.path.join(plots_path,"escapeeye-raw.png"), "Correct Raw Policy", escapeeye_series_names, correct_policy_masses)
-    # plot_policy(os.path.join(plots_path,"escapeeye-search.png"), "Correct Search Mass", escapeeye_series_names, correct_search_masses)
-    # plot_winrate(os.path.join(plots_path,"escapeeye-rawwinrate.png"), "Raw Winrate", escapeeye_series_names, raw_winrate)
-    # plot_winrate(os.path.join(plots_path,"escapeeye-searchwinrate.png"), "Search Winrate", escapeeye_series_names, search_winrate)
+    # plot_policy(os.path.join(output_path,"escapeeye-raw.png"), "Correct Raw Policy", escapeeye_series_names, correct_policy_masses)
+    # plot_policy(os.path.join(output_path,"escapeeye-search.png"), "Correct Search Mass", escapeeye_series_names, correct_search_masses)
+    # plot_winrate(os.path.join(output_path,"escapeeye-rawwinrate.png"), "Raw Winrate", escapeeye_series_names, raw_winrate)
+    # plot_winrate(os.path.join(output_path,"escapeeye-searchwinrate.png"), "Search Winrate", escapeeye_series_names, search_winrate)
 
     distraction_series_names = [
         key for key in series_names if key.startswith("distraction")
     ]
     plot_policy(
-        os.path.join(plots_path, "distraction-raw.png"),
+        os.path.join(output_path, "distraction-raw.png"),
         "Correct Raw Policy",
         distraction_series_names,
         correct_policy_masses,
     )
     plot_policy(
-        os.path.join(plots_path, "distraction-search.png"),
+        os.path.join(output_path, "distraction-search.png"),
         "Correct Search Mass",
         distraction_series_names,
         correct_search_masses,
     )
     plot_winrate(
-        os.path.join(plots_path, "distraction-rawwinrate.png"),
+        os.path.join(output_path, "distraction-rawwinrate.png"),
         "Raw Winrate",
         distraction_series_names,
         raw_winrate,
     )
     plot_winrate(
-        os.path.join(plots_path, "distraction-searchwinrate.png"),
+        os.path.join(output_path, "distraction-searchwinrate.png"),
         "Search Winrate",
         distraction_series_names,
         search_winrate,
     )
 
     # distractioneye_series_names = [key for key in series_names if key.startswith("distractioneye") and "eye" in key]
-    # plot_policy(os.path.join(plots_path,"distractioneye-raw.png"), "Correct Raw Policy", distractioneye_series_names, correct_policy_masses)
-    # plot_policy(os.path.join(plots_path,"distractioneye-search.png"), "Correct Search Mass", distractioneye_series_names, correct_search_masses)
-    # plot_winrate(os.path.join(plots_path,"distractioneye-rawwinrate.png"), "Raw Winrate", distractioneye_series_names, raw_winrate)
-    # plot_winrate(os.path.join(plots_path,"distractioneye-searchwinrate.png"), "Search Winrate", distractioneye_series_names, search_winrate)
+    # plot_policy(os.path.join(output_path,"distractioneye-raw.png"), "Correct Raw Policy", distractioneye_series_names, correct_policy_masses)
+    # plot_policy(os.path.join(output_path,"distractioneye-search.png"), "Correct Search Mass", distractioneye_series_names, correct_search_masses)
+    # plot_winrate(os.path.join(output_path,"distractioneye-rawwinrate.png"), "Raw Winrate", distractioneye_series_names, raw_winrate)
+    # plot_winrate(os.path.join(output_path,"distractioneye-searchwinrate.png"), "Search Winrate", distractioneye_series_names, search_winrate)
 
     eyelive_series_names = [
         key for key in series_names if key.startswith("eye") and "live" in key
     ]
     plot_policy(
-        os.path.join(plots_path, "eyelive-raw.png"),
+        os.path.join(output_path, "eyelive-raw.png"),
         "Correct Raw Policy",
         eyelive_series_names,
         correct_policy_masses,
     )
     plot_policy(
-        os.path.join(plots_path, "eyelive-search.png"),
+        os.path.join(output_path, "eyelive-search.png"),
         "Correct Search Mass",
         eyelive_series_names,
         correct_search_masses,
     )
     plot_winrate(
-        os.path.join(plots_path, "eyelive-rawwinrate.png"),
+        os.path.join(output_path, "eyelive-rawwinrate.png"),
         "Raw Winrate",
         eyelive_series_names,
         raw_winrate,
     )
     plot_winrate(
-        os.path.join(plots_path, "eyelive-searchwinrate.png"),
+        os.path.join(output_path, "eyelive-searchwinrate.png"),
         "Search Winrate",
         eyelive_series_names,
         search_winrate,
@@ -585,25 +651,25 @@ if __name__ == "__main__":
         key for key in series_names if key.startswith("eye") and "kill" in key
     ]
     plot_policy(
-        os.path.join(plots_path, "eyekill-raw.png"),
+        os.path.join(output_path, "eyekill-raw.png"),
         "Correct Raw Policy",
         eyekill_series_names,
         correct_policy_masses,
     )
     plot_policy(
-        os.path.join(plots_path, "eyekill-search.png"),
+        os.path.join(output_path, "eyekill-search.png"),
         "Correct Search Mass",
         eyekill_series_names,
         correct_search_masses,
     )
     plot_winrate(
-        os.path.join(plots_path, "eyekill-rawwinrate.png"),
+        os.path.join(output_path, "eyekill-rawwinrate.png"),
         "Raw Winrate",
         eyekill_series_names,
         raw_winrate,
     )
     plot_winrate(
-        os.path.join(plots_path, "eyekill-searchwinrate.png"),
+        os.path.join(output_path, "eyekill-searchwinrate.png"),
         "Search Winrate",
         eyekill_series_names,
         search_winrate,
@@ -613,13 +679,13 @@ if __name__ == "__main__":
         key for key in series_names if key.startswith("inevitable")
     ]
     plot_winrate(
-        os.path.join(plots_path, "inevitable-rawwinrate.png"),
+        os.path.join(output_path, "inevitable-rawwinrate.png"),
         "Raw Winrate",
         inevitable_series_names,
         raw_winrate,
     )
     plot_winrate(
-        os.path.join(plots_path, "inevitable-searchwinrate.png"),
+        os.path.join(output_path, "inevitable-searchwinrate.png"),
         "Search Winrate",
         inevitable_series_names,
         search_winrate,
@@ -629,13 +695,13 @@ if __name__ == "__main__":
         key for key in series_names if key.startswith("statusdead")
     ]
     plot_winrate(
-        os.path.join(plots_path, "statusdead-rawwinrate.png"),
+        os.path.join(output_path, "statusdead-rawwinrate.png"),
         "Raw Winrate",
         statusdead_series_names,
         raw_winrate,
     )
     plot_winrate(
-        os.path.join(plots_path, "statusdead-searchwinrate.png"),
+        os.path.join(output_path, "statusdead-searchwinrate.png"),
         "Search Winrate",
         statusdead_series_names,
         search_winrate,
@@ -645,13 +711,13 @@ if __name__ == "__main__":
         key for key in series_names if key.startswith("statusalive")
     ]
     plot_winrate(
-        os.path.join(plots_path, "statusalive-rawwinrate.png"),
+        os.path.join(output_path, "statusalive-rawwinrate.png"),
         "Raw Winrate",
         statusalive_series_names,
         raw_winrate,
     )
     plot_winrate(
-        os.path.join(plots_path, "statusalive-searchwinrate.png"),
+        os.path.join(output_path, "statusalive-searchwinrate.png"),
         "Search Winrate",
         statusalive_series_names,
         search_winrate,
@@ -660,3 +726,8 @@ if __name__ == "__main__":
     print("Done")
     for katago in katagos:
         katago.close()
+
+
+if __name__ == "__main__":
+    with tempfile.NamedTemporaryFile("w") as f:
+        main(temp_config_file=f)
