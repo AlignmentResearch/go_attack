@@ -284,7 +284,7 @@ def main(temp_config_file):
     configs = [Path(temp_config_file.name)] + args.config
     if len(args.override_config) > 0:
         args.override_config += ","
-    args.override_config += f"maxVisits0={args.visits}"
+    args.override_config += f"logToStdout=false,maxVisits0={args.visits}"
 
     katagos = []
     for model_path, model_name in models:
