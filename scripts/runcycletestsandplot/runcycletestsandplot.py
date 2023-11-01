@@ -39,11 +39,22 @@ def sgfmill_to_str(coord):
 
 
 class KataGo:
-    def __init__(self, name, katago_path, config_path, model_path):
+    def __init__(self, name, katago_path, config_path, model_path, override_config):
         self.name = name
         self.query_counter = 0
+
+        command = [
+            katago_path,
+            "analysis",
+            "-config",
+            config_path,
+            "-model",
+            model_path,
+        ]
+        if override_config is not None:
+            command += ["-override-config", override_config]
         katago = subprocess.Popen(
-            [katago_path, "analysis", "-config", config_path, "-model", model_path],
+            command,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -238,6 +249,11 @@ def main(temp_config_file):
         help="Only output a correctness summary score rather than plots",
         action="store_true",
     )
+    parser.add_argument(
+        "--override-config",
+        help="Extra KataGo config params",
+        type=str,
+    )
     args = parser.parse_args()
 
     output_path = args.output_dir
@@ -263,7 +279,13 @@ def main(temp_config_file):
     katagos = []
     for model_path, model_name in models:
         katagos.append(
-            KataGo(model_name, args.executable, temp_config_file.name, model_path)
+            KataGo(
+                model_name,
+                args.executable,
+                temp_config_file.name,
+                model_path,
+                args.override_config,
+            )
         )
 
     def get_policy_and_search_mass(board_at_setup, response, moves):
