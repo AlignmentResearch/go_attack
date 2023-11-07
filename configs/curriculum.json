@@ -1,36 +1,36 @@
 [
     {
-        "name": "kata1-b18c384nbt-s7950406400-d3778412003.bin.gz",
+        "name": "kata1-b18c384nbt-s8010407680-d3793967244.bin.gz",
         "max_visits_victim": 256,
         "win_rate": 0.9
     },
     {
-        "name": "kata1-b18c384nbt-s7950406400-d3778412003.bin.gz",
+        "name": "kata1-b18c384nbt-s8010407680-d3793967244.bin.gz",
         "max_visits_victim": 512,
         "win_rate": 0.9
     },
     {
-        "name": "kata1-b18c384nbt-s7950406400-d3778412003.bin.gz",
+        "name": "kata1-b18c384nbt-s8010407680-d3793967244.bin.gz",
         "max_visits_victim": 1024,
         "win_rate": 0.9
     },
     {
-        "name": "kata1-b18c384nbt-s7950406400-d3778412003.bin.gz",
+        "name": "kata1-b18c384nbt-s8010407680-d3793967244.bin.gz",
         "max_visits_victim": 2048,
         "win_rate": 0.9
     },
     {
-        "name": "kata1-b18c384nbt-s7950406400-d3778412003.bin.gz",
+        "name": "kata1-b18c384nbt-s8010407680-d3793967244.bin.gz",
         "max_visits_victim": 4096,
         "win_rate": 0.9
     },
     {
-        "name": "kata1-b18c384nbt-s7950406400-d3778412003.bin.gz",
+        "name": "kata1-b18c384nbt-s8010407680-d3793967244.bin.gz",
         "max_visits_victim": 8192,
         "win_rate": 0.9
     },
     {
-        "name": "kata1-b18c384nbt-s7950406400-d3778412003.bin.gz",
+        "name": "kata1-b18c384nbt-s8010407680-d3793967244.bin.gz",
         "max_visits_victim": 16384,
         "win_rate": 0.9
     }
