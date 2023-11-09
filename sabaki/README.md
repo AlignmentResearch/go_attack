@@ -39,15 +39,19 @@ The base KataGo models are downloaded from https://katagotraining.org/networks/.
   See below for more sample configs.
 4. After adding a config, you can follow the instructions at https://youtu.be/6ZA_saVHyTA to play against newly configured engine.
 
-## More sample bot configs
-You'll need to change the paths to the models and executables for your machine.
+In particular, the following config runs our cyclic-attack adversary, assuming
+this repo is checked out at `/Users/ttw/code/go_attack/engines/` (the paths will
+need to be adjusted depending on where your copy of the repo is located):
 ```
-# Strongest cyclic-adversary
 cyclic-adv-s545m-v600-vm-cp505-v1-s
 /Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
 gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/cyclic-adv-s545065216-d136760487.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg
 time_settings 0 1 0
+```
 
+## More sample bot configs
+You'll need to change the paths to the models and executables for your machine.
+```
 # Weaker cyclic-adversary (with dragonslayer strategy)
 cyclic-adv-s349m-v600-vm-cp505-v1-s
 /Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
