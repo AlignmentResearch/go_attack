@@ -39,9 +39,9 @@ The base KataGo models are downloaded from https://katagotraining.org/networks/.
   See below for more sample configs.
 4. After adding a config, you can follow the instructions at https://youtu.be/6ZA_saVHyTA to play against newly configured engine.
 
-In particular, the following config runs our cyclic-attack adversary, assuming
-this repo is checked out at `/Users/ttw/code/go_attack/engines/` (the paths will
-need to be adjusted depending on where your copy of the repo is located):
+In particular, the following config runs our cyclic-adversary, assuming this
+repo is checked out at `/Users/ttw/code/go_attack/engines/` (the paths will need
+to be adjusted depending on where your copy of the repo is located):
 ```
 cyclic-adv-s545m-v600-vm-cp505-v1-s
 /Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
