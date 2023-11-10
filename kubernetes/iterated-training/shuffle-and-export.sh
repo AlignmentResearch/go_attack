@@ -14,5 +14,5 @@ while true; do
   USE_GATING=0
   run_until_curriculum_done "$ITERATION_DIR" \
     /go_attack/kubernetes/shuffle-and-export.sh "$RUN_NAME"-"$ITERATION" \
-    "$RUN_NAME"/iteration-"$ITERATION" "$VOLUME_NAME" "$USE_GATING" 0
+    "$RUN_NAME"/iteration-"$ITERATION" "$VOLUME_NAME" "$USE_GATING"
 done
