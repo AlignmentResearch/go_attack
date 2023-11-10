@@ -7,8 +7,10 @@ while [ -n "${1-}" ]; do
   case $1 in
     # Set this flag if the gatekeeper is enabled.
     --gating) USE_GATING=1 ;;
-    # Set this to preseed training data with data up to and including this
-    # directory. This should be a */selfplay/t0-s*-d* directory.
+    # Pre-seed with this training data as the source.
+    # If the pre-seed source directory is formatted as `*/selfplay/t0-s*-d*`,
+    # then all earlier directories with lower step count in `*/selfplay/` will
+    # also be included in the pre-seeding
     --preseed) PRESEED_SRC=$2; shift ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
@@ -31,29 +33,28 @@ mkdir --parents "$EXPERIMENT_DIR"
 
 PRESEED_DST="$EXPERIMENT_DIR"/selfplay/prev-selfplay
 if [ -n "${PRESEED_SRC:-}" ] && [ ! -d "$PRESEED_DST" ]; then
-  if [[ "$PRESEED_SRC" =~ t0-s([0-9]+)-d[0-9]+ ]]; then
-    FINAL_STEP=${BASH_REMATCH[1]}
-  else
-    echo "Can't parse step count from $PRESEED_SRC"
-    exit 1
-  fi
-
-  mkdir --parents "$PRESEED_DST"
   PRESEED_SRC=$(realpath "$PRESEED_SRC")
-  PRESEED_SRC_PARENT=$(dirname "$PRESEED_SRC")
-  for DIR in "$PRESEED_SRC_PARENT"/*/; do
-    DIR_NAME=$(basename "$DIR")
-    if [ "$DIR_NAME" = "prev-selfplay" ] || [ "$DIR_NAME" = "random" ]; then
-      ln -s "$DIR" "$PRESEED_DST"
-    elif [[ "$DIR" =~ t0-s([0-9]+)-d[0-9]+ ]]; then
-      STEP=${BASH_REMATCH[1]}
-      if [ "$STEP" -le "$FINAL_STEP" ]; then
+  if [[ "$PRESEED_SRC" =~ -s([0-9]+)-d[0-9]+ ]]; then
+    # Preseed data up to the step count listed in PRESEED_SRC.
+    FINAL_STEP=${BASH_REMATCH[1]}
+    mkdir --parents "$PRESEED_DST"
+    PRESEED_SRC_PARENT=$(dirname "$PRESEED_SRC")
+    for DIR in "$PRESEED_SRC_PARENT"/*/; do
+      DIR_NAME=$(basename "$DIR")
+      if [ "$DIR_NAME" = "prev-selfplay" ] || [ "$DIR_NAME" = "random" ]; then
         ln -s "$DIR" "$PRESEED_DST"
+      elif [[ "$DIR" =~ -s([0-9]+)-d[0-9]+ ]]; then
+        STEP=${BASH_REMATCH[1]}
+        if [ "$STEP" -le "$FINAL_STEP" ]; then
+          ln -s "$DIR" "$PRESEED_DST"
+        fi
+      else
+        echo "Skipping unrecognized pre-seed source: $DIR"
       fi
-    else
-      echo "Skipping unrecognized pre-seed source: $DIR"
-    fi
-  done
+    done
+  else
+    ln -s "$PRESEED_SRC" "$PRESEED_DST"
+  fi
 fi
 
 cd /engines/KataGo-custom/python
