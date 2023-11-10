@@ -23,7 +23,6 @@ done
 RUN_NAME="$1"
 VOLUME_NAME="$2"
 LR_SCALE="$3"
-MODEL_KIND="$4"
 
 if [ -n "${USE_PYTORCH:-}" ]; then
   cd /engines/KataGo-custom/python
@@ -32,7 +31,6 @@ else
 fi
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
-
 if [ -z "$INITIAL_WEIGHTS" ]; then
     echo "No initial weights specified, using random weights"
 else
