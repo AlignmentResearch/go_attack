@@ -176,6 +176,13 @@ if [ -n "${USE_ITERATED_TRAINING:-}" ]; then
     echo "--victim-ckpt must be specified for iterated training."
     exit 1
   fi
+  # This is not hard to implement, but it's not a priority right now since we
+  # haven't used this script for automated iterated training in a while.
+  echo "Warning: Iterated training works better when each attack "`
+    `"iteration is pre-seeded with data from the previous attack iteration, "`
+    `"and similarly for each defense iteration. This is not yet implemented"`
+    `"in these automated iterated training scripts."
+
   VICTIMPLAY_CMD="/go_attack/kubernetes/iterated-training/victimplay.sh $VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME $ALTERNATE_ITERATION_FIRST"
   EVALUATE_LOOP_CMD="/go_attack/kubernetes/iterated-training/evaluate_loop.sh $RUN_NAME $VOLUME_NAME $ALTERNATE_ITERATION_FIRST"
   TRAIN_CMD="/go_attack/kubernetes/iterated-training/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE $VICTIM_CKPT"
