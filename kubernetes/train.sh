@@ -1,6 +1,6 @@
 #!/bin/bash -e
-cd /engines/KataGo-custom/python
 
+MODEL_KIND=b6c96
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
 # Flags must be specified before positional arguments.
 while [ -n "${1-}" ]; do
@@ -12,6 +12,8 @@ while [ -n "${1-}" ]; do
     --copy-initial-model) COPY_INITIAL_MODEL=1; ;;
     # Path to directory of TF weights for warmstarting.
     --initial-weights) INITIAL_WEIGHTS=$2; shift ;;
+    --model-kind) MODEL_KIND=$2; shift ;;
+    --use-pytorch) USE_PYTORCH=1; shift ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
@@ -22,6 +24,12 @@ RUN_NAME="$1"
 VOLUME_NAME="$2"
 LR_SCALE="$3"
 MODEL_KIND="$4"
+
+if [ -n "${USE_PYTORCH:-}" ]; then
+  cd /engines/KataGo-custom/python
+else
+  cd /engines/KataGo-tensorflow/python
+fi
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 
