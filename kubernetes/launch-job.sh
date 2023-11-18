@@ -165,12 +165,24 @@ else
   VICTIMPLAY_FLAGS=""
   TRAIN_FLAGS=""
 fi
+if [ -n "${USE_GATING:-}" ]; then
+  SHUFFLE_FLAGS="--gating"
+else
+  SHUFFLE_FLAGS=""
+fi
 
 if [ -n "${USE_ITERATED_TRAINING:-}" ]; then
   if [ -z "${VICTIM_CKPT:-}" ]; then
     echo "--victim-ckpt must be specified for iterated training."
     exit 1
   fi
+  # This is not hard to implement, but it's not a priority right now since we
+  # haven't used this script for automated iterated training in a while.
+  echo "Warning: Iterated training works better when each attack "`
+    `"iteration is pre-seeded with data from the previous attack iteration, "`
+    `"and similarly for each defense iteration. This is not yet implemented"`
+    `"in these automated iterated training scripts."
+
   VICTIMPLAY_CMD="/go_attack/kubernetes/iterated-training/victimplay.sh $VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME $ALTERNATE_ITERATION_FIRST"
   EVALUATE_LOOP_CMD="/go_attack/kubernetes/iterated-training/evaluate_loop.sh $RUN_NAME $VOLUME_NAME $ALTERNATE_ITERATION_FIRST"
   TRAIN_CMD="/go_attack/kubernetes/iterated-training/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE $VICTIM_CKPT"
@@ -180,7 +192,7 @@ else
   VICTIMPLAY_CMD+=" $VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME"
   EVALUATE_LOOP_CMD="/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval"
   TRAIN_CMD="/go_attack/kubernetes/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE"
-  SHUFFLE_AND_EXPORT_CMD="/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME $VOLUME_NAME $USE_GATING"
+  SHUFFLE_AND_EXPORT_CMD="/go_attack/kubernetes/shuffle-and-export.sh $SHUFFLE_FLAGS $RUN_NAME $RUN_NAME $VOLUME_NAME"
   CURRICULUM_CMD="/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM"
 fi
 
