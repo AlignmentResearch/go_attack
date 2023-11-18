@@ -27,6 +27,7 @@ if [ -n "${USE_PYTORCH:-}" ]; then
 else
   if [ "${USE_TORCHSCRIPT:-}" -eq 1 ]; then
     echo "Error: --use-pytorch is required if --use-torchscript is set."
+    exit 1
   fi
   cd /engines/KataGo-tensorflow/python
 fi
