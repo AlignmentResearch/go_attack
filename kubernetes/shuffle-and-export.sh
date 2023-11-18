@@ -7,7 +7,7 @@ while [ -n "${1-}" ]; do
   case $1 in
     # Use PyTorch for training rather than TensorFlow.
     --use-pytorch) USE_PYTORCH=1 ;;
-    # Export models to C++ as TorchScript models instead than using KataGo's
+    # Export models to C++ as TorchScript models instead of using KataGo's
     # default serialization.
     --use-torchscript) USE_TORCHSCRIPT=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
@@ -27,6 +27,7 @@ if [ -n "${USE_PYTORCH:-}" ]; then
 else
   if [ "${USE_TORCHSCRIPT:-}" -eq 1 ]; then
     echo "Error: --use-pytorch is required if --use-torchscript is set."
+    exit 1
   fi
   cd /engines/KataGo-tensorflow/python
 fi
