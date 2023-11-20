@@ -13,7 +13,7 @@ while [ -n "${1-}" ]; do
     # Path to directory of TF weights for warmstarting.
     --initial-weights) INITIAL_WEIGHTS=$2; shift ;;
     --model-kind) MODEL_KIND=$2; shift ;;
-    --use-pytorch) USE_PYTORCH=1; shift ;;
+    --use-pytorch) USE_PYTORCH=1; ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
