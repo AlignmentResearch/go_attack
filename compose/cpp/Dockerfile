@@ -40,9 +40,9 @@ RUN apt-get update -q \
   zlib1g-dev \
   # Newer version of glibc without a deadlock bug:
   # https://bugs.launchpad.net/ubuntu/+source/glibc/+bug/1899800
-  libc6=2.31-0ubuntu9.9 \
-  libc6-dev=2.31-0ubuntu9.9 \
-  libc-dev-bin=2.31-0ubuntu9.9 \
+  libc6>=2.31-0ubuntu9.9 \
+  libc6-dev>=2.31-0ubuntu9.9 \
+  libc-dev-bin>=2.31-0ubuntu9.9 \
   # Clean up
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
@@ -120,7 +120,7 @@ RUN apt-get update -q \
   zlib1g \
   # Newer version of glibc without a deadlock bug:
   # https://bugs.launchpad.net/ubuntu/+source/glibc/+bug/1899800
-  libc6=2.31-0ubuntu9.9 \
+  libc6>=2.31-0ubuntu9.9 \
   # Clean up
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
