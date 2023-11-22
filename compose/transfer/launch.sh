@@ -52,6 +52,7 @@ function usage() {
   echo "              default: ${DEFAULT_NUM_GAMES_TOTAL}"
   echo "  -o OUTPUT_DIR, --output-dir OUTPUT_DIR"
   echo "              The directory to which to output SGFs and logs."
+  echo "              Warning: twogtp will hang if the dir is on the NAS."
   echo "              default: ${HOST_REPO_ROOT}/transfer-logs/<experiment>/<label>-<date>"
   echo "  -t NUM_THREADS, --num-threads NUM_THREADS"
   echo "              The number of games to be played at once."
