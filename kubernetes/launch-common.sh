@@ -8,12 +8,7 @@ if [ "$(git status --porcelain --untracked-files=no | wc -l)" -gt 0 ]; then
     exit 1
 fi
 
-USE_WEKA=1
-if [ -n "${USE_WEKA:-}" ]; then
-  export VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
-else
-  export VOLUME_FLAGS="--shared-host-dir /nas/ucb/k8/go-attack --shared-host-dir-mount /shared --shared-host-dir-slow-tolerant"
-fi
+export VOLUME_FLAGS="--volume-name go-attack --volume-mount /shared"
 
 update_images () {
   # Maybe build and push new Docker images
