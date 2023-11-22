@@ -1,6 +1,6 @@
 [
     {
-        "name": "ttseng-cyclic-r3-s213334016-d294060288.bin.gz",
+        "name": "cyclic-r4-s982983936-d540500842.bin.gz",
         "max_visits_victim": 600,
         "_comment": "setting an impossible win rate so that we stay on this iteration forever",
         "win_rate": 1.1
