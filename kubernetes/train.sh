@@ -23,6 +23,9 @@ done
 RUN_NAME="$1"
 VOLUME_NAME="$2"
 LR_SCALE="$3"
+shift
+shift
+shift
 
 if [ -n "${USE_PYTORCH:-}" ]; then
   cd /engines/KataGo-custom/python
@@ -91,4 +94,4 @@ else
     fi
 fi
 
-./selfplay/train.sh "$EXPERIMENT_DIR" t0 "$MODEL_KIND" 256 main -lr-scale "$LR_SCALE" -max-train-bucket-per-new-data 4
+./selfplay/train.sh "$EXPERIMENT_DIR" t0 "$MODEL_KIND" 256 main -lr-scale "$LR_SCALE" -max-train-bucket-per-new-data 4 "$@"
