@@ -112,14 +112,21 @@ do
                 # https://stackoverflow.com/questions/12152626/how-can-i-remove-the-extension-of-a-filename-in-a-shell-script
                 VICTIM_NAME=$(echo "$VICTIM" | cut -f 1 -d '.')
 
-                if [ -n "$PREDICTOR_DIR" ]; then
-                    # https://stackoverflow.com/questions/4561895/how-to-recursively-find-the-latest-modified-file-in-a-directory
-                    PREDICTOR=$(find $PREDICTOR_DIR -name *.bin.gz -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ")
-                    EXTRA_CONFIG+=",predictorPath=$PREDICTOR"
-                fi
-
                 # Run the evaluation
                 echo "Evaluating model $LATEST_MODEL_DIR against victim $VICTIM_NAME"
+                # Low-visit eval
+                $KATAGO_BIN match \
+                    -config "$CONFIG" \
+                    -config "$VICTIMS_DIR"/victim.cfg \
+                    -override-config numGamesTotal=100 \
+                    -override-config nnModelFile0="$VICTIMS_DIR"/"$VICTIM" \
+                    -override-config botName0="victim-$VICTIM_NAME" \
+                    -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \
+                    -override-config botName1="adv-$LATEST_MODEL_DIR-v1" \
+                    -override-config maxVisits1=1 \
+                    -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR" \
+                    2>&1 | tee "$OUTPUT_DIR"/logs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR".log
+                # Normal eval
                 $KATAGO_BIN match \
                     -config "$CONFIG" \
                     -config "$VICTIMS_DIR"/victim.cfg \
@@ -129,7 +136,7 @@ do
                     -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \
                     -override-config botName1="adv-$LATEST_MODEL_DIR" \
                     -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR" \
-                    2>&1 | tee "$OUTPUT_DIR"/logs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR".log
+                    2>&1 | tee -a "$OUTPUT_DIR"/logs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR".log
 
                 # Update the last step
                 LAST_STEP="$STEP"

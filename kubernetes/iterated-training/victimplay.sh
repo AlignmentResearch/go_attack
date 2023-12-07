@@ -30,7 +30,7 @@ while true; do
 
   ITERATION_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/iteration-"$ITERATION"
   run_until_curriculum_done "$ITERATION_DIR" \
-    /go_attack/kubernetes/victimplay.sh --config "$CONFIG" "$WARMSTART_FLAG" \
+    /go_attack/kubernetes/victimplay.sh --config "$CONFIG" $WARMSTART_FLAG \
     "$RUN_NAME"/iteration-"$ITERATION" "$VOLUME_NAME"
 
   # All iterations besides the first are warmstarted with the victim of the
