@@ -118,12 +118,15 @@ do
                 $KATAGO_BIN match \
                     -config "$CONFIG" \
                     -config "$VICTIMS_DIR"/victim.cfg \
-                    -override-config numGamesTotal=100 \
+                    -config /go_attack/kubernetes/evaluate_loop_extra_2.cfg \
                     -override-config nnModelFile0="$VICTIMS_DIR"/"$VICTIM" \
                     -override-config botName0="victim-$VICTIM_NAME" \
                     -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \
                     -override-config botName1="adv-$LATEST_MODEL_DIR-v1" \
                     -override-config maxVisits1=1 \
+                    -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \
+                    -override-config botName1="adv-$LATEST_MODEL_DIR-v16" \
+                    -override-config maxVisits1=16 \
                     -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR" \
                     2>&1 | tee "$OUTPUT_DIR"/logs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR".log
                 # Normal eval
