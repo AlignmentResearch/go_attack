@@ -1,4 +1,12 @@
 #!/bin/bash -e
+
+function assert_exists() {
+  if [ ! -e "$1" ]; then
+    echo "Error: $1 does not exist"
+    exit 1
+  fi
+}
+
 cd /engines/KataGo-custom/python
 
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
@@ -26,6 +34,7 @@ EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 if [ ! -e "$EXPERIMENT_DIR/selfplay/prev-selfplay" ]; then
   mkdir -p "$EXPERIMENT_DIR"/selfplay
   ln -s /shared/victimplay/ttseng-cyclic-r5-20231123/selfplay "$EXPERIMENT_DIR"/selfplay/prev-selfplay
+  assert_exists "$EXPERIMENT_DIR"/selfplay/prev-selfplay
 fi
 
 if [ -z "$INITIAL_WEIGHTS" ]; then
