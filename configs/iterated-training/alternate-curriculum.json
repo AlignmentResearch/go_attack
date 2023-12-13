@@ -1,6 +1,6 @@
 [
     {
-        "name": "cyclic-r6-s249562880-d737002060.bin.gz",
+        "name": "cyclic-r5-s534912256-d674880880.bin.gz",
         "max_visits_victim": 600,
         "_comment": "setting an impossible win rate so that we stay on this iteration forever",
         "win_rate": 1.1

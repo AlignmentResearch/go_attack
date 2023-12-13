@@ -1,6 +1,13 @@
 #!/bin/bash -e
 cd /engines/KataGo-custom/python
 
+function assert_exists() {
+  if [ ! -e "$1" ]; then
+    echo "Error: $1 does not exist"
+    exit 1
+  fi
+}
+
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
 # Flags must be specified before positional arguments.
 while [ -n "${1-}" ]; do
@@ -24,22 +31,28 @@ LR_SCALE="$3"
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 if [ ! -e "$EXPERIMENT_DIR/selfplay/prev-selfplay" ]; then
-  mkdir --parents "$EXPERIMENT_DIR/selfplay/prev-selfplay"
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/prev-selfplay "$EXPERIMENT_DIR"/selfplay/prev-selfplay/prev-selfplay
+  PREV_H_DIR=ttseng-cp505-h5-20231121
+  PREV_H_TIMESTEP=9905920
 
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/prev-selfplay/t0-s0-d0 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s998400-d72492718 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s2138624-d72822181 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s3206912-d73318303 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s4276224-d73569187 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s5273344-d73956377 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s6200832-d74076955 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s7269632-d74429680 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s8268288-d74685063 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s9194752-d74981633 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s10123520-d75284816 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s11051008-d75604814 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  ln -s /shared/victimplay/ttseng-cp505-h6-20231203/iteration-0/selfplay/t0-s11906304-d75871082 "$EXPERIMENT_DIR"/selfplay/prev-selfplay
+  PREV_H_DIR=/shared/victimplay/"$PREV_H_DIR"/iteration-0/selfplay
+  PRESEED_DST="$EXPERIMENT_DIR"/selfplay/prev-selfplay
+  mkdir --parents "$PRESEED_DST"
+
+  for DIR in "$PREV_H_DIR"/*/; do
+    DIR_NAME=$(basename "$DIR")
+    if [ "$DIR_NAME" = "prev-selfplay" ] || [ "$DIR_NAME" = "random" ]; then
+      ln -s "$DIR" "$PRESEED_DST"
+      assert_exists "$PRESEED_DST/$DIR_NAME"
+    elif [[ "$DIR" =~ -s([0-9]+)-d[0-9]+ ]]; then
+      STEP=${BASH_REMATCH[1]}
+      if [ "$STEP" -le "$PREV_H_TIMESTEP" ]; then
+	ln -s "$DIR" "$PRESEED_DST"
+	assert_exists "$PRESEED_DST/$DIR_NAME"
+      fi
+    else
+      echo "Skipping unrecognized pre-seed source: $DIR"
+    fi
+  done
 fi
 
 if [ -z "$INITIAL_WEIGHTS" ]; then
