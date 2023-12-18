@@ -31,8 +31,8 @@ LR_SCALE="$3"
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 if [ ! -e "$EXPERIMENT_DIR/selfplay/prev-selfplay" ]; then
-  PREV_H_DIR=ttseng-cp505-h5-20231121
-  PREV_H_TIMESTEP=9905920
+  PREV_H_DIR=ttseng-cp505-h6-fix-20231212
+  PREV_H_TIMESTEP=19897600
 
   PREV_H_DIR=/shared/victimplay/"$PREV_H_DIR"/iteration-0/selfplay
   PRESEED_DST="$EXPERIMENT_DIR"/selfplay/prev-selfplay
