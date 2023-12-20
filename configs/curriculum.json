@@ -1,56 +1,56 @@
 [
     {
-        "name": "cp505-h6-s19897600-d86709525.bin.gz",
+        "name": "cp505-h7-s13333248-d93202834.bin.gz",
         "max_visits_victim": 4,
         "win_rate": 0.75
     },
     {
-        "name": "cp505-h6-s19897600-d86709525.bin.gz",
+        "name": "cp505-h7-s13333248-d93202834.bin.gz",
         "max_visits_victim": 8,
         "win_rate": 0.75
     },
     {
-        "name": "cp505-h6-s19897600-d86709525.bin.gz",
+        "name": "cp505-h7-s13333248-d93202834.bin.gz",
         "max_visits_victim": 16,
         "win_rate": 0.75
     },
     {
-        "name": "cp505-h6-s19897600-d86709525.bin.gz",
+        "name": "cp505-h7-s13333248-d93202834.bin.gz",
         "max_visits_victim": 32,
         "win_rate": 0.75
     },
     {
-        "name": "cp505-h6-s19897600-d86709525.bin.gz",
+        "name": "cp505-h7-s13333248-d93202834.bin.gz",
         "max_visits_victim": 64,
         "win_rate": 0.75
     },
     {
-        "name": "cp505-h6-s19897600-d86709525.bin.gz",
+        "name": "cp505-h7-s13333248-d93202834.bin.gz",
         "max_visits_victim": 128,
         "win_rate": 0.75
     },
     {
-        "name": "cp505-h6-s19897600-d86709525.bin.gz",
+        "name": "cp505-h7-s13333248-d93202834.bin.gz",
         "max_visits_victim": 256,
         "win_rate": 0.9
     },
     {
-        "name": "cp505-h6-s19897600-d86709525.bin.gz",
+        "name": "cp505-h7-s13333248-d93202834.bin.gz",
         "max_visits_victim": 512,
         "win_rate": 0.9
     },
     {
-        "name": "cp505-h6-s19897600-d86709525.bin.gz",
+        "name": "cp505-h7-s13333248-d93202834.bin.gz",
         "max_visits_victim": 1024,
         "win_rate": 0.9
     },
     {
-        "name": "cp505-h6-s19897600-d86709525.bin.gz",
+        "name": "cp505-h7-s13333248-d93202834.bin.gz",
         "max_visits_victim": 2048,
         "win_rate": 0.9
     },
     {
-        "name": "cp505-h6-s19897600-d86709525.bin.gz",
+        "name": "cp505-h7-s13333248-d93202834.bin.gz",
         "max_visits_victim": 4096,
         "win_rate": 0.9
     }
