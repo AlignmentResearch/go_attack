@@ -1,8 +1,8 @@
 """Deletes old shuffleddata directories to clear up space."""
+import argparse
+import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
-
-from tqdm import tqdm
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Delete old shuffleddata directories")
@@ -15,7 +15,7 @@ if __name__ == "__main__":
         "--since-days",
         type=int,
         default=1,
-        description="shuffledata not modified since this number of days will be deleted",
+        description="shuffledata not modified since this many days will be deleted",
     )
     args = parser.parse_args()
     victimplay_dir = args.victimplay_dir
@@ -25,12 +25,12 @@ if __name__ == "__main__":
     dirs_to_delete = []
     dirs_to_keep = []
     now = datetime.now()
-    max_age_allowed = now - timedelta(days=days)
-    for child_dir in tqdm(victimplay_dir.rglob("shuffleddata/")):
+    oldest_date_allowed = now - timedelta(days=days)
+    for child_dir in victimplay_dir.rglob("shuffleddata/"):
         if child_dir.is_symlink():
             continue
         mod_time = datetime.fromtimestamp(child_dir.stat().st_mtime)
-        if mod_time < max_age_allowed:
+        if mod_time < oldest_date_allowed:
             dirs_to_delete.append(child_dir)
         else:
             dirs_to_keep.append(child_dir)
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     confirm = input("Confirm file deletions (y/n): ")
 
     if confirm.lower().startswith("y"):
-        for data_dir in tdqm(dirs_to_delete):
+        for data_dir in dirs_to_delete:
             shutil.rmtree(data_dir)
     else:
         print("Deletions canceled")
