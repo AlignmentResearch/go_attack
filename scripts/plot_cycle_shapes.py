@@ -128,6 +128,9 @@ def main():
                         num_cycles += 1
                         interior = get_cycle_interior(captured_stones)
 
+                        interior_points = interior.nonzero()
+                        if len(interior_points[0]) == 0:
+                            continue
                         # Flip cyclic group so that it's in the top-left corner
                         interior_centroid = np.average(interior.nonzero(), axis=1)
                         for axis, coord in enumerate(interior_centroid):
