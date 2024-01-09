@@ -36,10 +36,10 @@ if __name__ == "__main__":
             dirs_to_keep.append(child_dir)
 
     # Confirm with user that the deletions look correct.
-    print("The following shuffleddata dirs will be deleted:")
+    print("The following shuffleddata directories will be deleted:")
     for file in dirs_to_delete:
         print(file)
-    print("\nThe following shuffleddata dirs will be kept:")
+    print("\nThe following shuffleddata directories will be kept:")
     for file in dirs_to_keep:
         print(file)
     confirm = input("Confirm file deletions (y/n): ")
