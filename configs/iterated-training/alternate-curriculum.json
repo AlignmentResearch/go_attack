@@ -1,6 +1,6 @@
 [
     {
-        "name": "cyclic-r8-vs-winopt-s223312896-d881742584.bin.gz",
+        "name": "cyclic-r8-s230162176-d883662666.bin.gz",
         "max_visits_victim": 600,
         "_comment": "setting an impossible win rate so that we stay on this iteration forever",
         "win_rate": 1.1
