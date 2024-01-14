@@ -1,127 +1,127 @@
 [
     {
         "_comment": "vit@1",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 1,
         "win_rate": 0.75
     },
     {
         "_comment": "vit@2",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 2,
         "win_rate": 0.75
     },
     {
         "_comment": "vit@4",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 4,
         "win_rate": 0.75
     },
     {
         "_comment": "vit@8",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 8,
         "win_rate": 0.75
     },
     {
         "_comment": "vit@16",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 16,
         "win_rate": 0.75
     },
     {
         "_comment": "vit@32",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 32,
         "win_rate": 0.75
     },
     {
         "_comment": "vit@64",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 64,
         "win_rate": 0.75
     },
     {
         "_comment": "vit@128",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 128,
         "win_rate": 0.75
     },
     {
         "_comment": "vit@256",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 256,
-        "win_rate": 0.9
+        "win_rate": 0.75
     },
     {
         "_comment": "vit@512",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 512,
         "win_rate": 0.9
     },
     {
         "_comment": "vit@1024",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 1024,
         "win_rate": 0.9
     },
     {
         "_comment": "vit@2048",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 2048,
         "win_rate": 0.9
     },
     {
         "_comment": "vit@4096",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 4096,
         "win_rate": 0.9
     },
     {
         "_comment": "vit@8192",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 8192,
         "win_rate": 0.9
     },
     {
         "_comment": "vit@16384",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 16384,
         "win_rate": 0.9
     },
     {
         "_comment": "vit@32768",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 32768,
         "win_rate": 0.9
     },
     {
         "_comment": "vit@65536",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 65536,
         "win_rate": 0.9
     },
     {
         "_comment": "vit@131072",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 131072,
         "win_rate": 0.9
     },
     {
         "_comment": "vit@262144",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 262144,
         "win_rate": 0.9
     },
     {
         "_comment": "vit@524288",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 524288,
         "win_rate": 0.9
     },
     {
         "_comment": "vit@1048576",
-        "name": "vit-s143218688-d125536887.pt",
+        "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 1048576,
         "win_rate": 0.9
     }

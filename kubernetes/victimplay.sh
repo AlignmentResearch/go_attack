@@ -23,8 +23,9 @@ while [ -n "${USE_WARMSTART:-}" ] &&
 done
 
 mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"
-/engines/KataGo-custom/cpp/katago selfplay \
+/engines/KataGo-custom/cpp/katago victimplay \
     -output-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/ \
     -models-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/models/ \
+    -nn-victim-path /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/victims/ \
     -config "$CONFIG" \
     -config /go_attack/configs/compute/1gpu.cfg

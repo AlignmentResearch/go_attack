@@ -1,5 +1,12 @@
 #!/bin/bash -e
 
+function assert_exists() {
+  if [ ! -e "$1" ]; then
+    echo "Error: $1 does not exist"
+    exit 1
+  fi
+}
+
 MODEL_KIND=b6c96
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
 # Flags must be specified before positional arguments.
@@ -34,6 +41,12 @@ else
 fi
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
+if [ ! -e "$EXPERIMENT_DIR/selfplay/prev-selfplay" ]; then
+  mkdir -p "$EXPERIMENT_DIR"/selfplay
+  ln -s /shared/victimplay/ttseng-avoid-pass-alive-coldstart-39-20221025-175949/selfplay "$EXPERIMENT_DIR"/selfplay/prev-selfplay
+  assert_exists "$EXPERIMENT_DIR"/selfplay/prev-selfplay
+fi
+
 if [ -z "$INITIAL_WEIGHTS" ]; then
     echo "No initial weights specified, using random weights"
 else
@@ -94,4 +107,4 @@ else
     fi
 fi
 
-./selfplay/train.sh "$EXPERIMENT_DIR" t0 "$MODEL_KIND" 256 main -lr-scale "$LR_SCALE" -max-train-bucket-per-new-data 4 "$@"
+./selfplay/train.sh "$EXPERIMENT_DIR" t0 "$MODEL_KIND" 256 main -disable-vtimeloss -lr-scale "$LR_SCALE" -max-train-bucket-per-new-data 4 "$@"
