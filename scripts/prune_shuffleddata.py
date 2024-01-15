@@ -9,13 +9,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "victimplay_dir",
         type=Path,
-        description="Path in which which to recursively search for shuffleddata",
+        help="Path in which which to recursively search for shuffleddata",
     )
     parser.add_argument(
         "--since-days",
         type=int,
         default=1,
-        description="shuffledata not modified since this many days will be deleted",
+        help="shuffledata not modified since this many days will be deleted",
     )
     args = parser.parse_args()
     victimplay_dir = args.victimplay_dir
