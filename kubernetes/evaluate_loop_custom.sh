@@ -122,11 +122,11 @@ do
                     -override-config nnModelFile0="$VICTIMS_DIR"/"$VICTIM" \
                     -override-config botName0="victim-$VICTIM_NAME" \
                     -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \
-                    -override-config botName1="adv-$LATEST_MODEL_DIR-v1" \
-                    -override-config maxVisits1=1 \
+                    -override-config botName1="adv-$LATEST_MODEL_DIR-v4" \
+                    -override-config maxVisits1=4 \
                     -override-config nnModelFile2="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \
-                    -override-config botName2="adv-$LATEST_MODEL_DIR-v16" \
-                    -override-config maxVisits2=16 \
+                    -override-config botName2="adv-$LATEST_MODEL_DIR-v8" \
+                    -override-config maxVisits2=8 \
                     -override-config searchAlgorithm2=MCTS \
                     -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR" \
                     2>&1 | tee "$OUTPUT_DIR"/logs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR".log
