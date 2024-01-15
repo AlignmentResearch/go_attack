@@ -30,6 +30,9 @@ else
     exit 1
   fi
   cd /engines/KataGo-tensorflow/python
+  # KataGo-tensorflow's shuffle_and_export.sh script doesn't have the
+  # TorchScript argument.
+  USE_TORCHSCRIPT=""
 fi
 
 # not related to shuffle-and-export but we want some process to log this
