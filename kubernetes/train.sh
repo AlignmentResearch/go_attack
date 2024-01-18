@@ -32,9 +32,28 @@ LR_SCALE="$3"
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 if [ ! -e "$EXPERIMENT_DIR/selfplay/prev-selfplay" ]; then
-  mkdir -p "$EXPERIMENT_DIR"/selfplay
-  ln -s /shared/victimplay/ttseng-cyclic-r7-20231219/selfplay "$EXPERIMENT_DIR"/selfplay/prev-selfplay
-  assert_exists "$EXPERIMENT_DIR"/selfplay/prev-selfplay
+  PREV_DIR=ttseng-avoid-pass-alive-coldstart-39-20221025-175949
+  PREV_TIMESTEP=227013120
+
+  PREV_DIR=/shared/victimplay/"$PREV_DIR"/selfplay
+  PRESEED_DST="$EXPERIMENT_DIR"/selfplay/prev-selfplay
+  mkdir --parents "$PRESEED_DST"
+
+  for DIR in "$PREV_DIR"/*/; do
+    DIR_NAME=$(basename "$DIR")
+    if [ "$DIR_NAME" = "prev-selfplay" ] || [ "$DIR_NAME" = "random" ]; then
+      ln -s "$DIR" "$PRESEED_DST"
+      assert_exists "$PRESEED_DST/$DIR_NAME"
+    elif [[ "$DIR" =~ -s([0-9]+)-d[0-9]+ ]]; then
+      STEP=${BASH_REMATCH[1]}
+      if [ "$STEP" -lt "$PREV_TIMESTEP" ]; then
+        ln -s "$DIR" "$PRESEED_DST"
+        assert_exists "$PRESEED_DST/$DIR_NAME"
+      fi
+    else
+      echo "Skipping unrecognized pre-seed source: $DIR"
+    fi
+  done
 fi
 
 if [ -z "$INITIAL_WEIGHTS" ]; then
