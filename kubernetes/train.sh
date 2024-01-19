@@ -33,7 +33,7 @@ LR_SCALE="$3"
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 if [ ! -e "$EXPERIMENT_DIR/selfplay/prev-selfplay" ]; then
   mkdir -p "$EXPERIMENT_DIR"/selfplay
-  ln -s /shared/victimplay/ttseng-cyclic-r7-20231219/selfplay "$EXPERIMENT_DIR"/selfplay/prev-selfplay
+  ln -s /shared/victimplay/ttseng-cyclic-r8-20231231/selfplay "$EXPERIMENT_DIR"/selfplay/prev-selfplay
   assert_exists "$EXPERIMENT_DIR"/selfplay/prev-selfplay
 fi
 
