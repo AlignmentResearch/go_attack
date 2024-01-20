@@ -199,7 +199,9 @@ def write_adversaries(
             f=f,
             bot_index=bot_index_offset + i,
             bot_path=path,
-            bot_name=f"adv-s{get_adversary_steps(path)}-v{visits}-{algorithm}",
+            bot_name=adversary.get(
+                "name", f"adv-s{get_adversary_steps(path)}-v{visits}-{algorithm}"
+            ),
             num_visits=visits,
             bot_algorithm=algorithm,
         )
@@ -600,6 +602,66 @@ def generate_adversary_visit_sweep_evaluation(
     print(f"\n{usage_string}\n")
 
 
+def generate_iterated_adversaries_vs_victims_evaluation(
+    parameters: Mapping[str, Any],
+    config_dir: Path,
+    repo_root: Path,
+) -> None:
+    """Generates experiment config for evaluating cyclic-r* vs cp505-h*."""
+    parameters_key = "iterated_adversaries_vs_victims"
+    if parameters_key not in parameters:
+        return
+    parameters = parameters[parameters_key]
+
+    evaluation_config_dir = config_dir / "iterated_adversaries_vs_victims"
+    evaluation_config_dir.mkdir(parents=True, exist_ok=True)
+
+    adversary_visits = 600
+    victims = parameters["victims"]
+    victims_per_gpu = parameters["n_victims_per_gpu"]
+    config_index = 0
+    # adversaries and victims could be written in separate config files and then
+    # both be specified on the command line, but I'm going to write them in a
+    # bunch of separate config files to make launching jobs require less thought
+    for adversary in parameters["adversaries"]:
+        for i in range(0, len(victims), victims_per_gpu):
+            job_victims = victims[i : i + victims_per_gpu]
+            num_victims = len(job_victims) * len(parameters["victim_visits"])
+            num_games = num_victims * parameters["num_games_per_matchup"]
+            output_config = evaluation_config_dir / f"match-extra-{config_index}.cfg"
+            config_index += 1
+
+            with open(output_config, "w") as f:
+                f.write("# Combine with match.cfg.\n")
+                f.write(f"numGamesTotal = {num_games}\n")
+                f.write(f"numBots = {1 + num_victims}\n\n")
+                write_adversaries(
+                    f=f,
+                    adversaries=[
+                        {
+                            "algorithm": "AMCTS",
+                            "name": f"{adversary['name']}-v{adversary_visits}",
+                            "path": adversary["path"],
+                            "visits": adversary_visits,
+                        }
+                    ],
+                )
+                f.write("\n")
+                write_victims(
+                    f=f,
+                    victims=[
+                        {
+                            "path": victim["path"],
+                            "name": f"{victim['name']}-v{visits}",
+                            "visits": visits,
+                        }
+                        for victim in job_victims
+                        for visits in parameters["victim_visits"]
+                    ],
+                    bot_index_offset=1,
+                )
+
+
 def main():
     """Entrypoint for the script."""
     repo_root = Path(os.path.dirname(os.path.realpath(__file__))).parents[0]
@@ -636,6 +698,7 @@ def main():
     with open(args.parameter_file) as f:
         evaluation_parameters = yaml.safe_load(f)
 
+    # Evaluations for "Adversarial Policies Beat Superhuman Go AIs"
     generate_main_adversary_evaluation(
         evaluation_parameters,
         config_dir=config_dir,
@@ -658,6 +721,13 @@ def main():
         repo_root=repo_root,
     )
     generate_adversary_visit_sweep_evaluation(
+        evaluation_parameters,
+        config_dir=config_dir,
+        repo_root=repo_root,
+    )
+
+    # Evaluations for go-defense paper
+    generate_iterated_adversaries_vs_victims_evaluation(
         evaluation_parameters,
         config_dir=config_dir,
         repo_root=repo_root,
