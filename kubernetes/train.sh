@@ -1,6 +1,13 @@
 #!/bin/bash -e
 cd /engines/KataGo-tensorflow/python
 
+function assert_exists() {
+  if [ ! -e "$1" ]; then
+    echo "Error: $1 does not exist"
+    exit 1
+  fi
+}
+
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
 # Flags must be specified before positional arguments.
 while [ -n "${1-}" ]; do
@@ -23,13 +30,29 @@ VOLUME_NAME="$2"
 LR_SCALE="$3"
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
-if [ ! -e "$EXPERIMENT_DIR/selfplay/preseed" ]; then
-  mkdir -p "$EXPERIMENT_DIR"/selfplay/preseed
-  ln -s /shared/nas-data/k8/victimplay/ttseng-avoid-pass-alive-coldstart-39-20221025-175949/selfplay "$EXPERIMENT_DIR"/selfplay/preseed/ttseng-avoid-pass-alive-coldstart-39-20221025-175949
-  ln -s /shared/nas-data/k8/victimplay/ttseng-cyclic-vs-cp564-20230213-154321/selfplay "$EXPERIMENT_DIR"/selfplay/preseed/ttseng-cyclic-vs-cp564-20230213-154321
-  ln -s /shared/nas-data/k8/victimplay/tony-cyc-adv-vs-b60-s7574m-20230515-174208/selfplay "$EXPERIMENT_DIR"/selfplay/preseed/tony-cyc-adv-vs-b60-s7574m-20230515-174208
-  ln -s /shared/nas-data/k8/victimplay/tony-cyc-adv-ft-vs-b60-s7702m-20230518-185923/selfplay "$EXPERIMENT_DIR"/selfplay/preseed/tony-cyc-adv-ft-vs-b60-s7702m-20230518-185923
-  ln -s /shared/nas-data/k8/victimplay/tony-cyc-adv-ft-vs-b60-s7702m-20230520-174057/selfplay "$EXPERIMENT_DIR"/selfplay/preseed/tony-cyc-adv-ft-vs-b60-s7702m-20230520-174057
+if [ ! -e "$EXPERIMENT_DIR/selfplay/prev-selfplay" ]; then
+  PREV_DIR=ttseng-avoid-pass-alive-coldstart-39-20221025-175949
+  PREV_TIMESTEP=227013120
+
+  PREV_DIR=/shared/victimplay/"$PREV_DIR"/selfplay
+  PRESEED_DST="$EXPERIMENT_DIR"/selfplay/prev-selfplay
+  mkdir --parents "$PRESEED_DST"
+
+  for DIR in "$PREV_DIR"/*/; do
+    DIR_NAME=$(basename "$DIR")
+    if [ "$DIR_NAME" = "prev-selfplay" ] || [ "$DIR_NAME" = "random" ]; then
+      ln -s "$DIR" "$PRESEED_DST"
+      assert_exists "$PRESEED_DST/$DIR_NAME"
+    elif [[ "$DIR" =~ -s([0-9]+)-d[0-9]+ ]]; then
+      STEP=${BASH_REMATCH[1]}
+      if [ "$STEP" -lt "$PREV_TIMESTEP" ]; then
+        ln -s "$DIR" "$PRESEED_DST"
+        assert_exists "$PRESEED_DST/$DIR_NAME"
+      fi
+    else
+      echo "Skipping unrecognized pre-seed source: $DIR"
+    fi
+  done
 fi
 
 if [ -z "$INITIAL_WEIGHTS" ]; then
