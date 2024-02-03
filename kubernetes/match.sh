@@ -1,5 +1,5 @@
 #!/bin/bash
-# Usage: $0 OUTPUT_DIR NUM_GAME
+# Usage: $0 OUTPUT_DIR NUM_GAMES
 #
 # If NUM_GAMES is -1, then the number of games from `match-base.cfg` will be
 # used.
