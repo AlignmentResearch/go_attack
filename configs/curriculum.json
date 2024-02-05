@@ -6,6 +6,21 @@
     },
     {
         "name": "kata1-b18c384nbt-s8526915840-d3929217702.bin.gz",
+        "max_visits_victim": 5,
+        "win_rate": 0.75
+    },
+    {
+        "name": "kata1-b18c384nbt-s8526915840-d3929217702.bin.gz",
+        "max_visits_victim": 6,
+        "win_rate": 0.75
+    },
+    {
+        "name": "kata1-b18c384nbt-s8526915840-d3929217702.bin.gz",
+        "max_visits_victim": 7,
+        "win_rate": 0.75
+    },
+    {
+        "name": "kata1-b18c384nbt-s8526915840-d3929217702.bin.gz",
         "max_visits_victim": 8,
         "win_rate": 0.75
     },
