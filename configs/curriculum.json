@@ -51,7 +51,7 @@
         "_comment": "vit@256",
         "name": "vitb16-s650025472-d167043571.pt",
         "max_visits_victim": 256,
-        "win_rate": 0.75
+        "win_rate": 0.9
     },
     {
         "_comment": "vit@512",
