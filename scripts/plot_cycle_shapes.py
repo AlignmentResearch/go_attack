@@ -1,3 +1,5 @@
+DESCRIPTION = """Plots cycle shapes captured in adversarial Go games."""
+
 import argparse
 import itertools
 import re
@@ -5,6 +7,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+from tqdm import tqdm
 
 from go_attack.go import Color, Game
 
@@ -70,10 +73,19 @@ def get_cycle_interior(cyclic_group: np.ndarray) -> (np.ndarray, (int, int)):
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("files", type=Path, nargs="+")
-    parser.add_argument("--title", type=str, default="")
-    parser.add_argument("--output", type=Path)
+    parser = argparse.ArgumentParser(description=DESCRIPTION)
+    parser.add_argument(
+        "files",
+        type=Path,
+        nargs="+",
+        help="Input directories to be searched recursively for SGFs, or SGF files",
+    )
+    parser.add_argument("--title", type=str, default="", help="Title of the plot")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="Output file. If not specified, the plot will be shown aand not saved.",
+    )
     args = parser.parse_args()
 
     cycle_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
@@ -88,8 +100,8 @@ def main():
         else:
             sgf_files = itertools.chain(path.glob("**/*.sgf"), path.glob("**/*.sgfs"))
 
-        for sgf_file in sgf_files:
-            for sgf_string in open(sgf_file):
+        for sgf_file in tqdm(list(sgf_files)):
+            for sgf_string in tqdm(open(sgf_file), leave=False):
 
                 # Filter for games with the correct board size and with the
                 # adversary winning.
@@ -138,7 +150,10 @@ def main():
                     # When the adversary captures lots of victim stones and the
                     # victim stones enclose at least one empty or adversary
                     # square, we guess that it's capturing a cyclic group.
-                    if np.count_nonzero(captured_stones) >= CAPTURE_GROUP_SIZE_THRESHOLD:
+                    if (
+                        np.count_nonzero(captured_stones)
+                        >= CAPTURE_GROUP_SIZE_THRESHOLD
+                    ):
                         interior = get_cycle_interior(captured_stones)
                         interior_points = interior.nonzero()
                         if len(interior_points[0]) == 0:
@@ -182,7 +197,7 @@ def main():
         return im
 
     plot_data(0, 0, cycle_heatmap, "Cyclic group")
-    axs[0, 1].axis("off")
+    axs[0, 1].axis("off") # Unused plot space
     plot_data(1, 0, adversary_heatmap, "Adversary stones")
     plot_data(1, 1, interior_adversary_heatmap, "Interior adversary stones")
     plot_data(2, 0, victim_heatmap, "Victim stones")
