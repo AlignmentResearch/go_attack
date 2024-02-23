@@ -4,6 +4,8 @@ import itertools
 import re
 from pathlib import Path
 
+import matplotlib.cm
+import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
@@ -103,7 +105,7 @@ def main():
         else:
             sgf_files = itertools.chain(path.glob("**/*.sgf"), path.glob("**/*.sgfs"))
 
-        for sgf_file in tqdm(list(sgf_files)):
+        for sgf_file in tqdm(list(sgf_files), leave=False):
             for sgf_string in tqdm(open(sgf_file), leave=False):
 
                 # Filter for games with the correct board size and with the
@@ -193,18 +195,20 @@ def main():
 
     fig, axs = plt.subplots(3, 2)
 
+    color_map = matplotlib.cm.get_cmap("hot")
+    normalizer = matplotlib.colors.Normalize(vmin=0, vmax=1)
+
     def plot_data(figure_row, figure_column, data, title):
         ax = axs[figure_row, figure_column]
-        im = ax.imshow(data / num_cycles, cmap="hot", interpolation="nearest", vmax=1.0)
+        ax.imshow(data / num_cycles, cmap=color_map, norm=normalizer)
         ax.title.set_text(title)
-        return im
 
     plot_data(0, 0, cycle_heatmap, "Cyclic group")
     axs[0, 1].axis("off")  # Unused plot space
     plot_data(1, 0, adversary_heatmap, "Adversary stones")
     plot_data(1, 1, interior_adversary_heatmap, "Interior adversary stones")
     plot_data(2, 0, victim_heatmap, "Victim stones")
-    im = plot_data(2, 1, interior_victim_heatmap, "Interior victim stones")
+    plot_data(2, 1, interior_victim_heatmap, "Interior victim stones")
     for _, ax in np.ndenumerate(axs):
         ax.set_xticks(range(0, BOARD_LEN, 5))
         ax.set_yticks(range(0, BOARD_LEN, 5))
@@ -214,7 +218,9 @@ def main():
         ax.yaxis.set_ticks_position("both")
     fig.suptitle(f"{args.title}, sample size of {num_cycles}")
     fig.tight_layout()
-    fig.colorbar(im, ax=axs.ravel().tolist(), location="left")
+
+    color_bar_info = matplotlib.cm.ScalarMappable(cmap=color_map, norm=normalizer)
+    fig.colorbar(color_bar_info, ax=axs, location="left")
 
     if args.output is None:
         plt.show()
