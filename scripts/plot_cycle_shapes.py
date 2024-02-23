@@ -1,5 +1,4 @@
-DESCRIPTION = """Plots cycle shapes captured in adversarial Go games."""
-
+"""Plots cycle shapes captured in adversarial Go games."""
 import argparse
 import itertools
 import re
@@ -21,18 +20,21 @@ VICTIM_NAME_SUBSTRINGS = ["victim", "b18-"]
 
 
 def get_sgf_property(property_name: str, sgf_string: str) -> str:
-    return re.search(f"{property_name}\[([^\]]+)\]", sgf_string).group(1)
+    """Returns the value of a property in an SGF string."""
+    match = re.search(rf"{property_name}\[([^\]]+)\]", sgf_string)
+    assert match is not None, f"No property {property_name} in SGF string {sgf_string}"
+    return match.group(1)
 
 
-def get_cycle_interior(cyclic_group: np.ndarray) -> (np.ndarray, (int, int)):
-    """Returns boolean map of points inside cyclic group.
+def get_cycle_interior(cyclic_group: np.ndarray) -> np.ndarray:
+    """Gets board points inside a cyclic group.
 
-    Args
-    ----
-    cyclic_group:
-      Boolean map of cyclic group points.
+    Args:
+        cyclic_group: Boolean map of cyclic group points.
+
+    Returns:
+        Boolean map of points inside the cyclic group.
     """
-
     visited = np.zeros_like(cyclic_group, dtype=bool)
     interior = ~cyclic_group
     adjacencies = [[0, -1], [0, 1], [-1, 0], [1, 0]]
@@ -73,7 +75,8 @@ def get_cycle_interior(cyclic_group: np.ndarray) -> (np.ndarray, (int, int)):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=DESCRIPTION)
+    """Script entrypoint."""
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "files",
         type=Path,
@@ -135,7 +138,7 @@ def main():
                 game = Game.from_sgf(sgf_string)
 
                 for i, (prev_board, board) in enumerate(
-                    zip(game.board_states, game.board_states[1:])
+                    zip(game.board_states, game.board_states[1:]),
                 ):
                     player_color = Color.BLACK if i % 2 == 0 else Color.WHITE
                     if player_color != adversary_color:
@@ -197,16 +200,16 @@ def main():
         return im
 
     plot_data(0, 0, cycle_heatmap, "Cyclic group")
-    axs[0, 1].axis("off") # Unused plot space
+    axs[0, 1].axis("off")  # Unused plot space
     plot_data(1, 0, adversary_heatmap, "Adversary stones")
     plot_data(1, 1, interior_adversary_heatmap, "Interior adversary stones")
     plot_data(2, 0, victim_heatmap, "Victim stones")
     im = plot_data(2, 1, interior_victim_heatmap, "Interior victim stones")
     for _, ax in np.ndenumerate(axs):
-        ax.set_xticks(range(0, board.shape[0], 5))
-        ax.set_yticks(range(0, board.shape[1], 5))
-        ax.set_xticks(range(board.shape[0]), minor=True)
-        ax.set_yticks(range(board.shape[1]), minor=True)
+        ax.set_xticks(range(0, BOARD_LEN, 5))
+        ax.set_yticks(range(0, BOARD_LEN, 5))
+        ax.set_xticks(range(BOARD_LEN), minor=True)
+        ax.set_yticks(range(BOARD_LEN), minor=True)
         ax.xaxis.set_ticks_position("both")
         ax.yaxis.set_ticks_position("both")
     fig.suptitle(f"{args.title}, sample size of {num_cycles}")
