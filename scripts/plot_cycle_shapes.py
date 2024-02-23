@@ -9,9 +9,12 @@ import numpy as np
 from go_attack.go import Color, Game
 
 BOARD_LEN = 19
+CAPTURE_GROUP_SIZE_THRESHOLD = 20
 
-adv_names = ["adv"]
-victim_names = ["victim", "b18-"]
+# Substrings that appear uniquely in adversaries' and victims' names and are
+# used to identify which player is the adversary.
+ADVERSARY_NAME_SUBSTRINGS = ["adv"]
+VICTIM_NAME_SUBSTRINGS = ["victim", "b18-"]
 
 
 def get_sgf_property(property_name: str, sgf_string: str) -> str:
@@ -74,9 +77,9 @@ def main():
     args = parser.parse_args()
 
     cycle_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
-    adv_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
+    adversary_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
     victim_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
-    interior_adv_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
+    interior_adversary_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
     interior_victim_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
     num_cycles = 0
     for path in args.files:
@@ -84,33 +87,38 @@ def main():
             sgf_files = [path]
         else:
             sgf_files = itertools.chain(path.glob("**/*.sgf"), path.glob("**/*.sgfs"))
+
         for sgf_file in sgf_files:
             for sgf_string in open(sgf_file):
+
+                # Filter for games with the correct board size and with the
+                # adversary winning.
                 if int(get_sgf_property("SZ", sgf_string)) != BOARD_LEN:
                     continue
-
                 b_name = get_sgf_property("PB", sgf_string)
                 w_name = get_sgf_property("PW", sgf_string)
                 winner = get_sgf_property("RE", sgf_string)[0]
-                adv_is_w = False
-                adv_is_b = False
-                for name in adv_names:
+                adversary_is_w = False
+                adversary_is_b = False
+                for name in ADVERSARY_NAME_SUBSTRINGS:
                     if name in b_name:
-                        adv_is_b = True
+                        adversary_is_b = True
                     if name in w_name:
-                        adv_is_w = True
-                for name in victim_names:
+                        adversary_is_w = True
+                for name in VICTIM_NAME_SUBSTRINGS:
                     if name in b_name:
-                        adv_is_w = True
+                        adversary_is_w = True
                     if name in w_name:
-                        adv_is_b = True
+                        adversary_is_b = True
                 assert (
-                    adv_is_w != adv_is_b
+                    adversary_is_w != adversary_is_b
                 ), f"Couldn't determine adversary: {b_name} vs. {w_name}"
-                adv_win = (adv_is_b and winner == "B") or (adv_is_w and winner == "W")
-                if not adv_win:
+                adversary_win = (adversary_is_b and winner == "B") or (
+                    adversary_is_w and winner == "W"
+                )
+                if not adversary_win:
                     continue
-                adv_color = Color.BLACK if adv_is_b else Color.WHITE
+                adversary_color = Color.BLACK if adversary_is_b else Color.WHITE
 
                 game = Game.from_sgf(sgf_string)
 
@@ -118,20 +126,33 @@ def main():
                     zip(game.board_states, game.board_states[1:])
                 ):
                     player_color = Color.BLACK if i % 2 == 0 else Color.WHITE
-                    if player_color != adv_color:
+                    if player_color != adversary_color:
                         continue
+                    # Check for captures by diffing the previous board with the
+                    # current board.
                     opponent_color = player_color.opponent()
                     opponent_stones = prev_board == opponent_color.value
                     empty_points = board == Color.EMPTY.value
                     captured_stones = empty_points & opponent_stones
-                    if np.count_nonzero(captured_stones) > 20:
-                        num_cycles += 1
-                        interior = get_cycle_interior(captured_stones)
 
+                    # When the adversary captures lots of victim stones and the
+                    # victim stones enclose at least one empty or adversary
+                    # square, we guess that it's capturing a cyclic group.
+                    if np.count_nonzero(captured_stones) >= CAPTURE_GROUP_SIZE_THRESHOLD:
+                        interior = get_cycle_interior(captured_stones)
                         interior_points = interior.nonzero()
                         if len(interior_points[0]) == 0:
                             continue
-                        # Flip cyclic group so that it's in the top-left corner
+
+                        num_cycles += 1
+
+                        # To get rid of some symmetries, flip cyclic group so
+                        # that it's in the top-left corner.
+                        # (There are still two symmetries that this doesn't
+                        # distinguish since you can flip the board diagonally
+                        # and keep the cyclic group in the top-left. This also
+                        # doesn't get rid of symmetries if the cyclic group is
+                        # in the center of the board.)
                         interior_centroid = np.average(interior.nonzero(), axis=1)
                         for axis, coord in enumerate(interior_centroid):
                             if coord > BOARD_LEN / 2:
@@ -139,31 +160,31 @@ def main():
                                 captured_stones = np.flip(captured_stones, axis)
                                 interior = np.flip(interior, axis)
 
-                        adv_stones = board == player_color.value
+                        adversary_stones = board == player_color.value
                         victim_stones = board == opponent_color.value
-                        interior_adv_stones = interior & adv_stones
+                        interior_adversary_stones = interior & adversary_stones
                         interior_victim_stones = interior & victim_stones
 
                         cycle_heatmap += captured_stones
-                        adv_heatmap += adv_stones
+                        adversary_heatmap += adversary_stones
                         victim_heatmap += victim_stones
-                        interior_adv_heatmap += interior_adv_stones
+                        interior_adversary_heatmap += interior_adversary_stones
                         interior_victim_heatmap += interior_victim_stones
 
                         break
 
     fig, axs = plt.subplots(3, 2)
 
-    def plot_data(x, y, data, title):
-        ax = axs[x, y]
+    def plot_data(figure_row, figure_column, data, title):
+        ax = axs[figure_row, figure_column]
         im = ax.imshow(data / num_cycles, cmap="hot", interpolation="nearest", vmax=1.0)
         ax.title.set_text(title)
         return im
 
     plot_data(0, 0, cycle_heatmap, "Cyclic group")
     axs[0, 1].axis("off")
-    plot_data(1, 0, adv_heatmap, "Adversary stones")
-    plot_data(1, 1, interior_adv_heatmap, "Interior adversary stones")
+    plot_data(1, 0, adversary_heatmap, "Adversary stones")
+    plot_data(1, 1, interior_adversary_heatmap, "Interior adversary stones")
     plot_data(2, 0, victim_heatmap, "Victim stones")
     im = plot_data(2, 1, interior_victim_heatmap, "Interior victim stones")
     for _, ax in np.ndenumerate(axs):
@@ -185,5 +206,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # import cProfile
-    # cProfile.run('main()', sort='cumtime')
