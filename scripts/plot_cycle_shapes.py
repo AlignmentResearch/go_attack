@@ -37,9 +37,9 @@ def get_cycle_interior(cyclic_group: np.ndarray) -> np.ndarray:
     Returns:
         Boolean map of points inside the cyclic group.
     """
+    ADJACENCIES = [[0, -1], [0, 1], [-1, 0], [1, 0]]
     visited = np.zeros_like(cyclic_group, dtype=bool)
     interior = ~cyclic_group
-    adjacencies = [[0, -1], [0, 1], [-1, 0], [1, 0]]
     x_max, y_max = cyclic_group.shape
 
     # Any point that has a path that reaches the edge of the board without
@@ -195,7 +195,6 @@ def main():
                         victim_heatmap += victim_stones
                         interior_adversary_heatmap += interior_adversary_stones
                         interior_victim_heatmap += interior_victim_stones
-
                         break
 
     fig, axs = plt.subplots(3, 2)
