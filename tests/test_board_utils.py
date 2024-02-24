@@ -1,4 +1,5 @@
 """Unit tests for the `board_utils` module."""
+
 from itertools import product
 
 import pytest
