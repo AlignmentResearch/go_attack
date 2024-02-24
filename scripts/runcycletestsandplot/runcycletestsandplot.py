@@ -306,7 +306,7 @@ def main(temp_config_file):
         for move_info in response["moveInfos"]:
             weight_total += move_info["weight"]
 
-        for (_, coord) in moves:
+        for _, coord in moves:
             if coord is None:
                 pos = board_at_setup.side * board_at_setup.side  # pass
             else:
@@ -516,7 +516,7 @@ def main(temp_config_file):
 
         for model_name in model_names:
             ax.axvline(x=model_name, linestyle="-", color="lightgray", alpha=0.5)
-        for (y, _label) in yticks:
+        for y, _label in yticks:
             ax.axhline(y=ytoplot(y), linestyle="-", color="lightgray", alpha=0.5)
 
         # plt.show()
