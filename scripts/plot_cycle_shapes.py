@@ -42,7 +42,6 @@ def get_cycle_interior(cyclic_group: np.ndarray) -> np.ndarray:
     adjacencies = [[0, -1], [0, 1], [-1, 0], [1, 0]]
     x_max, y_max = cyclic_group.shape
 
-
     # Any point that has a path that reaches the edge of the board without
     # intersecting with the cyclic group is not interior. We DFS to find these
     # non-interior points.
@@ -146,8 +145,8 @@ def main():
 
                 game = Game.from_sgf(sgf_string)
 
-                # For each move, check for a capture by diffing the previous board with the
-                # current board.
+                # For each move, check for a capture by diffing the previous
+                # board with the current board.
                 #
                 # The victim can suicide its cyclic group, so we need to check
                 # all moves, not just the adversary's moves, for a capture.
