@@ -4,8 +4,7 @@ import itertools
 import re
 from pathlib import Path
 
-import matplotlib.cm
-import matplotlib.colors
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
@@ -195,7 +194,7 @@ def main():
 
     fig, axs = plt.subplots(3, 2)
 
-    color_map = matplotlib.cm.get_cmap("hot")
+    color_map = matplotlib.colormaps.get_cmap("hot")
     normalizer = matplotlib.colors.Normalize(vmin=0, vmax=1)
 
     def plot_data(figure_row, figure_column, data, title):
