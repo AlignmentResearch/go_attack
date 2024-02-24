@@ -58,7 +58,7 @@ def get_cycle_interior(cyclic_group: np.ndarray) -> np.ndarray:
         ):
             interior[x, y] = False
 
-        for x_inc, y_inc in adjacencies:
+        for x_inc, y_inc in ADJACENCIES:
             x_new = x + x_inc
             y_new = y + y_inc
             if (
