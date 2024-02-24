@@ -1,4 +1,5 @@
 """Plots cycle shapes captured in adversarial Go games."""
+
 import argparse
 import itertools
 import re
