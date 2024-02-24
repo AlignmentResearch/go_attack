@@ -14,6 +14,8 @@ from tqdm import tqdm
 from go_attack.go import Color, Game
 
 BOARD_LEN = 19
+# When this many stones or more are captured in one move, we check if it's a
+# cyclic group.
 CAPTURE_GROUP_SIZE_THRESHOLD = 20
 
 # Substrings that appear uniquely in adversaries' and victims' names and are
