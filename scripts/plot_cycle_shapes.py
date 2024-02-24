@@ -4,6 +4,7 @@ import argparse
 import itertools
 import re
 from pathlib import Path
+from typing import Iterable, Iterator, Optional, Tuple
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -81,6 +82,191 @@ def get_cycle_interior(cyclic_group: np.ndarray) -> np.ndarray:
     return interior
 
 
+def get_sgfs(paths: Iterable[Path]) -> Iterator[str]:
+    """Yields all SGF games in the input files.
+
+    Args:
+        paths: List of paths where each path is an SGF file or a directory to
+            recursively search for SGF files. Each SGF is assumed to be a single
+            line.
+
+    Yields:
+        SGF strings.
+    """
+    for path in paths:
+        if path.suffix in [".sgf", ".sgfs", ".txt"]:
+            sgf_files = [path]
+        else:
+            sgf_files = itertools.chain(path.glob("**/*.sgf"), path.glob("**/*.sgfs"))
+
+    for sgf_file in sgf_files:
+        for sgf_string in open(sgf_file):
+            yield sgf_string
+
+
+def get_adversary_win_color(sgf_string: str) -> Optional[Color]:
+    """Returns adversary color if the adversary wins, else returns None."""
+    b_name = get_sgf_property("PB", sgf_string)
+    w_name = get_sgf_property("PW", sgf_string)
+    winner = get_sgf_property("RE", sgf_string)[0]
+    adversary_is_w = False
+    adversary_is_b = False
+    for name in ADVERSARY_NAME_SUBSTRINGS:
+        if name in b_name:
+            adversary_is_b = True
+        if name in w_name:
+            adversary_is_w = True
+    for name in VICTIM_NAME_SUBSTRINGS:
+        if name in b_name:
+            adversary_is_w = True
+        if name in w_name:
+            adversary_is_b = True
+    assert (
+        adversary_is_w != adversary_is_b
+    ), f"Couldn't determine adversary: {b_name} vs. {w_name}"
+    adversary_win = (adversary_is_b and winner == "B") or (
+        adversary_is_w and winner == "W"
+    )
+    if not adversary_win:
+        return None
+    return Color.BLACK if adversary_is_b else Color.WHITE
+
+
+def get_cyclic_capture(
+    sgf_string: str,
+    adversary_color: Color,
+) -> Optional[Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]]:
+    """Finds cyclic capture in a game and returns some board data about it.
+
+    Args:
+        sgf_string: The game to search for a cyclic capture.
+        adversary_color: The color of the adversary.
+
+    Returns:
+        None if no cyclic capture is found, otherwise a tuple of the following
+        board properties computed immediately after the capture:
+            cyclic_group: Boolean map of cyclic group points.
+            adversary_stones: Boolean map of adversary stones.
+            victim_stones: Boolean map of victim stones.
+            interior_adversary_stones: Boolean map of adversary stones inside
+                the cyclic group.
+            interior_victim_stones: Boolean map of victim stones inside the
+                cyclic group.
+
+    """
+    victim_color = adversary_color.opponent()
+    game = Game.from_sgf(sgf_string)
+
+    # For each move, check for a capture by diffing the previous board with the
+    # current board.
+    #
+    # The victim can suicide its cyclic group, so we need to check all moves,
+    # not just the adversary's moves, for a capture.
+    for i, (prev_board, board) in enumerate(
+        zip(game.board_states, game.board_states[1:]),
+    ):
+        victim_stones = prev_board == victim_color.value
+        empty_points = board == Color.EMPTY.value
+        captured_stones = empty_points & victim_stones
+
+        # When the adversary captures lots of victim stones and the victim
+        # stones enclose at least one empty or adversary square, we guess that
+        # it's capturing a cyclic group.
+        if np.count_nonzero(captured_stones) < CAPTURE_GROUP_SIZE_THRESHOLD:
+            continue
+        interior = get_cycle_interior(captured_stones)
+        interior_points = interior.nonzero()
+        if len(interior_points[0]) == 0:
+            continue
+
+        # To get rid of some symmetries, flip cyclic group so that it's in
+        # the top-left corner. (There are still two symmetries that this
+        # doesn't distinguish since you can flip the board diagonally and
+        # keep the cyclic group in the top-left. This also doesn't get rid
+        # of symmetries if the cyclic group is near the center of either the
+        # x or y axis.)
+        interior_centroid = np.average(interior.nonzero(), axis=1)
+        for axis, coord in enumerate(interior_centroid):
+            if coord > BOARD_LEN / 2:
+                board = np.flip(board, axis)
+                captured_stones = np.flip(captured_stones, axis)
+                interior = np.flip(interior, axis)
+
+        adversary_stones = board == adversary_color.value
+        victim_stones = board == victim_color.value
+        interior_adversary_stones = interior & adversary_stones
+        interior_victim_stones = interior & victim_stones
+
+        return (
+            captured_stones,
+            adversary_stones,
+            victim_stones,
+            interior_adversary_stones,
+            interior_victim_stones,
+        )
+    return None
+
+
+def plot_heat_maps(
+    plot_title: str,
+    num_cycles: int,
+    cycle_heat_map: np.ndarray,
+    adversary_heat_map: np.ndarray,
+    victim_heat_map: np.ndarray,
+    interior_adversary_heat_map: np.ndarray,
+    interior_victim_heat_map: np.ndarray,
+    output_path: Optional[Path],
+) -> None:
+    """Plots heat maps about cyclic capture data.
+
+    Args:
+        plot_title: Title of the whole plot.
+        num_cycles: Number of cycles to normalize the heat maps by.
+        cycle_heat_map: Heat map of cyclic group points.
+        adversary_heat_map: Heat map of adversary stones.
+        victim_heat_map: Heat map of victim stones.
+        interior_adversary_heat_map: Heat map of adversary stones inside the
+            cyclic group.
+        interior_victim_heat_map: Heat map of victim stones inside the cyclic
+            group.
+        output_path: If None the plot will be shown and not saved, otherwise
+            the plot is saved to this path.
+    """
+    fig, axs = plt.subplots(3, 2)
+
+    color_map = matplotlib.colormaps.get_cmap("hot")
+    normalizer = matplotlib.colors.Normalize(vmin=0, vmax=1)
+
+    def plot_data(figure_row, figure_column, data, title):
+        ax = axs[figure_row, figure_column]
+        ax.imshow(data / num_cycles, cmap=color_map, norm=normalizer)
+        ax.title.set_text(title)
+
+    plot_data(0, 0, cycle_heat_map, "Cyclic group")
+    axs[0, 1].axis("off")  # Unused plot space
+    plot_data(1, 0, adversary_heat_map, "Adversary stones")
+    plot_data(1, 1, interior_adversary_heat_map, "Interior adversary stones")
+    plot_data(2, 0, victim_heat_map, "Victim stones")
+    plot_data(2, 1, interior_victim_heat_map, "Interior victim stones")
+    for _, ax in np.ndenumerate(axs):
+        ax.set_xticks(range(0, BOARD_LEN, 5))
+        ax.set_yticks(range(0, BOARD_LEN, 5))
+        ax.set_xticks(range(BOARD_LEN), minor=True)
+        ax.set_yticks(range(BOARD_LEN), minor=True)
+        ax.xaxis.set_ticks_position("both")
+        ax.yaxis.set_ticks_position("both")
+    fig.suptitle(f"{plot_title}, sample size of {num_cycles}")
+    fig.tight_layout()
+
+    color_bar_info = matplotlib.cm.ScalarMappable(cmap=color_map, norm=normalizer)
+    fig.colorbar(color_bar_info, ax=axs, location="left")
+
+    if output_path is None:
+        plt.show()
+    else:
+        fig.savefig(output_path)
+
+
 def main():
     """Script entrypoint."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -98,138 +284,43 @@ def main():
     )
     args = parser.parse_args()
 
-    cycle_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
-    adversary_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
-    victim_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
-    interior_adversary_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
-    interior_victim_heatmap = np.zeros((BOARD_LEN, BOARD_LEN))
     num_cycles = 0
-    for path in args.files:
-        if ".sgf" in path.suffix:
-            sgf_files = [path]
-        else:
-            sgf_files = itertools.chain(path.glob("**/*.sgf"), path.glob("**/*.sgfs"))
+    cycle_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
+    adversary_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
+    victim_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
+    interior_adversary_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
+    interior_victim_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
+    for sgf_string in tqdm(list(get_sgfs(args.files))):
+        if int(get_sgf_property("SZ", sgf_string)) != BOARD_LEN:
+            continue
+        adversary_color = get_adversary_win_color(sgf_string)
+        if adversary_color is None:
+            continue
+        capture_data = get_cyclic_capture(sgf_string, adversary_color)
+        if capture_data is None:
+            # It's not necessarily a problem if we do not detect a cyclic
+            # capture. The victim may have resigned, or in match and victimplay,
+            # the game can end due to BoardHistory::endGameIfAllPassAlive()
+            # firing in KataGo's play.cpp.
+            continue
 
-        for sgf_file in tqdm(list(sgf_files), leave=False):
-            for sgf_string in tqdm(open(sgf_file).readlines(), leave=False):
+        num_cycles += 1
+        cycle_heat_map += capture_data[0]
+        adversary_heat_map += capture_data[1]
+        victim_heat_map += capture_data[2]
+        interior_adversary_heat_map += capture_data[3]
+        interior_victim_heat_map += capture_data[4]
 
-                # Filter for games with the correct board size and with the
-                # adversary winning.
-                if int(get_sgf_property("SZ", sgf_string)) != BOARD_LEN:
-                    continue
-                b_name = get_sgf_property("PB", sgf_string)
-                w_name = get_sgf_property("PW", sgf_string)
-                winner = get_sgf_property("RE", sgf_string)[0]
-                adversary_is_w = False
-                adversary_is_b = False
-                for name in ADVERSARY_NAME_SUBSTRINGS:
-                    if name in b_name:
-                        adversary_is_b = True
-                    if name in w_name:
-                        adversary_is_w = True
-                for name in VICTIM_NAME_SUBSTRINGS:
-                    if name in b_name:
-                        adversary_is_w = True
-                    if name in w_name:
-                        adversary_is_b = True
-                assert (
-                    adversary_is_w != adversary_is_b
-                ), f"Couldn't determine adversary: {b_name} vs. {w_name}"
-                adversary_win = (adversary_is_b and winner == "B") or (
-                    adversary_is_w and winner == "W"
-                )
-                if not adversary_win:
-                    continue
-                adversary_color = Color.BLACK if adversary_is_b else Color.WHITE
-                victim_color = adversary_color.opponent()
-
-                game = Game.from_sgf(sgf_string)
-
-                # For each move, check for a capture by diffing the previous
-                # board with the current board.
-                #
-                # The victim can suicide its cyclic group, so we need to check
-                # all moves, not just the adversary's moves, for a capture.
-                for i, (prev_board, board) in enumerate(
-                    zip(game.board_states, game.board_states[1:]),
-                ):
-                    victim_stones = prev_board == victim_color.value
-                    empty_points = board == Color.EMPTY.value
-                    captured_stones = empty_points & victim_stones
-
-                    # When the adversary captures lots of victim stones and the
-                    # victim stones enclose at least one empty or adversary
-                    # square, we guess that it's capturing a cyclic group.
-                    if (
-                        np.count_nonzero(captured_stones)
-                        >= CAPTURE_GROUP_SIZE_THRESHOLD
-                    ):
-                        interior = get_cycle_interior(captured_stones)
-                        interior_points = interior.nonzero()
-                        if len(interior_points[0]) == 0:
-                            continue
-
-                        num_cycles += 1
-
-                        # To get rid of some symmetries, flip cyclic group so
-                        # that it's in the top-left corner.
-                        # (There are still two symmetries that this doesn't
-                        # distinguish since you can flip the board diagonally
-                        # and keep the cyclic group in the top-left. This also
-                        # doesn't get rid of symmetries if the cyclic group is
-                        # near the center of either the x or y axis.)
-                        interior_centroid = np.average(interior.nonzero(), axis=1)
-                        for axis, coord in enumerate(interior_centroid):
-                            if coord > BOARD_LEN / 2:
-                                board = np.flip(board, axis)
-                                captured_stones = np.flip(captured_stones, axis)
-                                interior = np.flip(interior, axis)
-
-                        adversary_stones = board == adversary_color.value
-                        victim_stones = board == victim_color.value
-                        interior_adversary_stones = interior & adversary_stones
-                        interior_victim_stones = interior & victim_stones
-
-                        cycle_heatmap += captured_stones
-                        adversary_heatmap += adversary_stones
-                        victim_heatmap += victim_stones
-                        interior_adversary_heatmap += interior_adversary_stones
-                        interior_victim_heatmap += interior_victim_stones
-                        break
-
-    fig, axs = plt.subplots(3, 2)
-
-    color_map = matplotlib.colormaps.get_cmap("hot")
-    normalizer = matplotlib.colors.Normalize(vmin=0, vmax=1)
-
-    def plot_data(figure_row, figure_column, data, title):
-        ax = axs[figure_row, figure_column]
-        ax.imshow(data / num_cycles, cmap=color_map, norm=normalizer)
-        ax.title.set_text(title)
-
-    plot_data(0, 0, cycle_heatmap, "Cyclic group")
-    axs[0, 1].axis("off")  # Unused plot space
-    plot_data(1, 0, adversary_heatmap, "Adversary stones")
-    plot_data(1, 1, interior_adversary_heatmap, "Interior adversary stones")
-    plot_data(2, 0, victim_heatmap, "Victim stones")
-    plot_data(2, 1, interior_victim_heatmap, "Interior victim stones")
-    for _, ax in np.ndenumerate(axs):
-        ax.set_xticks(range(0, BOARD_LEN, 5))
-        ax.set_yticks(range(0, BOARD_LEN, 5))
-        ax.set_xticks(range(BOARD_LEN), minor=True)
-        ax.set_yticks(range(BOARD_LEN), minor=True)
-        ax.xaxis.set_ticks_position("both")
-        ax.yaxis.set_ticks_position("both")
-    fig.suptitle(f"{args.title}, sample size of {num_cycles}")
-    fig.tight_layout()
-
-    color_bar_info = matplotlib.cm.ScalarMappable(cmap=color_map, norm=normalizer)
-    fig.colorbar(color_bar_info, ax=axs, location="left")
-
-    if args.output is None:
-        plt.show()
-    else:
-        fig.savefig(args.output)
+    plot_heat_maps(
+        plot_title=args.title,
+        num_cycles=num_cycles,
+        cycle_heat_map=cycle_heat_map,
+        adversary_heat_map=adversary_heat_map,
+        victim_heat_map=victim_heat_map,
+        interior_adversary_heat_map=interior_adversary_heat_map,
+        interior_victim_heat_map=interior_victim_heat_map,
+        output_path=args.output,
+    )
 
 
 if __name__ == "__main__":
