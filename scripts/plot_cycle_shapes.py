@@ -17,7 +17,7 @@ CAPTURE_GROUP_SIZE_THRESHOLD = 20
 
 # Substrings that appear uniquely in adversaries' and victims' names and are
 # used to identify which player is the adversary.
-ADVERSARY_NAME_SUBSTRINGS = ["adv"]
+ADVERSARY_NAME_SUBSTRINGS = ["adv", "attack"] + [f"r{i}-v600" for i in range(10)]
 VICTIM_NAME_SUBSTRINGS = ["victim", "b18-"]
 
 
@@ -106,7 +106,7 @@ def main():
             sgf_files = itertools.chain(path.glob("**/*.sgf"), path.glob("**/*.sgfs"))
 
         for sgf_file in tqdm(list(sgf_files), leave=False):
-            for sgf_string in tqdm(open(sgf_file), leave=False):
+            for sgf_string in tqdm(open(sgf_file).readlines(), leave=False):
 
                 # Filter for games with the correct board size and with the
                 # adversary winning.
