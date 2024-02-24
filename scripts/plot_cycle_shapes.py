@@ -42,18 +42,22 @@ def get_cycle_interior(cyclic_group: np.ndarray) -> np.ndarray:
     adjacencies = [[0, -1], [0, 1], [-1, 0], [1, 0]]
     x_max, y_max = cyclic_group.shape
 
-    def dfs(x, y, definitely_not_interior=False):
-        visited[x, y] = True
 
+    # Any point that has a path that reaches the edge of the board without
+    # intersecting with the cyclic group is not interior. We DFS to find these
+    # non-interior points.
+    def dfs(x, y, previous_square=None):
+        visited[x, y] = True
+        # Checking interior[previous_square] handles the case where a previously
+        # traversed square found a path to the edge of the board.
         if (
-            definitely_not_interior
+            (previous_square is not None and not interior[previous_square])
             or x == 0
             or y == 0
             or x == x_max - 1
             or y == y_max - 1
         ):
             interior[x, y] = False
-            definitely_not_interior = True
 
         for x_inc, y_inc in adjacencies:
             x_new = x + x_inc
@@ -65,7 +69,9 @@ def get_cycle_interior(cyclic_group: np.ndarray) -> np.ndarray:
             ):
                 continue
             if not visited[x_new, y_new]:
-                dfs(x_new, y_new, definitely_not_interior=definitely_not_interior)
+                dfs(x_new, y_new, previous_square=(x, y))
+            # Checking interior[x_new, y_new] handles the case where a
+            # subsequently traversed square finds a path to the edge of the board.
             if not interior[x_new, y_new]:
                 interior[x, y] = False
 
@@ -136,21 +142,21 @@ def main():
                 if not adversary_win:
                     continue
                 adversary_color = Color.BLACK if adversary_is_b else Color.WHITE
+                victim_color = adversary_color.opponent()
 
                 game = Game.from_sgf(sgf_string)
 
+                # For each move, check for a capture by diffing the previous board with the
+                # current board.
+                #
+                # The victim can suicide its cyclic group, so we need to check
+                # all moves, not just the adversary's moves, for a capture.
                 for i, (prev_board, board) in enumerate(
                     zip(game.board_states, game.board_states[1:]),
                 ):
-                    player_color = Color.BLACK if i % 2 == 0 else Color.WHITE
-                    if player_color != adversary_color:
-                        continue
-                    # Check for captures by diffing the previous board with the
-                    # current board.
-                    opponent_color = player_color.opponent()
-                    opponent_stones = prev_board == opponent_color.value
+                    victim_stones = prev_board == victim_color.value
                     empty_points = board == Color.EMPTY.value
-                    captured_stones = empty_points & opponent_stones
+                    captured_stones = empty_points & victim_stones
 
                     # When the adversary captures lots of victim stones and the
                     # victim stones enclose at least one empty or adversary
@@ -172,7 +178,7 @@ def main():
                         # distinguish since you can flip the board diagonally
                         # and keep the cyclic group in the top-left. This also
                         # doesn't get rid of symmetries if the cyclic group is
-                        # in the center of the board.)
+                        # near the center of either the x or y axis.)
                         interior_centroid = np.average(interior.nonzero(), axis=1)
                         for axis, coord in enumerate(interior_centroid):
                             if coord > BOARD_LEN / 2:
@@ -180,8 +186,8 @@ def main():
                                 captured_stones = np.flip(captured_stones, axis)
                                 interior = np.flip(interior, axis)
 
-                        adversary_stones = board == player_color.value
-                        victim_stones = board == opponent_color.value
+                        adversary_stones = board == adversary_color.value
+                        victim_stones = board == victim_color.value
                         interior_adversary_stones = interior & adversary_stones
                         interior_victim_stones = interior & victim_stones
 
