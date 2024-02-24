@@ -302,8 +302,7 @@ def main():
         if capture_data is None:
             # It's not necessarily a problem if we do not detect a cyclic
             # capture. The victim may have resigned, or in match and victimplay,
-            # the game can end due to BoardHistory::endGameIfAllPassAlive()
-            # firing in KataGo's play.cpp.
+            # the game can end due to BoardHistory::endGameIfAllPassAlive().
             continue
 
         num_cycles += 1
