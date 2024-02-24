@@ -269,6 +269,7 @@ def get_heat_maps(paths: Iterable[Path]) -> Tuple[int, np.ndarray]:
 
 def plot_heat_maps(
     heat_maps: np.ndarray,
+    is_diff: bool,
     plot_title: str,
     output_path: Optional[Path],
 ) -> None:
@@ -276,6 +277,8 @@ def plot_heat_maps(
 
     Args:
         heat_maps: Heat maps from get_heat_maps().
+        is_diff: If True, the heat maps are a diff and have a range of [-1, 1].
+            Otherwise they have a range of [0, 1].
         plot_title: Title of the whole plot.
         output_path: If None the plot will be shown and not saved, otherwise
             the plot is saved to this path.
@@ -288,8 +291,13 @@ def plot_heat_maps(
 
     fig, axs = plt.subplots(3, 2)
 
-    color_map = matplotlib.colormaps.get_cmap("hot")
-    normalizer = matplotlib.colors.Normalize(vmin=0, vmax=1)
+    if is_diff:
+        color_map = matplotlib.colormaps.get_cmap("RdBu")
+        vmin = -1
+    else:
+        color_map = matplotlib.colormaps.get_cmap("Blues")
+        vmin = 0
+    normalizer = matplotlib.colors.Normalize(vmin=vmin, vmax=1)
 
     def plot_data(figure_row, figure_column, data, title):
         ax = axs[figure_row, figure_column]
@@ -336,13 +344,32 @@ def main():
         type=Path,
         help="Output file. If not specified, the plot will be shown and not saved.",
     )
+    parser.add_argument(
+        "--diff-files",
+        type=Path,
+        nargs="+",
+        help=(
+            "Files to compare with the input files. If specified, the heat "
+            "maps will be a diff of [heat maps for files arg] minus [heat maps "
+            "for --diff-files arg]."
+        ),
+    )
     args = parser.parse_args()
 
     num_samples, heat_maps = get_heat_maps(args.files)
+    plot_title = args.title
+
+    is_diff = args.diff_files is not None
+    if is_diff:
+        _, other_heat_maps = get_heat_maps(args.diff_files)
+        heat_maps -= other_heat_maps
+    else:
+        plot_title += f", sample size of {num_samples}"
 
     plot_heat_maps(
         heat_maps=heat_maps,
-        plot_title=f"{args.title}, sample size of {num_samples}",
+        is_diff=is_diff,
+        plot_title=plot_title,
         output_path=args.output,
     )
 
