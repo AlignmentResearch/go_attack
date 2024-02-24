@@ -94,7 +94,7 @@ def main():
     parser.add_argument(
         "--output",
         type=Path,
-        help="Output file. If not specified, the plot will be shown aand not saved.",
+        help="Output file. If not specified, the plot will be shown and not saved.",
     )
     args = parser.parse_args()
 
