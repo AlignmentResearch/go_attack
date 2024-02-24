@@ -209,14 +209,54 @@ def get_cyclic_capture(
     return None
 
 
+def get_heat_maps(
+    files: Iterable[Path],
+) -> Optional[Tuple[int, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]]:
+    """Computes heat maps about cyclic captures."""
+    num_cycles = 0
+    cycle_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
+    adversary_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
+    victim_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
+    interior_adversary_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
+    interior_victim_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
+    for sgf_string in tqdm(list(get_sgfs(files))):
+        if int(get_sgf_property("SZ", sgf_string)) != BOARD_LEN:
+            continue
+        adversary_color = get_adversary_win_color(sgf_string)
+        if adversary_color is None:
+            # Skip games that the adversary loses.
+            continue
+        capture_data = get_cyclic_capture(sgf_string, adversary_color)
+        if capture_data is None:
+            # It's not necessarily a problem if we do not detect a cyclic
+            # capture. The victim may have resigned, or in match and victimplay,
+            # the game can end due to BoardHistory::endGameIfAllPassAlive().
+            continue
+
+        num_cycles += 1
+        cycle_heat_map += capture_data[0]
+        adversary_heat_map += capture_data[1]
+        victim_heat_map += capture_data[2]
+        interior_adversary_heat_map += capture_data[3]
+        interior_victim_heat_map += capture_data[4]
+    return (
+        num_cycles,
+        cycle_heat_map,
+        adversary_heat_map,
+        victim_heat_map,
+        interior_adversary_heat_map,
+        interior_victim_heat_map,
+    )
+
+
 def plot_heat_maps(
-    plot_title: str,
     num_cycles: int,
     cycle_heat_map: np.ndarray,
     adversary_heat_map: np.ndarray,
     victim_heat_map: np.ndarray,
     interior_adversary_heat_map: np.ndarray,
     interior_victim_heat_map: np.ndarray,
+    plot_title: str,
     output_path: Optional[Path],
 ) -> None:
     """Plots heat maps about cyclic capture data.
@@ -286,40 +326,11 @@ def main():
     )
     args = parser.parse_args()
 
-    num_cycles = 0
-    cycle_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
-    adversary_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
-    victim_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
-    interior_adversary_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
-    interior_victim_heat_map = np.zeros((BOARD_LEN, BOARD_LEN))
-    for sgf_string in tqdm(list(get_sgfs(args.files))):
-        if int(get_sgf_property("SZ", sgf_string)) != BOARD_LEN:
-            continue
-        adversary_color = get_adversary_win_color(sgf_string)
-        if adversary_color is None:
-            continue
-        capture_data = get_cyclic_capture(sgf_string, adversary_color)
-        if capture_data is None:
-            # It's not necessarily a problem if we do not detect a cyclic
-            # capture. The victim may have resigned, or in match and victimplay,
-            # the game can end due to BoardHistory::endGameIfAllPassAlive().
-            continue
-
-        num_cycles += 1
-        cycle_heat_map += capture_data[0]
-        adversary_heat_map += capture_data[1]
-        victim_heat_map += capture_data[2]
-        interior_adversary_heat_map += capture_data[3]
-        interior_victim_heat_map += capture_data[4]
+    heat_map_data = get_heat_maps(args.files)
 
     plot_heat_maps(
+        *heat_map_data,
         plot_title=args.title,
-        num_cycles=num_cycles,
-        cycle_heat_map=cycle_heat_map,
-        adversary_heat_map=adversary_heat_map,
-        victim_heat_map=victim_heat_map,
-        interior_adversary_heat_map=interior_adversary_heat_map,
-        interior_victim_heat_map=interior_victim_heat_map,
         output_path=args.output,
     )
 
