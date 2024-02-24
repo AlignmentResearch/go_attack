@@ -38,9 +38,20 @@ def sgfmill_to_str(coord):
 
 
 class KataGo:
-    def __init__(self, name, katago_path, config_paths, model_path, override_config):
+    def __init__(
+        self,
+        name,
+        katago_path,
+        config_paths,
+        model_path,
+        override_config,
+        override_komi,
+        rules,
+    ):
         self.name = name
         self.query_counter = 0
+        self.override_komi = override_komi
+        self.rules = rules
 
         command = [
             katago_path,
@@ -89,8 +100,8 @@ class KataGo:
                 color = initial_board.get(y, x)
                 if color:
                     query["initialStones"].append((color, sgfmill_to_str((y, x))))
-        query["rules"] = "Chinese"
-        query["komi"] = komi
+        query["rules"] = self.rules
+        query["komi"] = komi if self.override_komi is None else self.override_komi
         query["boardXSize"] = initial_board.side
         query["boardYSize"] = initial_board.side
         query["includePolicy"] = True
@@ -256,6 +267,25 @@ def main(temp_config_file):
         default="",
     )
     parser.add_argument(
+        "--override-komi",
+        help=(
+            "Value with which to override the games' komi. This argument may "
+            "be useful when evaluating a model that was only trained on one "
+            "komi, but there is no guarantee that the games still make sense "
+            "when their komis are changed."
+        ),
+        type=float,
+    )
+    parser.add_argument(
+        "--rules",
+        help=(
+            "Go rules to use. The original script used Chinese rules. There is "
+            "no guarantee the games still make sense with other rules."
+        ),
+        type=str,
+        default="Chinese",
+    )
+    parser.add_argument(
         "--visits",
         help="Number of visits to use for search",
         type=int,
@@ -295,6 +325,8 @@ def main(temp_config_file):
                 configs,
                 model_path,
                 args.override_config,
+                args.override_komi,
+                args.rules,
             )
         )
 
@@ -306,7 +338,7 @@ def main(temp_config_file):
         for move_info in response["moveInfos"]:
             weight_total += move_info["weight"]
 
-        for (_, coord) in moves:
+        for _, coord in moves:
             if coord is None:
                 pos = board_at_setup.side * board_at_setup.side  # pass
             else:
@@ -516,7 +548,7 @@ def main(temp_config_file):
 
         for model_name in model_names:
             ax.axvline(x=model_name, linestyle="-", color="lightgray", alpha=0.5)
-        for (y, _label) in yticks:
+        for y, _label in yticks:
             ax.axhline(y=ytoplot(y), linestyle="-", color="lightgray", alpha=0.5)
 
         # plt.show()
