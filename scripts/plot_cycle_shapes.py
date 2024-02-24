@@ -181,11 +181,11 @@ def get_cyclic_capture(
         if len(interior_points[0]) == 0:
             continue
 
-        # To get rid of some symmetries, flip cyclic group that its center is in
-        # the top-left corner, and flip across the diagonal if the center's row
-        # coordinate is larger than the column coordinate.
+        # To get rid of some symmetries, flip cyclic group so that its center is
+        # in the top-left corner, and flip across the diagonal if the center's
+        # row coordinate is larger than the column coordinate.
         # (It's ambiguous which symmetry to use when the center lies upon an
-        # axis of reflection---we don't try to handle this.)
+        # axis of reflection. We don't attempt to handle this.)
         interior_centroid = np.average(interior.nonzero(), axis=1)
         for axis, coord in enumerate(interior_centroid):
             if coord > BOARD_LEN / 2:
