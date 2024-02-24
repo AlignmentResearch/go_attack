@@ -181,18 +181,23 @@ def get_cyclic_capture(
         if len(interior_points[0]) == 0:
             continue
 
-        # To get rid of some symmetries, flip cyclic group so that it's in
-        # the top-left corner. (There are still two symmetries that this
-        # doesn't distinguish since you can flip the board diagonally and
-        # keep the cyclic group in the top-left. This also doesn't get rid
-        # of symmetries if the cyclic group is near the center of either the
-        # x or y axis.)
+        # To get rid of some symmetries, flip cyclic group that its center is in
+        # the top-left corner, and flip across the diagonal if the center's row
+        # coordinate is larger than the column coordinate.
+        # (It's ambiguous which symmetry to use when the center lies upon an
+        # axis of reflection---we don't try to handle this.)
         interior_centroid = np.average(interior.nonzero(), axis=1)
         for axis, coord in enumerate(interior_centroid):
             if coord > BOARD_LEN / 2:
+                interior_centroid[axis] = BOARD_LEN - 1 - coord
                 board = np.flip(board, axis)
                 captured_stones = np.flip(captured_stones, axis)
                 interior = np.flip(interior, axis)
+        if interior_centroid[0] > interior_centroid[1]:
+            interior_centroid[[0, 1]] = interior_centroid[[1, 0]]
+            board = board.T
+            captured_stones = captured_stones.T
+            interior = interior.T
 
         adversary_stones = board == adversary_color.value
         victim_stones = board == victim_color.value
