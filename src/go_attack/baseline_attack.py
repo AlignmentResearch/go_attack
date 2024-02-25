@@ -1,4 +1,5 @@
 """Functions for running baseline attacks against KataGo."""
+
 import itertools
 import random
 import re

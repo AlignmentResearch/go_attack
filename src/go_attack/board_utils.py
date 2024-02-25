@@ -1,4 +1,5 @@
 """Math functions for manipulating Go vertices."""
+
 import re
 from typing import IO
 

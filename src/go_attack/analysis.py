@@ -1,4 +1,5 @@
 """Utilities for loading and manipulating KataGo analyses."""
+
 import re
 from pathlib import Path
 from typing import Union

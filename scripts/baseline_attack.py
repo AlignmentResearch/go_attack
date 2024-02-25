@@ -179,15 +179,17 @@ def main():  # noqa: D103
     )
 
     configs = list(
-        product(
-            args.policy,
-            model_paths,
-            args.num_visits,
-            args.passing_behavior,
-            args.victim_color,
-        )
-        if args.engine == "katago"
-        else product(args.policy),
+        (
+            product(
+                args.policy,
+                model_paths,
+                args.num_visits,
+                args.passing_behavior,
+                args.victim_color,
+            )
+            if args.engine == "katago"
+            else product(args.policy)
+        ),
     )
 
     if len(configs) > 1:

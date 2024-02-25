@@ -1,4 +1,5 @@
 """Classes implementing hardcoded adversarial policies."""
+
 import random
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
