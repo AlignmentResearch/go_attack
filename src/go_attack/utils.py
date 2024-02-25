@@ -1,4 +1,5 @@
 """Miscellaneous utility functions."""
+
 import ast
 import re
 from pathlib import Path
