@@ -5,6 +5,7 @@ consistency throughout experiments, we should use KataGo scoring everywhere
 (including in experiments where otherwise KataGo isn't involved at all like
 baseline attacks vs. ELF).
 """
+
 import argparse
 import os
 import subprocess
