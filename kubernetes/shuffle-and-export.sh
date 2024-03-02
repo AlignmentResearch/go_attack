@@ -58,6 +58,6 @@ if [ -n "${PRESEED_SRC:-}" ] && [ ! -d "$PRESEED_DST" ]; then
   fi
 fi
 
-cd /engines/KataGo-custom/python
+cd /engines/KataGo-tensorflow/python
 ./selfplay/shuffle_and_export_loop.sh "$RUN_NAME" "$EXPERIMENT_DIR" /tmp 16 256 $USE_GATING "$@"
 sleep infinity

@@ -2,7 +2,9 @@
 
 # Libs needed by KataGo
 psutil
+requests_toolbelt
 scipy
+torch
 
 # Helpful libraries
 gpustat
