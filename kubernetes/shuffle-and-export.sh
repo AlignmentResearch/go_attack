@@ -53,7 +53,7 @@ mkdir --parents "$EXPERIMENT_DIR"/selfplay
 PRESEED_DST="$EXPERIMENT_DIR"/selfplay/prev-selfplay
 if [ -n "${PRESEED_SRC:-}" ] && [ ! -d "$PRESEED_DST" ]; then
   PRESEED_SRC=$(realpath "$PRESEED_SRC")
-  echo "$PRESEED_SRC" > "$EXPERIMENT_DIR"/selfplay/prev-selfplay-$(date +%Y%m%d-%H%M%S).log
+  echo "$PRESEED_SRC" > "$EXPERIMENT_DIR"/selfplay/prev-selfplay-"$(date +%Y%m%d-%H%M%S)".log
   if [[ "$PRESEED_SRC" =~ -s([0-9]+)-d[0-9]+ ]]; then
     # Preseed data up to the step count listed in PRESEED_SRC.
     FINAL_STEP=${BASH_REMATCH[1]}

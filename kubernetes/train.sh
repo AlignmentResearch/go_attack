@@ -31,9 +31,12 @@ else
 fi
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
+EXTRA_FLAGS=""
 if [ -z "$INITIAL_WEIGHTS" ]; then
     echo "No initial weights specified, using random weights"
-else
+elif [ -n "${USE_PYTORCH:-}" ]; then # handle PyTorch initial weights
+    EXTRA_FLAGS="-initial-checkpoint $INITIAL_WEIGHTS/model.ckpt"
+else # handle TensorFlow initial weights
     echo "Using initial weights: $INITIAL_WEIGHTS"
     # The train script will use the model kind specified by the warmstarted
     # model's config. MODEL_KIND is ignored.
@@ -91,4 +94,4 @@ else
     fi
 fi
 
-./selfplay/train.sh "$EXPERIMENT_DIR" t0 "$MODEL_KIND" 256 main -disable-vtimeloss -lr-scale "$LR_SCALE" -max-train-bucket-per-new-data 4
+./selfplay/train.sh "$EXPERIMENT_DIR" t0 "$MODEL_KIND" 256 main -disable-vtimeloss -lr-scale "$LR_SCALE" -max-train-bucket-per-new-data 4 "$EXTRA_FLAGS" "$@"
