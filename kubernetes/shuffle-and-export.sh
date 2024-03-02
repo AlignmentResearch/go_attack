@@ -1,5 +1,12 @@
 #!/bin/bash -eu
 
+function assert_exists() {
+  if [ ! -e "$1" ]; then
+    echo "Error: $1 does not exist"
+    exit 1
+  fi
+}
+
 USE_GATING=0
 USE_TORCHSCRIPT=0
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
@@ -63,10 +70,12 @@ if [ -n "${PRESEED_SRC:-}" ] && [ ! -d "$PRESEED_DST" ]; then
       DIR_NAME=$(basename "$DIR")
       if [ "$DIR_NAME" = "prev-selfplay" ] || [ "$DIR_NAME" = "random" ]; then
         ln -s "$DIR" "$PRESEED_DST"
+        assert_exists "$PRESEED_DST/$DIR_NAME"
       elif [[ "$DIR" =~ -s([0-9]+)-d[0-9]+ ]]; then
         STEP=${BASH_REMATCH[1]}
         if [ "$STEP" -le "$FINAL_STEP" ]; then
           ln -s "$DIR" "$PRESEED_DST"
+          assert_exists "$PRESEED_DST/$DIR_NAME"
         fi
       else
         echo "Skipping unrecognized pre-seed source: $DIR"
