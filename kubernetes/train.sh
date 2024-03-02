@@ -36,6 +36,20 @@ if [ -z "$INITIAL_WEIGHTS" ]; then
     echo "No initial weights specified, using random weights"
 elif [ -n "${USE_PYTORCH:-}" ]; then # handle PyTorch initial weights
     EXTRA_FLAGS="-initial-checkpoint $INITIAL_WEIGHTS/model.ckpt"
+
+    if [ -n "${COPY_INITIAL_MODEL:-}" ] &&
+       [ ! -f "$EXPERIMENT_DIR"/done-copying-warmstart-model ]; then
+        TARGET_DIR="$EXPERIMENT_DIR"/models/t0-s0-d0
+        mkdir --parents "$TARGET_DIR"
+
+        if [ -f "$INITIAL_WEIGHTS/model.bin.gz" ]; then
+            cp "$INITIAL_WEIGHTS/model.bin.gz" "$TARGET_DIR"/model.bin.gz
+        elif [ -f "$INITIAL_WEIGHTS/model.pt" ]; then
+            cp "$INITIAL_WEIGHTS/model.pt" "$TARGET_DIR"/model.pt
+        else
+            echo "Error: no exported model was found at $INITIAL_WEIGHTS."
+        fi
+    fi
 else # handle TensorFlow initial weights
     echo "Using initial weights: $INITIAL_WEIGHTS"
     # The train script will use the model kind specified by the warmstarted
@@ -84,7 +98,7 @@ else # handle TensorFlow initial weights
       echo "Using initial model: $INITIAL_MODEL"
       MODEL_EXTENSION=${INITIAL_MODEL: -6} # bin.gz or txt.gz
       TARGET_DIR="$EXPERIMENT_DIR"/models/t0-s0-d0
-      mkdir -p "$TARGET_DIR"/saved_model
+      mkdir --parents "$TARGET_DIR"/saved_model
       cp "$INITIAL_MODEL" "$TARGET_DIR"/model."$MODEL_EXTENSION"
       # Copying the saved_model files isn't strictly necessary, but we copy them
       # in case we want to warmstart from this t0-s0-d0/ in a different run.
