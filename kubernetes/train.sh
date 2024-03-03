@@ -7,6 +7,7 @@ while [ -n "${1-}" ]; do
   case $1 in
     # Whether to copy model for warmstarting. If this flag is used,
     # --initial-weights flag should be specified as well.
+    # You usually want this flag when using --initial-weights.
     # For predictor training, this flag should not be specified since the
     # curriculum script will handle copying the victim models for the predictor.
     --copy-initial-model) COPY_INITIAL_MODEL=1; ;;
@@ -23,6 +24,9 @@ done
 RUN_NAME="$1"
 VOLUME_NAME="$2"
 LR_SCALE="$3"
+shift
+shift
+shift
 
 if [ -n "${USE_PYTORCH:-}" ]; then
   cd /engines/KataGo-custom/python
@@ -31,11 +35,14 @@ else
 fi
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
-EXTRA_FLAGS=""
 if [ -z "$INITIAL_WEIGHTS" ]; then
     echo "No initial weights specified, using random weights"
 elif [ -n "${USE_PYTORCH:-}" ]; then # handle PyTorch initial weights
-    EXTRA_FLAGS="-initial-checkpoint $INITIAL_WEIGHTS/model.ckpt"
+    # For PyTorch, we expect INITIAL_WEIGHTS to contain `model.ckpt` for the
+    # train code to initialize from and an exported model `model.bin.gz` or
+    # `model.pt` for the C++ code to use.
+
+    PYTORCH_CHECKPOINT="$INITIAL_WEIGHTS/model.ckpt"
 
     if [ -n "${COPY_INITIAL_MODEL:-}" ] &&
        [ ! -f "$EXPERIMENT_DIR"/done-copying-warmstart-model ]; then
@@ -108,4 +115,11 @@ else # handle TensorFlow initial weights
     fi
 fi
 
-./selfplay/train.sh "$EXPERIMENT_DIR" t0 "$MODEL_KIND" 256 main -disable-vtimeloss -lr-scale "$LR_SCALE" -max-train-bucket-per-new-data 4 "$EXTRA_FLAGS" "$@"
+# Only add the PyTorch-only flag -initial-checkpoint if we're warmstarting
+# with PyTorch.
+./selfplay/train.sh "$EXPERIMENT_DIR" t0 "$MODEL_KIND" 256 main \
+  -disable-vtimeloss \
+  -lr-scale "$LR_SCALE" \
+  -max-train-bucket-per-new-data 4 \
+  ${PYTORCH_CHECKPOINT:+"-initial-checkpoint" "$PYTORCH_CHECKPOINT"} \
+  "$@"
