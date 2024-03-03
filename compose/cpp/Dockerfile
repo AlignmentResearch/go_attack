@@ -6,7 +6,7 @@
 #
 # KataGo has been tested on CUDA 11.1 with CUDNN 8.0.4
 # See https://github.com/lightvector/KataGo/blob/master/Compiling.md.
-FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04 AS build-deps
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04 AS build-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -35,6 +35,10 @@ RUN apt-get update -q \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+RUN wget https://download.pytorch.org/libtorch/cu118/libtorch-cxx11-abi-shared-with-deps-2.2.0%2Bcu118.zip \
+  && unzip libtorch-cxx11-abi-shared-with-deps-2.2.0+cu118.zip -d /opt \
+  && rm libtorch-cxx11-abi-shared-with-deps-2.2.0+cu118.zip
+
 # Install cmake
 # Instructions from https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html
 RUN wget -qO- "https://cmake.org/files/v3.22/cmake-3.22.0-linux-x86_64.tar.gz" \
@@ -62,7 +66,7 @@ RUN cmake . -DUSE_BACKEND=CUDA -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1 -DBUILD_DEBU
 RUN make clean && make -j
 
 # Actual production image, without development headers.
-FROM nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu20.04 AS runtime-deps
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04 AS runtime-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -98,6 +102,8 @@ RUN apt-get update -q \
   # Clean up
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build-deps /opt/libtorch /opt/libtorch
 
 # Reset working directory
 WORKDIR /
