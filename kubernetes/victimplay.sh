@@ -28,12 +28,4 @@ mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay
     -models-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/models/ \
     -nn-victim-path /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/victims/ \
     -config "$CONFIG" \
-    -config /go_attack/configs/compute/1gpu.cfg &
-PID="$!"
-
-TIMESTAMP=$(date +%Y%m%d-%H%M%S)
-ID=$(openssl rand -hex 4)
-while true; do
-    printf "%s:  %s\n" "$(date)" "$(pmap -x $PID | tail -n 1)" >> /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/memory-"$TIMESTAMP"-"$ID".txt
-    sleep 900
-done
+    -config /go_attack/configs/compute/1gpu.cfg
