@@ -1,0 +1,14 @@
+(;GM[1]FF[4]CA[UTF-8]AP[CGoban:3]ST[2]
+RU[Chinese]SZ[19]KM[7.50]
+AW[pb][fc][nc][dd][de][oe][cf][qf][cg][oi][cj][dj][ej][ij][jj][ck][ek][gk][hk][kk][nk][bl][il][jl][nl][dm][jm][nm][pm][qm][bn][dn][jn][nn][do][io][jo][ko][oo][cp][dp][ep][hp][ip][np][eq][fq][gq][hq][fr][ir][or][pr][rr]AB[pd][fe][df][dg][dh][bi][ci][fi][hi][ii][ji][ki][mj][ak][dk][mk][cl][dl][el][gl][hl][ml][em][im][mm][en][hn][in][ln][pn][qn][bo][co][eo][go][ho][lo][bp][fp][gp][jp][lp][pp][cq][dq][iq][jq][pq][qq][cr][er][hr][jr][qr][ds][rs]PL[W]
+(;W[gr]C[BLACKWIN])
+(;W[gs]
+;B[is]
+;W[es]
+;B[dr]
+;W[cn]
+;B[aq]
+;W[cm]
+;B[am]C[CORRECT])
+(;W[ao]
+;B[aq]C[WHITEWIN]))
