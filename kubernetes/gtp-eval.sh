@@ -24,7 +24,7 @@ COMMON_KATAGO_FLAGS="-config $GPU_CONFIG -override-config logSearchInfo=true,log
 mkdir --parents "$OUTPUT_DIR/sgfs"
 /gogui/bin/gogui-twogtp \
   -black "/engines/KataGo-raw/cpp/katago gtp -config $VICTIM_CONFIG $COMMON_KATAGO_FLAGS -model $VICTIM_MODEL" \
-  -white "/engines/KataGo-custom/cpp/katago gtp -config $ADV_CONFIG $COMMON_KATAGO_FLAGS -model $ADV_MODEL -victim-model $VICTIM_MODEL" \
+  -white "/engines/KataGo-custom/cpp/katago gtp -config $ADV_CONFIG $COMMON_KATAGO_FLAGS -model $ADV_MODEL" \
   -alternate -auto -games "$NUM_GAMES" -komi 6.5 -maxmoves 1600 \
   -sgffile "$OUTPUT_DIR/sgfs/game" -verbose \
 2>&1 | tee --append "$OUTPUT_DIR/twogtp.log"
