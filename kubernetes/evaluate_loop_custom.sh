@@ -129,9 +129,7 @@ do
                     -override-config nnModelFile0="$VICTIMS_DIR"/"$VICTIM" \
                     -override-config botName0="victim-$VICTIM_NAME" \
                     -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \
-                    -override-config botName1="adv-$LATEST_MODEL_DIR" \
-                    -override-config nnModelFile2="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz \
-                    -override-config botName2="adv-$LATEST_MODEL_DIR-noresultneg" \
+                    -override-config botName1="adv-$LATEST_MODEL_DIR-noresultneg" \
                     -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR" \
                     2>&1 | tee "$OUTPUT_DIR"/logs/"$VICTIM_NAME"_"$LATEST_MODEL_DIR".log
             done
