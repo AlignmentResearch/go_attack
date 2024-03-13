@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import IO, Any, Iterable, List, Mapping, Sequence, Union
 
+import natsort
 import numpy as np
 import yaml
 
@@ -180,7 +181,7 @@ def write_victims(
             ),
             bot_name=victim["name"],
             num_visits=victim["visits"],
-            bot_algorithm="MCTS",
+            bot_algorithm=victim.get("algorithm", "MCTS"),
             extra_parameters=victim.get("extra_parameters", []),
         )
 
@@ -278,30 +279,56 @@ def generate_training_checkpoint_sweep_evaluation(
     victims = parameters["victims"]
     with open(victim_config, "w") as f:
         f.write("logSearchInfo = false\n")
+        # Reduce memory usage of each NN since we have a lot of distinct NNs.
+        f.write("nnCacheSizePowerOfTwo = 20\n")
+        f.write("nnMutexPoolSizePowerOfTwo = 16\n")
         write_victims(f, victims)
 
     # Fetch `num_checkpoints_to_evaluate` evenly spaced checkpoints from
-    # `checkpoints_path`.
-    main_checkpoint_path = Path(common_parameters["main_adversary"]["path"])
-    checkpoints_path = Path(parameters["checkpoints_path"])
-    assert checkpoints_path in main_checkpoint_path.parents
+    # `checkpoints_paths`.
+    checkpoints_paths = parameters["checkpoints_paths"]
+    checkpoints = []
+    natsort_key = natsort.natsort_keygen()
+    final_checkpoint = None
     with create_dummy_devbox() as devbox:
-        full_checkpoints_path = str(checkpoints_path)
-        num_checkpoints = int(devbox.run(f"ls {full_checkpoints_path} | wc -l"))
-        indices_to_evaluate = np.unique(
-            np.linspace(
-                0,
-                num_checkpoints - 1,
-                parameters["num_checkpoints_to_evaluate"],
+        for i, entry in enumerate(checkpoints_paths):
+            path = Path(entry["path"]) / "models"
+            last_checkpoint_in_path = entry["last_checkpoint"]
+            final_checkpoint = path / last_checkpoint_in_path
+
+            intermediate_checkpoints = [
+                checkpoint for checkpoint in devbox.run(f"ls -v {path}").split("\n")
+            ]
+            if i < len(checkpoints_paths) - 1:
+                # For the final path (i == len(checkpoints_paths - 1), we should
+                # evaluate checkpoints beyond the final checkpoint to get a
+                # complete training curve. Otherwise, we can throw away
+                # checkpoints beyond last_checkpoint_in_path.
+                intermediate_checkpoints = [
+                    checkpoint
+                    for checkpoint in intermediate_checkpoints
+                    if natsort_key(checkpoint) <= natsort_key(last_checkpoint_in_path)
+                ]
+            if i > 0 and intermediate_checkpoints[0] == "t0-s0-d0":
+                # For any path beyond the first one, t0-s0-d0 is likely a
+                # warmstart checkpoint equal to the final checkpoint of the
+                # previous path.
+                intermediate_checkpoints.pop(0)
+            checkpoints.extend(
+                f"{path / checkpoint}" for checkpoint in intermediate_checkpoints
             )
-            .round()
-            .astype(int),
+    indices_to_evaluate = np.unique(
+        np.linspace(
+            0,
+            len(checkpoints) - 1,
+            parameters["num_checkpoints_to_evaluate"],
         )
-        checkpoints = devbox.run(f"ls -v {full_checkpoints_path}").split("\n")
-        checkpoints_to_evaluate = [checkpoints[i] for i in indices_to_evaluate]
-        main_checkpoint = main_checkpoint_path.parent.name
-        if main_checkpoint not in checkpoints_to_evaluate:
-            checkpoints_to_evaluate.append(main_checkpoint)
+        .round()
+        .astype(int),
+    )
+    checkpoints_to_evaluate = [checkpoints[i] for i in indices_to_evaluate]
+    if final_checkpoint not in checkpoints_to_evaluate:
+        checkpoints_to_evaluate.append(final_checkpoint)
 
     # Each checkpoint costs GPU memory, so we cannot give every checkpoint to a
     # job if the number of checkpoints is high. Instead, we split the
@@ -314,9 +341,12 @@ def generate_training_checkpoint_sweep_evaluation(
     # * We put enough checkpoints to hit 80% of the memory of a 16GB GPU,
     #   leaving the 20% remaining memory as buffer to account for error in this
     #   estimate.
-    checkpoints_per_job = math.floor((16384 * 0.8 - 5942) / 815)
+    checkpoints_per_job = parameters.get(
+        "checkpoints_per_job", math.floor((16384 * 0.8 - 5942) / 815)
+    )
     job_commands = []
     job_description = "evaluate several adversary checkpoints throughout training"
+    visits_arr = parameters["adversary_visits"]
     for checkpoints_start in range(
         0,
         len(checkpoints_to_evaluate),
@@ -334,13 +364,14 @@ def generate_training_checkpoint_sweep_evaluation(
             num_games = (
                 len(victims)
                 * len(job_checkpoints)
+                * len(visits_arr)
                 * parameters["num_games_per_matchup"]
             )
             usage_string = get_usage_string(
                 repo_root=repo_root,
                 job_description=job_description,
                 job_name=job_name,
-                default_num_gpus=2,
+                default_num_gpus=1,
                 num_games=num_games,
                 configs=[victim_config, job_config],
             )
@@ -348,22 +379,64 @@ def generate_training_checkpoint_sweep_evaluation(
             job_commands.append(usage_string.command)
 
             f.write(f"numGamesTotal = {num_games}\n")
-            f.write(f"numBots = {len(victims) + len(job_checkpoints)}\n")
+            f.write(
+                f"numBots = {len(victims) + len(job_checkpoints) * len(visits_arr)}\n"
+            )
             write_adversaries(
                 f=f,
                 adversaries=[
                     {
                         "algorithm": parameters["adversary_algorithm"],
-                        "path": (
-                            Path(adjust_nas_path(parameters["checkpoints_path"]))
-                            / checkpoint
-                            / "model.bin.gz"
-                        ),
-                        "visits": parameters["adversary_visits"],
+                        "path": Path(checkpoint) / "model.bin.gz",
+                        "visits": visits,
                     }
                     for checkpoint in job_checkpoints
+                    for visits in visits_arr
                 ],
                 bot_index_offset=len(victims),
+            )
+
+        k8s_config = evaluation_config_dir / f"k8s-{job_name}.yml"
+        with open(k8s_config, "w") as f:
+            f.write(
+                f"""
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {parameters['job_prefix']}-{job_name}
+  labels:
+    kueue.x-k8s.io/queue-name: farai
+spec:
+  suspend: true # The job must start suspended kueue will start it when it is admitted
+  template:
+    spec:
+      priorityClassName: normal-batch
+      containers:
+      - command:
+        - /go_attack/kubernetes/match.sh
+        - {parameters['results_dir']}/{job_name}
+        - "-1"
+        - -config
+        - {victim_config.resolve()}
+        - -config
+        - {job_config.resolve()}
+        name: match
+        image: humancompatibleai/goattack:{parameters['commit']}-cpp
+        resources:
+          limits:
+            memory: 55Gi
+            nvidia.com/gpu: 1
+          requests:
+            cpu: 1
+            nvidia.com/gpu: 1
+        volumeMounts:
+        - mountPath: /shared
+          name: go-attack
+      restartPolicy: Never
+      volumes:
+      - name: go-attack
+        persistentVolumeClaim:
+          claimName: go-attack"""
             )
 
     command = "\n".join(job_commands)
@@ -508,7 +581,7 @@ def generate_victim_visit_sweep_evaluation(
         output_config = config_dir / f"victim-visit-sweep-{algorithm}.cfg"
         max_victim_visits = algorithm_parameters["max_victim_visits"]
 
-        victim_visits = [2**i for i in range(int(math.log2(max_victim_visits)))]
+        victim_visits = [2 ** i for i in range(int(math.log2(max_victim_visits)))]
         victim_visits.append(max_victim_visits)
         victims = [
             {
@@ -572,7 +645,7 @@ def generate_adversary_visit_sweep_evaluation(
 
     victims = parameters["victims"]
     max_adversary_visits = parameters["max_adversary_visits"]
-    adversary_visits = [2**i for i in range(int(math.log2(max_adversary_visits)))]
+    adversary_visits = [2 ** i for i in range(int(math.log2(max_adversary_visits)))]
     adversary_visits.append(max_adversary_visits)
     num_games = (
         len(victims) * len(adversary_visits) * parameters["num_games_per_matchup"]
