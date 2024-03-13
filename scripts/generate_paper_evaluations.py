@@ -315,7 +315,7 @@ def generate_training_checkpoint_sweep_evaluation(
                 # previous path.
                 intermediate_checkpoints.pop(0)
             checkpoints.extend(
-                f"{path / checkpoint}" for checkpoint in intermediate_checkpoints
+                path / checkpoint for checkpoint in intermediate_checkpoints
             )
     indices_to_evaluate = np.unique(
         np.linspace(
