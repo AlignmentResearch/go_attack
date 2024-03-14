@@ -353,6 +353,7 @@ def generate_training_checkpoint_sweep_evaluation(
     job_commands = []
     job_description = "evaluate several adversary checkpoints throughout training"
     visits_arr = parameters["adversary_visits"]
+    model_file_name = "model" + parameters.get("model_suffix", ".bin.gz")
     for checkpoints_start in range(
         0,
         len(checkpoints_to_evaluate),
@@ -393,7 +394,7 @@ def generate_training_checkpoint_sweep_evaluation(
                 adversaries=[
                     {
                         "algorithm": parameters["adversary_algorithm"],
-                        "path": Path(checkpoint) / "model.bin.gz",
+                        "path": Path(checkpoint) / model_file_name,
                         "visits": visits,
                         "step_offset": step_offset,
                     }
