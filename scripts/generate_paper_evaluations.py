@@ -323,18 +323,25 @@ def generate_training_checkpoint_sweep_evaluation(
             # All subsequent checkpoints should have their step count
             # incremented.
             step_offset += int(get_adversary_steps(last_checkpoint_in_path))
-    indices_to_evaluate = np.unique(
-        np.linspace(
-            0,
-            len(checkpoints) - 1,
-            parameters["num_checkpoints_to_evaluate"],
+
+    def pick_checkpoints(num_checkpoints):
+        indices_to_evaluate = np.unique(
+            np.linspace(
+                0,
+                len(checkpoints) - 1,
+                num_checkpoints,
+            )
+            .round()
+            .astype(int),
         )
-        .round()
-        .astype(int),
-    )
-    checkpoints_to_evaluate = [checkpoints[i] for i in indices_to_evaluate]
+        return [checkpoints[i] for i in indices_to_evaluate]
+
+    num_checkpoints_to_evaluate = parameters["num_checkpoints_to_evaluate"]
+    checkpoints_to_evaluate = pick_checkpoints(num_checkpoints_to_evaluate)
     if final_checkpoint not in checkpoints_to_evaluate:
-        checkpoints_to_evaluate.append(final_checkpoint)
+        checkpoints_to_evaluate = pick_checkpoints(num_checkpoints_to_evaluate - 1)
+        if final_checkpoint not in checkpoints_to_evaluate:
+            checkpoints_to_evaluate.append(final_checkpoint)
 
     # Each checkpoint costs GPU memory, so we cannot give every checkpoint to a
     # job if the number of checkpoints is high. Instead, we split the
