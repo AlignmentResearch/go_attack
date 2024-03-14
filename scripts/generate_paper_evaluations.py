@@ -201,11 +201,12 @@ def write_adversaries(
         algorithm = adversary["algorithm"]
         path = str(adversary["path"])
         visits = adversary["visits"]
+        steps = int(get_adversary_steps(path)) + adversary.get("step_offset", 0)
         write_bot(
             f=f,
             bot_index=bot_index_offset + i,
             bot_path=path,
-            bot_name=f"adv-s{get_adversary_steps(path)}-v{visits}-{algorithm}",
+            bot_name=f"adv-s{steps}-v{visits}-{algorithm}",
             num_visits=visits,
             bot_algorithm=algorithm,
         )
@@ -287,14 +288,15 @@ def generate_training_checkpoint_sweep_evaluation(
     # Fetch `num_checkpoints_to_evaluate` evenly spaced checkpoints from
     # `checkpoints_paths`.
     checkpoints_paths = parameters["checkpoints_paths"]
-    checkpoints = []
+    checkpoints = []  # tuple of (path, step_offset)
     natsort_key = natsort.natsort_keygen()
     final_checkpoint = None
+    step_offset = 0
     with create_dummy_devbox() as devbox:
         for i, entry in enumerate(checkpoints_paths):
             path = Path(entry["path"]) / "models"
             last_checkpoint_in_path = entry["last_checkpoint"]
-            final_checkpoint = path / last_checkpoint_in_path
+            final_checkpoint = (path / last_checkpoint_in_path, step_offset)
 
             intermediate_checkpoints = [
                 checkpoint for checkpoint in devbox.run(f"ls -v {path}").split("\n")
@@ -315,8 +317,12 @@ def generate_training_checkpoint_sweep_evaluation(
                 # previous path.
                 intermediate_checkpoints.pop(0)
             checkpoints.extend(
-                path / checkpoint for checkpoint in intermediate_checkpoints
+                (path / checkpoint, step_offset)
+                for checkpoint in intermediate_checkpoints
             )
+            # All subsequent checkpoints should have their step count
+            # incremented.
+            step_offset += int(get_adversary_steps(last_checkpoint_in_path))
     indices_to_evaluate = np.unique(
         np.linspace(
             0,
@@ -389,8 +395,9 @@ def generate_training_checkpoint_sweep_evaluation(
                         "algorithm": parameters["adversary_algorithm"],
                         "path": Path(checkpoint) / "model.bin.gz",
                         "visits": visits,
+                        "step_offset": step_offset,
                     }
-                    for checkpoint in job_checkpoints
+                    for checkpoint, step_offset in job_checkpoints
                     for visits in visits_arr
                 ],
                 bot_index_offset=len(victims),
