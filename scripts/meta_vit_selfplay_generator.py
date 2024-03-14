@@ -8,13 +8,13 @@ RUNS = [
     (
         "vit-b4",
         [("ttseng-vitp2b4c384-selfplay-231031", "t0-s253387264-d55238979")],
-        30,
+        15,
         ".pt",
     ),
     (
         "vit-b8",
         [("ttseng-vitp2b8c384-selfplay-231106", "t0-s553885440-d138132846")],
-        60,
+        30,
         ".pt",
     ),
     (
@@ -23,14 +23,14 @@ RUNS = [
             ("ttseng-vitp2b16c384-selfplay-231124", "t0-s405153792-d108411059"),
             ("ttseng-vitp2b16c384-minrows10m-240103", "t0-s650025472-d167043571"),
         ],
-        59,
+        30,
         ".pt",
     ),
     (
         "b10",
         [("ttseng-b10-selfplay-231026", "t0-s419465984-d105544048")],
-        45,
-        "bin.gz",
+        30,
+        ".bin.gz",
     ),
 ]
 
@@ -59,11 +59,11 @@ training_checkpoint_sweep:
     - 1
     - 256
   # How many games to run between a adversary checkpoint and a victim.
-  num_games_per_matchup: 100
+  num_games_per_matchup: 50
   num_checkpoints_to_evaluate: {num_checkpoints}
   model_suffix: {model_suffix}
   checkpoints_per_job: 15
-  commit: 8a3bd77
+  commit: 5027884
   victims:
     - name: cyclic-s545m
       filename: cyclic-adv-s545065216.bin.gz
