@@ -1,7 +1,7 @@
 # To build, navigate to the *root* of this repo and first run:
 # docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp
 # And then:
-# docker build . -f engines/kgs-bot/Dockerfile -t humancompatibleai/goattack:cpp-kgs
+# docker build . -f engines/kgs-bot/Dockerfile -t humancompatibleai/goattack:<hash>-cpp-kgs
 
 FROM humancompatibleai/goattack:cpp
 
@@ -28,7 +28,7 @@ RUN gdown 1D_Ifj3hFICxF37Yuoblde1JizOn5OhG7
 RUN mv vitp2b16c384-s650025472-d167043571-fp16.pt /go_attack/models/vit-model-fp16.pt
     
 # Run this last so we can update configs and other settings without invalidating cache
-COPY ./engines/kgs-bot/ /go_attack/engines/kgs-bot
+COPY ./engines/kgs-bot/config.txt /go_attack/engines/kgs-bot/config.txt
 
 WORKDIR /go_attack/engines/kgs-bot/
 ENTRYPOINT ["/usr/bin/java", "-jar", "kgsGtp.jar", "config.txt"]
