@@ -15,6 +15,8 @@ done
 
 RUN_NAME="$1"
 VOLUME_NAME="$2"
+shift
+shift
 
 while [ -n "${USE_WARMSTART:-}" ] &&
       [ ! -f /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/done-copying-warmstart-model ]; do
@@ -28,4 +30,5 @@ mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"
     -models-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/models/ \
     -nn-victim-path /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/victims/ \
     -config "$CONFIG" \
-    -config /go_attack/configs/compute/1gpu.cfg
+    -config /go_attack/configs/compute/1gpu.cfg \
+    "$@"
