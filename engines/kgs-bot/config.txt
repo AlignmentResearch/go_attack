@@ -1,5 +1,5 @@
 mode=custom
 rules=newzealand
 rules.boardSize=19
-rules.time=5:00+5x0:30
+rules.time=15:00+5x0:30
 engine=/engines/KataGo-custom/cpp/katago gtp -model /go_attack/models/vit-model-fp16.pt -config /go_attack/configs/kgs-bot/vit-bot.cfg
