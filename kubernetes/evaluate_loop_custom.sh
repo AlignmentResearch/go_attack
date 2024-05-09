@@ -108,6 +108,16 @@ do
                 -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$LATEST_MODEL_DIR" \
                 2>&1 | tee "$OUTPUT_DIR"/logs/"$LATEST_MODEL_DIR".log
 
+            $KATAGO_BIN match \
+                -config "$CONFIG" \
+                -config "/go_attack/configs/eval-2.cfg" \
+                -override-config nnModelFile0="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.pt \
+                -override-config botName0="$LATEST_MODEL_DIR"-v1 \
+                -override-config nnModelFile1="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.pt \
+                -override-config botName1="$LATEST_MODEL_DIR"-v256 \
+                -sgf-output-dir "$OUTPUT_DIR"/sgfs/"$LATEST_MODEL_DIR" \
+                2>&1 | tee -a "$OUTPUT_DIR"/logs/"$LATEST_MODEL_DIR".log
+
             # Update the last step
             LAST_STEP="$STEP"
         fi
