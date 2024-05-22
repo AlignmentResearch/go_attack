@@ -2,9 +2,7 @@
 
 This repository contains code for studying the adversarial robustness of KataGo.
 
-Read about our research here: https://arxiv.org/abs/2211.00241.
-
-View our website here: https://ANONYMOUS_REPO.far.ai/.
+View our website here: https://go-defense.netlify.app/
 
 To run our adversary with Sabaki, see [this guide](sabaki/README.md).
 
@@ -31,6 +29,9 @@ Modifications to KataGo *are not* tracked in this repository and should instead 
 
 - [engines/KataGo-custom](engines/KataGo-custom) tracks the `stable` branch of the `KataGo-custom` repository.
 - [engines/KataGo-raw](engines/KataGo-raw) tracks the `master` branch of https://github.com/lightvector/KataGo.
+
+(For this anonymous repo, these are not actually submodules, as the anonymizer
+app does not support submodules.)
 
 ## Individual containers
 
@@ -59,18 +60,3 @@ parameters of the run (
     batch size,
     where to look for other config files
 ).
-
-## Website and analysis notebooks
-
-See [ANONYMOUS_USERNAME/KataGoVisualizer](https://github.com/ANONYMOUS_USERNAME/KataGoVisualizer).
-
-# Baseline attacks
-
-In addition to the learned attacks, we also implement 5 baseline, hardcoded attacks:
-- Edge attack, which plays random vertices in the outermost available ring of the board
-- Random attack, which simply plays random legal moves
-- Pass attack, which always passes at every turn
-- Spiral attack, which deterministically plays the "largest" legal move in lexicographical order in polar coordinates (going counterclockwise starting from the outermost ring)
-- [Mirror Go](https://en.wikipedia.org/wiki/Mirror_Go), which plays the opponent's last move reflected about the y = x diagonal, or the y = -x diagonal if they play on y = x. If the mirrored vertex is taken, then the policy plays the "closest" legal vertex by L1 distance.
-
-You can test these attacks by running `baseline_attacks.py` with the appropriate `--strategy` flag (`edge`, `random`, `pass`, `spiral`, or `mirror`). Run `python scripts/baseline_attacks.py --help` for more information about all the available flags.
