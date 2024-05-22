@@ -64,7 +64,7 @@ static void setSimpleSearchParams(SearchParams& params) {
   // adjustment.
   params.rootEndingBonusPoints = 0;
 
-  // TODO(tony): Support this within the playout check.
+  // TODO(ANONYMOUS_AUTHOR_2): Support this within the playout check.
   params.rootDesiredPerChildVisitsCoeff = 0;
 
   // This is not used in selfplay right now for backwards compatibility
@@ -532,7 +532,7 @@ void AMCTSTests::checkFinalMoveSelection(const Search& bot) {
 
     // Possibly reduce weight on children that we spend too many visits on in
     // retrospect.
-    // TODO(tony): Figure out what exactly is going on here and write it down on
+    // TODO(ANONYMOUS_AUTHOR_2): Figure out what exactly is going on here and write it down on
     // overleaf.
     const float* policyProbs =
         tree.root->getNNOutput()->getPolicyProbsMaybeNoised();
@@ -564,7 +564,7 @@ void AMCTSTests::checkFinalMoveSelection(const Search& bot) {
     }
 
     // Adjust psvs with lcb values
-    // TODO(tony): Figure out what exactly is going on here and write it down on
+    // TODO(ANONYMOUS_AUTHOR_2): Figure out what exactly is going on here and write it down on
     // overleaf.
     testAssert(bot.searchParams.useLcbForSelection);
     testAssert(bot.searchParams.useNonBuggyLcb);

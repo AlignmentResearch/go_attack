@@ -1,8 +1,8 @@
-{'input-files-or-dirs': ['/nas/ucb/tony/go-attack/matches/visit-exp2'], 'recursive': False, 'elo_prior_games': 2, 'estimate_first_player_advantage': False}
-Searching and adding files in /nas/ucb/tony/go-attack/matches/visit-exp2, please wait...
-Added 10/1600 sgfs files for /nas/ucb/tony/go-attack/matches/visit-exp2
-Added 1600/1600 sgfs files for /nas/ucb/tony/go-attack/matches/visit-exp2
-Added 1600 new sgfs files and 0 new sgf files from /nas/ucb/tony/go-attack/matches/visit-exp2
+{'input-files-or-dirs': ['/nas/ucb/ANONYMOUS_AUTHOR_2/go-attack/matches/visit-exp2'], 'recursive': False, 'elo_prior_games': 2, 'estimate_first_player_advantage': False}
+Searching and adding files in /nas/ucb/ANONYMOUS_AUTHOR_2/go-attack/matches/visit-exp2, please wait...
+Added 10/1600 sgfs files for /nas/ucb/ANONYMOUS_AUTHOR_2/go-attack/matches/visit-exp2
+Added 1600/1600 sgfs files for /nas/ucb/ANONYMOUS_AUTHOR_2/go-attack/matches/visit-exp2
+Added 1600 new sgfs files and 0 new sgf files from /nas/ucb/ANONYMOUS_AUTHOR_2/go-attack/matches/visit-exp2
 Beginning iteration 0, cur log likelihood -34701.72136649154, last elo change None
 Beginning iteration 1, cur log likelihood -16423.87981672868, last elo change 332.15107860826083
 Beginning iteration 2, cur log likelihood -12008.073543967947, last elo change 303.53817869638823
