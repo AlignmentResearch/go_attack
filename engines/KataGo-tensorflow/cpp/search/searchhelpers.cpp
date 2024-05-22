@@ -398,7 +398,7 @@ bool Search::shouldSuppressPass(const SearchNode* n) const {
   }
 
   switch(searchParams.passingBehavior) {
-    // Tony Wang's proposal
+    // ANONYMOUS_AUTHOR_2's proposal
     case SearchParams::PassingBehavior::AvoidPassAliveTerritory: {
       // Find pass-alive territory
       Color territories[Board::MAX_ARR_SIZE];
