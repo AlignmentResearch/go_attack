@@ -91,4 +91,4 @@ rnn -tt 'bash -l -c "/nas/ucb/tony/go-attack/gtp-host/go_attack/sabaki/scripts/d
 time_settings 0 1 0
 ```
 
-See https://github.com/AlignmentResearch/KataGoVisualizer/blob/3216f9b5bebaf1377dc1e320294abcc0f65bd8bd/notebooks/notebooks/paper/estimate-flops-adv.ipynb for locations of adversaries on the `/nas/`.
+See https://github.com/ANONYMOUS_USERNAME/KataGoVisualizer/blob/3216f9b5bebaf1377dc1e320294abcc0f65bd8bd/notebooks/notebooks/paper/estimate-flops-adv.ipynb for locations of adversaries on the `/nas/`.

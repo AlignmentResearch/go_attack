@@ -14,10 +14,10 @@ To clone this repository,
 run one of the following commands
 ```
 # Via HTTPS
-git clone --recurse-submodules https://github.com/AlignmentResearch/go_attack.git
+git clone --recurse-submodules https://github.com/ANONYMOUS_USERNAME/go_attack.git
 
 # Via SSH
-git clone --recurse-submodules git@github.com:AlignmentResearch/go_attack.git
+git clone --recurse-submodules git@github.com:ANONYMOUS_USERNAME/go_attack.git
 ```
 
 You can run `pip install -e .[dev]` inside the project root directory to install all necessary dependencies.
@@ -27,7 +27,7 @@ You may also want to run `pre-commit install` from `engines/KataGo-custom` to in
 
 ## Git submodules
 
-Modifications to KataGo *are not* tracked in this repository and should instead be made to the [AlignmentResearch/KataGo-custom](https://github.com/AlignmentResearch/KataGo-custom) repository. We use code from KataGo-custom in this repository via a Git submodule.
+Modifications to KataGo *are not* tracked in this repository and should instead be made to the [ANONYMOUS_USERNAME/KataGo-custom](https://github.com/ANONYMOUS_USERNAME/KataGo-custom) repository. We use code from KataGo-custom in this repository via a Git submodule.
 
 - [engines/KataGo-custom](engines/KataGo-custom) tracks the `stable` branch of the `KataGo-custom` repository.
 - [engines/KataGo-raw](engines/KataGo-raw) tracks the `master` branch of https://github.com/lightvector/KataGo.
@@ -62,7 +62,7 @@ parameters of the run (
 
 ## Website and analysis notebooks
 
-See [AlignmentResearch/KataGoVisualizer](https://github.com/AlignmentResearch/KataGoVisualizer).
+See [ANONYMOUS_USERNAME/KataGoVisualizer](https://github.com/ANONYMOUS_USERNAME/KataGoVisualizer).
 
 # Baseline attacks
 

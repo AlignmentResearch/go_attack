@@ -79,7 +79,7 @@ setup(
         ],
         "test": TESTS_REQUIRE,
     },
-    url="https://github.com/AlignmentResearch/go_attack",
+    url="https://github.com/ANONYMOUS_USERNAME/go_attack",
     license="MIT",
     classifiers=[
         # Trove classifiers
