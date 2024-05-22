@@ -1,4 +1,4 @@
-# Go Attack
+# ANONYMOUS REPO
 
 This repository contains code for studying the adversarial robustness of KataGo.
 

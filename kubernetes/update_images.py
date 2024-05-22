@@ -51,7 +51,7 @@ def main():
         for tag in image.tags
     ]
 
-    # We also need to know the absolute path for the root Go Attack directory
+    # We also need to know the absolute path for the root ANONYMOUS REPO directory
     # in order to build the Docker images if necessary.
     rootdir_raw = subprocess.check_output(["git", "rev-parse", "--show-toplevel"])
     rootdir = rootdir_raw.decode("ascii").strip()
