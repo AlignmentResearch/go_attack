@@ -1,8 +1,8 @@
 # To build, navigate to the *root* of this repo and run:
-# docker build . -f compose/cpp/Dockerfile -t ANONYMOUS_USERNAME/goattack:cpp
+# docker build . -f compose/cpp/Dockerfile -t ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp
 #
 # Commands to build alternative targets:
-# docker build . -f compose/cpp/Dockerfile -t ANONYMOUS_USERNAME/goattack:cpp-build-deps --target build-*
+# docker build . -f compose/cpp/Dockerfile -t ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp-build-deps --target build-*
 #
 # KataGo has been tested on CUDA 11.1 with CUDNN 8.0.4
 # See https://github.com/lightvector/KataGo/blob/master/Compiling.md.

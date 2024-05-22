@@ -1,12 +1,12 @@
 # Dockerfile for local, CircleCI runner
 # To build, run:
-# docker build . -f ci/Dockerfile -t ANONYMOUS_USERNAME/goattack:runner
-# Note you first need to build ANONYMOUS_USERNAME/goattack:cpp-build-deps
+# docker build . -f ci/Dockerfile -t ANONYMOUS_USERNAME/ANONYMOUS_REPO:runner
+# Note you first need to build ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp-build-deps
 # See compose/cpp/Dockerfile for instructions.
 
 FROM circleci/runner:launch-agent as launch-agent
 
-FROM ANONYMOUS_USERNAME/goattack:cpp-build-deps as cpp-build-deps
+FROM ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp-build-deps as cpp-build-deps
 # Drawing from https://github.com/CircleCI-Public/circleci-runner-docker/blob/main/launch-agent/Dockerfile
 # Copying over files we can from that Docker image.
 # Where we can't, duplicating commands.

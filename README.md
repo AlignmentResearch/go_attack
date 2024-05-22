@@ -4,7 +4,7 @@ This repository contains code for studying the adversarial robustness of KataGo.
 
 Read about our research here: https://arxiv.org/abs/2211.00241.
 
-View our website here: https://goattack.far.ai/.
+View our website here: https://ANONYMOUS_REPO.far.ai/.
 
 To run our adversary with Sabaki, see [this guide](sabaki/README.md).
 
@@ -44,7 +44,7 @@ The Dockerfiles contain instructions for how to build them individually. This is
 A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory inside the container.
 To run a docker container, you can use a command like
 ```
-docker run --gpus all -v ~/ANONYMOUS_REPO:/ANONYMOUS_REPO -it ANONYMOUS_USERNAME/goattack:cpp
+docker run --gpus all -v ~/ANONYMOUS_REPO:/ANONYMOUS_REPO -it ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp
 ```
 
 ## Docker compose

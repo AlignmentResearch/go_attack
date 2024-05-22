@@ -13,7 +13,7 @@ version: "3"
 
 services:
   match:
-    image: ANONYMOUS_USERNAME/goattack:cpp
+    image: ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp
     build:
       context: ..
       dockerfile: ./compose/cpp/Dockerfile

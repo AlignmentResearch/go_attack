@@ -7,7 +7,7 @@ services:
   elf:
     profiles:
       - elf
-    image: ANONYMOUS_USERNAME/goattack:elf
+    image: ANONYMOUS_USERNAME/ANONYMOUS_REPO:elf
     build:
       context: ${HOST_REPO_ROOT}/engines/elf
     volumes:
@@ -29,7 +29,7 @@ services:
   leela:
     profiles:
       - leela
-    image: ANONYMOUS_USERNAME/goattack:leela
+    image: ANONYMOUS_USERNAME/ANONYMOUS_REPO:leela
     build:
       context: ${HOST_REPO_ROOT}/engines/leela
     volumes:
@@ -60,7 +60,7 @@ services:
   baseline-attack:
     profiles:
       - baseline-attack
-    image: ANONYMOUS_USERNAME/goattack:cpp
+    image: ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp
     build:
       context: ${HOST_REPO_ROOT}
       dockerfile: ${HOST_REPO_ROOT}/compose/cpp/Dockerfile
@@ -92,7 +92,7 @@ services:
   katago: &katago
     profiles:
       - katago
-    image: ANONYMOUS_USERNAME/goattack:cpp
+    image: ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp
     build:
       context: ${HOST_REPO_ROOT}
       dockerfile: ${HOST_REPO_ROOT}/compose/cpp/Dockerfile
@@ -154,7 +154,7 @@ services:
   twogtp:
     profiles:
       - katago
-    image: ANONYMOUS_USERNAME/goattack:twogtp
+    image: ANONYMOUS_USERNAME/ANONYMOUS_REPO:twogtp
     build:
       context: ${HOST_REPO_ROOT}
       dockerfile: ${HOST_REPO_ROOT}/compose/transfer/twogtp/Dockerfile

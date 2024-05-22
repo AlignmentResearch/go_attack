@@ -12,7 +12,7 @@ version: "3"
 
 services:
   curriculum:
-    image: ANONYMOUS_USERNAME/goattack:python
+    image: ANONYMOUS_USERNAME/ANONYMOUS_REPO:python
     build:
       context: ..
       dockerfile: ./compose/python/Dockerfile
@@ -40,7 +40,7 @@ services:
         sleep infinity
       "
   evaluate:
-    image: ANONYMOUS_USERNAME/goattack:cpp
+    image: ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp
     build:
       context: ..
       dockerfile: ./compose/cpp/Dockerfile
@@ -58,7 +58,7 @@ services:
               device_ids: ["0"]
 
   victimplay:
-    image: ANONYMOUS_USERNAME/goattack:cpp
+    image: ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp
     build:
       context: ..
       dockerfile: ./compose/cpp/Dockerfile
@@ -90,7 +90,7 @@ services:
     stop_grace_period: 120s   # Nvidia driver bug workaround
 
   train:
-    image: ANONYMOUS_USERNAME/goattack:python
+    image: ANONYMOUS_USERNAME/ANONYMOUS_REPO:python
     build:
       context: ..
       dockerfile: ./compose/python/Dockerfile
@@ -119,7 +119,7 @@ services:
               device_ids: ["0"]
 
   shuffle-and-export:
-    image: ANONYMOUS_USERNAME/goattack:python
+    image: ANONYMOUS_USERNAME/ANONYMOUS_REPO:python
     build:
       context: ..
       dockerfile: ./compose/python/Dockerfile

@@ -79,7 +79,7 @@ def main():
             help="Path to KataGo executable",
             default=(
                 f"docker run -i -v {tmp_dir}:{tmp_dir} "
-                "ANONYMOUS_USERNAME/goattack:cpp /engines/KataGo-raw/cpp/katago"
+                "ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp /engines/KataGo-raw/cpp/katago"
             ),
         )
         args = parser.parse_args()

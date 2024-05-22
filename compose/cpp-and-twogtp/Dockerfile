@@ -4,7 +4,7 @@
 # Since this image performs a multi-stage build based on
 # ANONYMOUS_USERNAME/goatttack:cpp, that image should be rebuilt before
 # rebuilding this image.
-FROM ANONYMOUS_USERNAME/goattack:cpp as cpp
+FROM ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp as cpp
 
 COPY ./controllers/gogui /gogui
 WORKDIR /gogui

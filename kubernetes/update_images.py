@@ -15,7 +15,7 @@ IMAGE_TYPES = ("cpp", "python", "cpp-and-twogtp")
 IMAGE_PREREQS = {
     "cpp-and-twogtp": ["cpp"],
 }
-REPO_NAME = "ANONYMOUS_USERNAME/goattack"
+REPO_NAME = "ANONYMOUS_USERNAME/ANONYMOUS_REPO"
 
 
 def main():
@@ -42,7 +42,7 @@ def main():
     current_hash = hash_raw.decode("ascii").strip()
 
     # The "tag" string actually includes the repo name as well
-    # (e.g. "ANONYMOUS_USERNAME/goattack:c27e251"). These are all
+    # (e.g. "ANONYMOUS_USERNAME/ANONYMOUS_REPO:c27e251"). These are all
     # from the same repo, so we just look at the tag proper (e.g. "c27e251").
     available_tags = [
         tag.split(":")[1]

@@ -1,9 +1,9 @@
 # To build, navigate to the *root* of this repo and first run:
-# docker build . -f compose/cpp/Dockerfile -t ANONYMOUS_USERNAME/goattack:cpp
+# docker build . -f compose/cpp/Dockerfile -t ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp
 # And then:
-# docker build . -f engines/kgs-bot/Dockerfile -t ANONYMOUS_USERNAME/goattack:cpp-kgs
+# docker build . -f engines/kgs-bot/Dockerfile -t ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp-kgs
 
-FROM ANONYMOUS_USERNAME/goattack:cpp
+FROM ANONYMOUS_USERNAME/ANONYMOUS_REPO:cpp
 
 # Install Java
 RUN  apt-get update -q \
