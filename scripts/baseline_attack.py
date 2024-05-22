@@ -8,8 +8,8 @@ from pathlib import Path
 
 from pynvml import nvmlDeviceGetCount, nvmlInit, nvmlShutdown
 
-from go_attack.adversarial_policy import POLICIES
-from go_attack.baseline_attack import (
+from ANONYMOUS_REPO.adversarial_policy import POLICIES
+from ANONYMOUS_REPO.baseline_attack import (
     ENGINE_TYPES,
     PASSING_BEHAVIOR,
     run_baseline_attack,
@@ -127,7 +127,7 @@ def main():  # noqa: D103
         # Try to find the config file automatically
         if config_path is None:
             config_path = (
-                Path("/go_attack") / "configs" / "katago" / "baseline_attack.cfg"
+                Path("/ANONYMOUS_REPO") / "configs" / "katago" / "baseline_attack.cfg"
             )
         if not config_path.exists():
             raise FileNotFoundError("Could not find config file")
@@ -135,7 +135,7 @@ def main():  # noqa: D103
 
         # Try to find the model automatically
         if args.models is None:
-            root = Path("/go_attack") / "models"
+            root = Path("/ANONYMOUS_REPO") / "models"
             model_paths = [
                 min(
                     root.glob("*.gz"),

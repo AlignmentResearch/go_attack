@@ -9,15 +9,15 @@ from typing import IO, AnyStr, Literal, Optional, Sequence, Tuple, cast
 
 from tqdm import tqdm
 
-from go_attack.adversarial_policy import (
+from ANONYMOUS_REPO.adversarial_policy import (
     POLICIES,
     AdversarialPolicy,
     MyopicWhiteBoxPolicy,
     NonmyopicWhiteBoxPolicy,
     PassingWrapper,
 )
-from go_attack.go import Color, Game, Move
-from go_attack.utils import select_best_gpu
+from ANONYMOUS_REPO.go import Color, Game, Move
+from ANONYMOUS_REPO.utils import select_best_gpu
 
 ENGINE_TYPES = (
     "elf",

@@ -5,7 +5,7 @@ from typing import IO
 
 import numpy as np
 
-from go_attack.go import Move
+from ANONYMOUS_REPO.go import Move
 
 
 def l1_distance(move1: Move, move2: Move) -> int:

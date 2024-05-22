@@ -43,6 +43,6 @@ while true; do
   ITERATION_DIR=/"$RUN_DIR"/iteration-"$ITERATION"
   # shellcheck disable=SC2086
   run_until_curriculum_done "$ITERATION_DIR" \
-    /go_attack/kubernetes/train.sh $WARMSTART_FLAGS \
+    /ANONYMOUS_REPO/kubernetes/train.sh $WARMSTART_FLAGS \
     "$RUN_NAME"/iteration-"$ITERATION" "$VOLUME_NAME" "$LR_SCALE"
 done

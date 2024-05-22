@@ -1,8 +1,8 @@
-"""Setup for go_attack: research code attacking Go AI systems."""
+"""Setup for ANONYMOUS_REPO: research code attacking Go AI systems."""
 
 from setuptools import find_packages, setup
 
-import src.go_attack  # pytype: disable=import-error
+import src.ANONYMOUS_REPO  # pytype: disable=import-error
 
 TESTS_REQUIRE = [
     "black[jupyter]",
@@ -35,8 +35,8 @@ def get_readme() -> str:
 
 
 setup(
-    name="go_attack",
-    version=src.go_attack.__version__,
+    name="ANONYMOUS_REPO",
+    version=src.ANONYMOUS_REPO.__version__,
     description="Research code attacking Go AI systems",
     long_description=get_readme(),
     long_description_content_type="text/markdown",
@@ -44,7 +44,7 @@ setup(
     python_requires=">=3.8.0",
     packages=find_packages("src"),
     package_dir={"": "src"},
-    package_data={"go_attack": ["py.typed"]},
+    package_data={"ANONYMOUS_REPO": ["py.typed"]},
     install_requires=[
         "docker",
         "matplotlib",
@@ -79,7 +79,7 @@ setup(
         ],
         "test": TESTS_REQUIRE,
     },
-    url="https://github.com/ANONYMOUS_USERNAME/go_attack",
+    url="https://github.com/ANONYMOUS_USERNAME/ANONYMOUS_REPO",
     license="MIT",
     classifiers=[
         # Trove classifiers

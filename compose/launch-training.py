@@ -110,9 +110,9 @@ def build_docker_compose_cmd(
     # Be robust to being run from any directory
     this_script_path = Path(__file__).resolve()
     compose_dir = this_script_path.parent
-    go_attack_dir = compose_dir.parent
+    ANONYMOUS_REPO_dir = compose_dir.parent
 
-    host_victims_dir = go_attack_dir / "victim-models"
+    host_victims_dir = ANONYMOUS_REPO_dir / "victim-models"
     if host_victims_dir.exists():
         print(f"Using victim models from: {host_victims_dir}")
     else:

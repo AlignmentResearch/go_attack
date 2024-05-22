@@ -46,7 +46,7 @@ ctl job run --container \
   "$CPP_IMAGE" \
   $VOLUME_FLAGS \
   --command "bash -c \"mkdir --parents $RUN_DIR &&
-  /go_attack/kubernetes/baseline-attack.sh \
+  /ANONYMOUS_REPO/kubernetes/baseline-attack.sh \
   $RUN_DIR 2>&1 | tee $RUN_DIR/baseline-attack.log\"" \
   --high-priority \
   --gpu "$NUM_GPUS" \

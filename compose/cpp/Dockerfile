@@ -112,23 +112,23 @@ WORKDIR /
 RUN python3 -m pip install --upgrade pip
 
 # Copy over python files and install them.
-RUN mkdir -p /go_attack/src
-COPY ./src/go_attack /go_attack/src/go_attack
-COPY ./setup.py /go_attack/setup.py
-COPY README.md /go_attack/README.md
+RUN mkdir -p /ANONYMOUS_REPO/src
+COPY ./src/ANONYMOUS_REPO /ANONYMOUS_REPO/src/ANONYMOUS_REPO
+COPY ./setup.py /ANONYMOUS_REPO/setup.py
+COPY README.md /ANONYMOUS_REPO/README.md
 # Silence annoying pip warning about running it as root inside the container
-RUN pip install -e /go_attack --root-user-action=ignore
+RUN pip install -e /ANONYMOUS_REPO --root-user-action=ignore
 
 # Copy over other files
-COPY ./kubernetes/ /go_attack/kubernetes
-COPY ./scripts/ /go_attack/scripts
+COPY ./kubernetes/ /ANONYMOUS_REPO/kubernetes
+COPY ./scripts/ /ANONYMOUS_REPO/scripts
 
 COPY ./engines/KataGo-custom/cpp/evaluate_loop.sh /engines/KataGo-custom/cpp/evaluate_loop.sh
 COPY ./engines/KataGo-raw/cpp/configs /engines/KataGo-raw/cpp/configs
 
 FROM runtime-deps as debug
 COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
-COPY ./configs /go_attack/configs
+COPY ./configs /ANONYMOUS_REPO/configs
 
 FROM runtime-deps as prod
 # Make the git commit visible to the image if provided as a --build-arg
@@ -138,5 +138,5 @@ ENV GIT_COMMIT=$ARG_GIT_COMMIT
 COPY --from=build-raw /engines/KataGo-raw/cpp/katago /engines/KataGo-raw/cpp/katago
 COPY --from=build-custom /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
 
-COPY ./configs /go_attack/configs
-RUN ln -s /engines /go_attack/engines
+COPY ./configs /ANONYMOUS_REPO/configs
+RUN ln -s /engines /ANONYMOUS_REPO/engines

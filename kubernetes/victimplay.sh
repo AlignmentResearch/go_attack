@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-CONFIG=/go_attack/configs/active-experiment.cfg
+CONFIG=/ANONYMOUS_REPO/configs/active-experiment.cfg
 while [ -n "${1-}" ]; do
   case $1 in
     # Specifies the config to use.
@@ -28,4 +28,4 @@ mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"
     -models-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/models/ \
     -nn-victim-path /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/victims/ \
     -config "$CONFIG" \
-    -config /go_attack/configs/compute/1gpu.cfg
+    -config /ANONYMOUS_REPO/configs/compute/1gpu.cfg

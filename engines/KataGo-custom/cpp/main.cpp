@@ -52,7 +52,7 @@ testgpuerror : Print the average error of the neural net between current config 
 
 runtests : Test important board algorithms and datastructures
 runnnlayertests : Test a few subcomponents of the current neural net backend
-runexpensivetests : Expensive tests (mostly for the go_attack project).
+runexpensivetests : Expensive tests (mostly for the ANONYMOUS_REPO project).
 
 runnnontinyboardtest : Run neural net on a tiny board and dump result to stdout
 runnnsymmetriestest : Run neural net on a hardcoded rectangle board and dump symmetries result

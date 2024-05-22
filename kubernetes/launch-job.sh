@@ -5,8 +5,8 @@
 # Argument parsing #
 ####################
 
-DEFAULT_CURRICULUM="/go_attack/configs/curriculum.json"
-DEFAULT_ALTERNATE_CURRICULUM="/go_attack/configs/iterated-training/alternate-curriculum.json"
+DEFAULT_CURRICULUM="/ANONYMOUS_REPO/configs/curriculum.json"
+DEFAULT_ALTERNATE_CURRICULUM="/ANONYMOUS_REPO/configs/iterated-training/alternate-curriculum.json"
 DEFAULT_LR_SCALE=1.0
 DEFAULT_NUM_VICTIMPLAY_GPUS=4
 
@@ -141,21 +141,21 @@ if [ -n "${USE_PREDICTOR:-}" ]; then
   fi
 
   PREDICTOR_FLAG="-p $RUN_NAME/predictor"
-  VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay-predictor.sh"
+  VICTIMPLAY_CMD="/ANONYMOUS_REPO/kubernetes/victimplay-predictor.sh"
 
   # shellcheck disable=SC2215,SC2086,SC2089,SC2090
   ctl job run --container \
       "$PYTHON_IMAGE" \
       "$PYTHON_IMAGE" \
       $VOLUME_FLAGS \
-      --command "/go_attack/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME" \
-      "/go_attack/kubernetes/train.sh --initial-weights $PREDICTOR_WARMSTART_CKPT $RUN_NAME/predictor $VOLUME_NAME $LR_SCALE" \
+      --command "/ANONYMOUS_REPO/kubernetes/shuffle-and-export.sh $RUN_NAME $RUN_NAME/predictor $VOLUME_NAME" \
+      "/ANONYMOUS_REPO/kubernetes/train.sh --initial-weights $PREDICTOR_WARMSTART_CKPT $RUN_NAME/predictor $VOLUME_NAME $LR_SCALE" \
       --high-priority \
       --gpu 0 1 \
       --name gt-"$1"-p
 else
   PREDICTOR_FLAG=""
-  VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay.sh"
+  VICTIMPLAY_CMD="/ANONYMOUS_REPO/kubernetes/victimplay.sh"
 fi
 
 if [ -n "${WARMSTART_CKPT:-}" ]; then
@@ -183,17 +183,17 @@ if [ -n "${USE_ITERATED_TRAINING:-}" ]; then
     `"and similarly for each defense iteration. This is not yet implemented"`
     `"in these automated iterated training scripts."
 
-  VICTIMPLAY_CMD="/go_attack/kubernetes/iterated-training/victimplay.sh $VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME $ALTERNATE_ITERATION_FIRST"
-  EVALUATE_LOOP_CMD="/go_attack/kubernetes/iterated-training/evaluate_loop.sh $RUN_NAME $VOLUME_NAME $ALTERNATE_ITERATION_FIRST"
-  TRAIN_CMD="/go_attack/kubernetes/iterated-training/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE $VICTIM_CKPT"
-  SHUFFLE_AND_EXPORT_CMD="/go_attack/kubernetes/iterated-training/shuffle-and-export.sh $RUN_NAME $VOLUME_NAME"
-  CURRICULUM_CMD="/go_attack/kubernetes/iterated-training/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM $ALTERNATE_CURRICULUM $ALTERNATE_ITERATION_FIRST"
+  VICTIMPLAY_CMD="/ANONYMOUS_REPO/kubernetes/iterated-training/victimplay.sh $VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME $ALTERNATE_ITERATION_FIRST"
+  EVALUATE_LOOP_CMD="/ANONYMOUS_REPO/kubernetes/iterated-training/evaluate_loop.sh $RUN_NAME $VOLUME_NAME $ALTERNATE_ITERATION_FIRST"
+  TRAIN_CMD="/ANONYMOUS_REPO/kubernetes/iterated-training/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE $VICTIM_CKPT"
+  SHUFFLE_AND_EXPORT_CMD="/ANONYMOUS_REPO/kubernetes/iterated-training/shuffle-and-export.sh $RUN_NAME $VOLUME_NAME"
+  CURRICULUM_CMD="/ANONYMOUS_REPO/kubernetes/iterated-training/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM $ALTERNATE_CURRICULUM $ALTERNATE_ITERATION_FIRST"
 else
   VICTIMPLAY_CMD+=" $VICTIMPLAY_FLAGS $RUN_NAME $VOLUME_NAME"
   EVALUATE_LOOP_CMD="/engines/KataGo-custom/cpp/evaluate_loop.sh $PREDICTOR_FLAG /$VOLUME_NAME/victimplay/$RUN_NAME /$VOLUME_NAME/victimplay/$RUN_NAME/eval"
-  TRAIN_CMD="/go_attack/kubernetes/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE"
-  SHUFFLE_AND_EXPORT_CMD="/go_attack/kubernetes/shuffle-and-export.sh $SHUFFLE_FLAGS $RUN_NAME $RUN_NAME $VOLUME_NAME"
-  CURRICULUM_CMD="/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM"
+  TRAIN_CMD="/ANONYMOUS_REPO/kubernetes/train.sh $TRAIN_FLAGS $RUN_NAME $VOLUME_NAME $LR_SCALE"
+  SHUFFLE_AND_EXPORT_CMD="/ANONYMOUS_REPO/kubernetes/shuffle-and-export.sh $SHUFFLE_FLAGS $RUN_NAME $RUN_NAME $VOLUME_NAME"
+  CURRICULUM_CMD="/ANONYMOUS_REPO/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM"
 fi
 
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
@@ -224,7 +224,7 @@ if [ "$USE_GATING" -eq 1 ]; then
   ctl job run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
-      --command "/go_attack/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
+      --command "/ANONYMOUS_REPO/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
       --high-priority \
       --restart-on-failure \
       --memory 48Gi \

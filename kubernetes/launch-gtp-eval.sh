@@ -5,8 +5,8 @@ HOST_REPO_ROOT=$(git rev-parse --show-toplevel)
 DEFAULT_NUM_CPUS=8
 DEFAULT_NUM_GAMES=100
 DEFAULT_NUM_GPUS=1
-DEFAULT_ADV_CONFIG=/go_attack/configs/gtp-amcts.cfg
-DEFAULT_VICTIM_CONFIG=/go_attack/configs/gtp-raw.cfg
+DEFAULT_ADV_CONFIG=/ANONYMOUS_REPO/configs/gtp-amcts.cfg
+DEFAULT_VICTIM_CONFIG=/ANONYMOUS_REPO/configs/gtp-raw.cfg
 DEFAULT_ADV_MODEL=/shared/victimplay/ANONYMOUS_AUTHOR-avoid-pass-alive-coldstart-39-20221025-175949/models/t0-s545065216-d136760487/model.bin.gz
 DEFAULT_VICTIM_MODEL=/shared/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz
 
@@ -94,7 +94,7 @@ ctl job run --container \
   "$CPP_AND_TWOGTP_IMAGE" \
   $VOLUME_FLAGS \
   --command "bash -x
-  /go_attack/kubernetes/gtp-eval.sh
+  /ANONYMOUS_REPO/kubernetes/gtp-eval.sh
   /shared/gtp-eval/$RUN_NAME $NUM_GPUS $NUM_GAMES
   $ADV_CONFIG $VICTIM_CONFIG $ADV_MODEL $VICTIM_MODEL" \
   --high-priority \

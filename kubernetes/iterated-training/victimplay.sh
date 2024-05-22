@@ -23,14 +23,14 @@ while true; do
   echo "Starting iteration $ITERATION"
 
   if [ $((ITERATION % 2)) -eq "$ALTERNATE_ITERATION_FIRST" ]; then
-    CONFIG=/go_attack/configs/active-experiment.cfg
+    CONFIG=/ANONYMOUS_REPO/configs/active-experiment.cfg
   else
-    CONFIG=/go_attack/configs/iterated-training/alternate-experiment.cfg
+    CONFIG=/ANONYMOUS_REPO/configs/iterated-training/alternate-experiment.cfg
   fi
 
   ITERATION_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/iteration-"$ITERATION"
   run_until_curriculum_done "$ITERATION_DIR" \
-    /go_attack/kubernetes/victimplay.sh --config "$CONFIG" "$WARMSTART_FLAG" \
+    /ANONYMOUS_REPO/kubernetes/victimplay.sh --config "$CONFIG" "$WARMSTART_FLAG" \
     "$RUN_NAME"/iteration-"$ITERATION" "$VOLUME_NAME"
 
   # All iterations besides the first are warmstarted with the victim of the

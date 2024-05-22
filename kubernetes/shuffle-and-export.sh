@@ -52,7 +52,7 @@ else
 fi
 
 # not related to shuffle-and-export but we want some process to log this
-/go_attack/kubernetes/log-git-commit.sh /"$VOLUME_NAME"/victimplay/"$DIRECTORY"
+/ANONYMOUS_REPO/kubernetes/log-git-commit.sh /"$VOLUME_NAME"/victimplay/"$DIRECTORY"
 
 EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$DIRECTORY"
 mkdir --parents "$EXPERIMENT_DIR"/selfplay

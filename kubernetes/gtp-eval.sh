@@ -16,10 +16,10 @@ VICTIM_CONFIG=$5
 ADV_MODEL=$6
 VICTIM_MODEL=$7
 
-GPU_CONFIG="go_attack/configs/compute/${NUM_GPUS}gpu.cfg"
+GPU_CONFIG="ANONYMOUS_REPO/configs/compute/${NUM_GPUS}gpu.cfg"
 COMMON_KATAGO_FLAGS="-config $GPU_CONFIG -override-config logSearchInfo=true,logToStdout=true"
 
-/go_attack/kubernetes/log-git-commit.sh "$OUTPUT_DIR"
+/ANONYMOUS_REPO/kubernetes/log-git-commit.sh "$OUTPUT_DIR"
 
 mkdir --parents "$OUTPUT_DIR/sgfs"
 /gogui/bin/gogui-twogtp \

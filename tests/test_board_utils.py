@@ -4,8 +4,8 @@ from itertools import product
 
 import pytest
 
-from go_attack.board_utils import mirror_move
-from go_attack.go import Move
+from ANONYMOUS_REPO.board_utils import mirror_move
+from ANONYMOUS_REPO.go import Move
 
 
 @pytest.mark.parametrize("board_size", [9, 13, 19])

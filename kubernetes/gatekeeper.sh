@@ -6,8 +6,8 @@ TRAINING_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 mkdir -p "$TRAINING_DIR"
 
 /engines/KataGo-custom/cpp/katago victimplaygatekeeper \
-  -config /go_attack/configs/amcts/gatekeeper.cfg \
-  -config /go_attack/configs/compute/1gpu.cfg \
+  -config /ANONYMOUS_REPO/configs/amcts/gatekeeper.cfg \
+  -config /ANONYMOUS_REPO/configs/compute/1gpu.cfg \
   -accepted-models-dir "$TRAINING_DIR/models"  \
   -rejected-models-dir "$TRAINING_DIR/rejectedmodels" \
   -test-models-dir "$TRAINING_DIR/modelstobetested" \

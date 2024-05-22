@@ -49,11 +49,11 @@ COPY ./engines/KataGo-raw/python /engines/KataGo-raw/python
 COPY ./engines/KataGo-tensorflow/python /engines/KataGo-tensorflow/python
 COPY ./engines/KataGo-custom/python /engines/KataGo-custom/python
 
-COPY ./configs/ /go_attack/configs
-COPY ./kubernetes/ /go_attack/kubernetes
-COPY ./scripts/ /go_attack/scripts
-COPY ./src/go_attack /go_attack/src/go_attack
-COPY ./setup.py /go_attack/setup.py
+COPY ./configs/ /ANONYMOUS_REPO/configs
+COPY ./kubernetes/ /ANONYMOUS_REPO/kubernetes
+COPY ./scripts/ /ANONYMOUS_REPO/scripts
+COPY ./src/ANONYMOUS_REPO /ANONYMOUS_REPO/src/ANONYMOUS_REPO
+COPY ./setup.py /ANONYMOUS_REPO/setup.py
 
 # Make /engines/KataGo-* git repos to make scripts run nicely.
 # TODO: Make this less hacky...

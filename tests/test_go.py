@@ -5,7 +5,7 @@ from typing import Dict, Sequence
 import numpy as np
 import pytest
 
-from go_attack.go import Game, Move
+from ANONYMOUS_REPO.go import Game, Move
 
 
 def create_game(

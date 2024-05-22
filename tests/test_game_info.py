@@ -1,10 +1,10 @@
-"""Tests for `go_attack.game_info`."""
+"""Tests for `ANONYMOUS_REPO.game_info`."""
 
 import pathlib
 
 import pytest
 
-from go_attack import game_info
+from ANONYMOUS_REPO import game_info
 
 THIS_DIR = pathlib.Path(__file__).absolute().parent
 TESTDATA_DIR = THIS_DIR / "testdata"

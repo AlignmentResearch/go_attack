@@ -3,7 +3,7 @@
 usage() {
     echo "Usage: $0 [--victim-list VICTIM_LIST] [-victim-dir VICTIM_DIR]"
     echo "          [--prediction-dir PREDICTOR_DIR] [--katago-bin KATAGO_BIN]"
-    echo "          [--go-attack-root GO_ATTACK_ROOT] BASE_DIR OUTPUT_DIR"
+    echo "          [--go-attack-root ANONYMOUS_REPO_ROOT] BASE_DIR OUTPUT_DIR"
     echo
     echo "positional arguments:"
     echo " BASE_DIR The root of the training run, containing selfplay data, models and"
@@ -13,7 +13,7 @@ usage() {
     echo "optional arguments:"
     echo "  --config CONFIG"
     echo "    KataGo match config."
-    echo "    Default: GO_ATTACK_ROOT/configs/match-1gpu.cfg"
+    echo "    Default: ANONYMOUS_REPO_ROOT/configs/match-1gpu.cfg"
     echo "  -v VICTIM_LIST, --victim-list VICTIM_LIST"
     echo "    A comma-separated list of models in VICTIM_DIR to use."
     echo "    If empty, the most recent model will be used."
@@ -25,9 +25,9 @@ usage() {
     echo "  -k KATAGO_BIN, --katago-bin KATAGO_BIN"
     echo "    The path to the KataGo binary."
     echo "    Default: '/engines/KataGo-custom/cpp/katago'"
-    echo "  -g GO_ATTACK_ROOT, --go-attack-root GO_ATTACK_ROOT"
+    echo "  -g ANONYMOUS_REPO_ROOT, --go-attack-root ANONYMOUS_REPO_ROOT"
     echo "    The root directory of the go-attack repository."
-    echo "    Default: '/go_attack'"
+    echo "    Default: '/ANONYMOUS_REPO'"
     echo "  --num-games NUM_GAMES"
     echo "    Number of games per evaluation."
     echo "    Default: 100"
@@ -40,7 +40,7 @@ VICTIM_LIST_ARG=""
 VICTIMS_DIR=""
 PREDICTOR_DIR=""
 KATAGO_BIN="/engines/KataGo-custom/cpp/katago"
-GO_ATTACK_ROOT="/go_attack"
+ANONYMOUS_REPO_ROOT="/ANONYMOUS_REPO"
 NUM_GAMES=100
 
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149)
@@ -52,13 +52,13 @@ while [ -n "${1-}" ]; do
     -d|--victim-dir) VICTIMS_DIR="$2"; shift 2 ;;
     -p|--prediction-dir) PREDICTOR_DIR="$2"; shift 2 ;;
     -k|--katago-bin) KATAGO_BIN="$2"; shift 2 ;;
-    -g|--go-attack-root) GO_ATTACK_ROOT="$2"; shift 2 ;;
+    -g|--go-attack-root) ANONYMOUS_REPO_ROOT="$2"; shift 2 ;;
     --num-games) NUM_GAMES="$2"; shift 2;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
 done
-CONFIG=${CONFIG:-"$GO_ATTACK_ROOT"/configs/match-1gpu.cfg}
+CONFIG=${CONFIG:-"$ANONYMOUS_REPO_ROOT"/configs/match-1gpu.cfg}
 
 NUM_POSITIONAL_ARGUMENTS=2
 if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then

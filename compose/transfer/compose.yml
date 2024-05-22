@@ -73,13 +73,13 @@ services:
         target: /outputs
       - type: bind
         source: ${HOST_REPO_ROOT}
-        target: /go_attack
+        target: /ANONYMOUS_REPO
         read_only: true
     command:
       sh -c "
         printf '#!/bin/bash\nnc ${VICTIM} 80' > /connect-to-victim.sh
         && chmod +x /connect-to-victim.sh
-        && python3 -u /go_attack/scripts/baseline_attack.py
+        && python3 -u /ANONYMOUS_REPO/scripts/baseline_attack.py
         --engine ${VICTIM}
         --executable /connect-to-victim.sh
         --komi ${KOMI}

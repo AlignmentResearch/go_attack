@@ -111,7 +111,7 @@ def get_usage_string(
 ) -> UsageString:
     """Generates a usage string for a job."""
     configs = [
-        re.sub(r".*go_attack/configs", r"/go_attack/configs", str(config))
+        re.sub(r".*ANONYMOUS_REPO/configs", r"/ANONYMOUS_REPO/configs", str(config))
         for config in configs
     ]
     config_flags = " ".join(f"-config {config}" for config in configs)

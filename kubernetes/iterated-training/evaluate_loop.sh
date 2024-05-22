@@ -11,9 +11,9 @@ while true; do
   echo "Starting iteration $ITERATION"
 
   if [ $((ITERATION % 2)) -eq "$ALTERNATE_ITERATION_FIRST" ]; then
-    CONFIG=/go_attack/configs/match-1gpu.cfg
+    CONFIG=/ANONYMOUS_REPO/configs/match-1gpu.cfg
   else
-    CONFIG=/go_attack/configs/iterated-training/alternate-match-1gpu.cfg
+    CONFIG=/ANONYMOUS_REPO/configs/iterated-training/alternate-match-1gpu.cfg
   fi
 
   ITERATION_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/iteration-"$ITERATION"

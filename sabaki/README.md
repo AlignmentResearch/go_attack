@@ -40,12 +40,12 @@ The base KataGo models are downloaded from https://katagotraining.org/networks/.
 4. After adding a config, you can follow the instructions at https://youtu.be/6ZA_saVHyTA to play against newly configured engine.
 
 In particular, the following config runs our cyclic-adversary, assuming this
-repo is checked out at `/Users/ttw/code/go_attack/engines/` (the paths will need
+repo is checked out at `/Users/ttw/code/ANONYMOUS_REPO/engines/` (the paths will need
 to be adjusted depending on where your copy of the repo is located):
 ```
 cyclic-adv-s545m-v600-vm-cp505-v1-s
-/Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
-gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/cyclic-adv-s545065216-d136760487.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg
+/Users/ttw/code/ANONYMOUS_REPO/engines/KataGo-custom/cpp/katago
+gtp -model /Users/ttw/code/ANONYMOUS_REPO/sabaki/models/adv/cyclic-adv-s545065216-d136760487.bin.gz -victim-model /Users/ttw/code/ANONYMOUS_REPO/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/ANONYMOUS_REPO/configs/sabaki/gtp-adv600-vm1-s.cfg
 time_settings 0 1 0
 ```
 
@@ -54,40 +54,40 @@ You'll need to change the paths to the models and executables for your machine.
 ```
 # Weaker cyclic-adversary (with dragonslayer strategy)
 cyclic-adv-s349m-v600-vm-cp505-v1-s
-/Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
-gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/cyclic-adv-s349284096-d87808728.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg
+/Users/ttw/code/ANONYMOUS_REPO/engines/KataGo-custom/cpp/katago
+gtp -model /Users/ttw/code/ANONYMOUS_REPO/sabaki/models/adv/cyclic-adv-s349284096-d87808728.bin.gz -victim-model /Users/ttw/code/ANONYMOUS_REPO/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/ANONYMOUS_REPO/configs/sabaki/gtp-adv600-vm1-s.cfg
 time_settings 0 1 0
 
 # Pass-adversary
 pass-adv-s34m-v600-vs-cp505-v1-s
-/Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
-gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/pass-adv-s34090496-d8262123.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg 
+/Users/ttw/code/ANONYMOUS_REPO/engines/KataGo-custom/cpp/katago
+gtp -model /Users/ttw/code/ANONYMOUS_REPO/sabaki/models/adv/pass-adv-s34090496-d8262123.bin.gz -victim-model /Users/ttw/code/ANONYMOUS_REPO/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/ANONYMOUS_REPO/configs/sabaki/gtp-adv600-vm1-s.cfg 
 time_settings 0 1 0
 
 # Latest with 128 visits
 cp505-v128
-/Users/ttw/code/go_attack/engines/KataGo-raw/cpp/katago
-gtp -model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-v128.cfg
+/Users/ttw/code/ANONYMOUS_REPO/engines/KataGo-raw/cpp/katago
+gtp -model /Users/ttw/code/ANONYMOUS_REPO/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/ANONYMOUS_REPO/configs/sabaki/gtp-v128.cfg
 time_settings 0 1 0
 
 # Latest with no search
 cp505-v1
-/Users/ttw/code/go_attack/engines/KataGo-raw/cpp/katago
-gtp -model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-v1.cfg
+/Users/ttw/code/ANONYMOUS_REPO/engines/KataGo-raw/cpp/katago
+gtp -model /Users/ttw/code/ANONYMOUS_REPO/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/ANONYMOUS_REPO/configs/sabaki/gtp-v1.cfg
 time_settings 0 1 0
 ```
 
 ## Internal notes
 The following config enables playing against an adversary (or victim) over SSH.
 To do this on a machine M without `/nas/` access,
-you need to clone the `go_attack` repo on M,
+you need to clone the `ANONYMOUS_REPO` repo on M,
 download the adversary and victim models on M,
 and make sure Docker works on M.
 ```
 # Cyclic-adversary over ssh
 ssh-cyclic-adv-s545m-v600-vm-cp505-v1-s
 ssh
-rnn -tt 'bash -l -c "/nas/ucb/ANONYMOUS_AUTHOR_2/go-attack/gtp-host/go_attack/sabaki/scripts/docker-katago.sh custom gtp -model /models/adv/cyclic-adv-s545065216-d136760487.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg -config /go_attack/configs/compute/1gpu.cfg"'
+rnn -tt 'bash -l -c "/nas/ucb/ANONYMOUS_AUTHOR_2/go-attack/gtp-host/ANONYMOUS_REPO/sabaki/scripts/docker-katago.sh custom gtp -model /models/adv/cyclic-adv-s545065216-d136760487.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /ANONYMOUS_REPO/configs/sabaki/gtp-adv600-vm1-s.cfg -config /ANONYMOUS_REPO/configs/compute/1gpu.cfg"'
 time_settings 0 1 0
 ```
 

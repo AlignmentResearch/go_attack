@@ -89,7 +89,7 @@ ctl job run --container \
   "$CPP_IMAGE" \
   $VOLUME_FLAGS \
   --command "bash -x
-  /go_attack/kubernetes/match.sh
+  /ANONYMOUS_REPO/kubernetes/match.sh
   /shared/match/${SUBDIR}/${RUN_NAME}
   ${GAMES_PER_REPLICA}
   $*" \

@@ -14,10 +14,10 @@ To clone this repository,
 run one of the following commands
 ```
 # Via HTTPS
-git clone --recurse-submodules https://github.com/ANONYMOUS_USERNAME/go_attack.git
+git clone --recurse-submodules https://github.com/ANONYMOUS_USERNAME/ANONYMOUS_REPO.git
 
 # Via SSH
-git clone --recurse-submodules git@github.com:ANONYMOUS_USERNAME/go_attack.git
+git clone --recurse-submodules git@github.com:ANONYMOUS_USERNAME/ANONYMOUS_REPO.git
 ```
 
 You can run `pip install -e .[dev]` inside the project root directory to install all necessary dependencies.
@@ -44,7 +44,7 @@ The Dockerfiles contain instructions for how to build them individually. This is
 A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory inside the container.
 To run a docker container, you can use a command like
 ```
-docker run --gpus all -v ~/go_attack:/go_attack -it ANONYMOUS_USERNAME/goattack:cpp
+docker run --gpus all -v ~/ANONYMOUS_REPO:/ANONYMOUS_REPO -it ANONYMOUS_USERNAME/goattack:cpp
 ```
 
 ## Docker compose

@@ -34,7 +34,7 @@ while true; do
   fi
 
   run_until_curriculum_done "$ITERATION_DIR" \
-    /go_attack/kubernetes/curriculum.sh --input-models-dir "$INPUT_MODELS_DIR" \
+    /ANONYMOUS_REPO/kubernetes/curriculum.sh --input-models-dir "$INPUT_MODELS_DIR" \
     "$RUN_NAME"/iteration-"$ITERATION" "$VOLUME_NAME" \
     "$ITERATION_CURRICULUM_FILE"
   echo "Finished iteration $ITERATION"
