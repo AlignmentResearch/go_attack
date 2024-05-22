@@ -9,7 +9,7 @@
 #include "../neuralnet/nninputs.h"
 #include "../neuralnet/nneval.h"
 #include "../neuralnet/desc.h"
-// note(tomtseng): We're crudely bolting the PyTorch backend here while we
+// note(ANONYMOUS_AUTHOR): We're crudely bolting the PyTorch backend here while we
 // prototype the PyTorch backend implementation, but ideally we'd refactor
 // things so that the PyTorch backend is independent of the other backends.
 #include "../neuralnet/pytorchbackend.h"
@@ -2003,7 +2003,7 @@ struct LoadedModel {
   LoadedModel(const string& fileName, const string& expectedSha256) {
     if (Global::isSuffix(fileName, ".pt")) {
       torchModel = std::unique_ptr<TorchNeuralNet::LoadedModel>(TorchNeuralNet::loadModelFile(fileName, expectedSha256));
-      // HACK(tomtseng): Setting the modelDesc->version makes
+      // HACK(ANONYMOUS_AUTHOR): Setting the modelDesc->version makes
       // NeuralNet::getSupportedRules() work as expected since the function
       // depends only on model version.
       modelDesc.version = TorchNeuralNet::getModelVersion(torchModel.get());

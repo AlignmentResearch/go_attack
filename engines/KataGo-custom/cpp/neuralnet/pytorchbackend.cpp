@@ -16,7 +16,7 @@ namespace TorchNeuralNet {
 
 namespace {
 
-// HACK(tomtseng): We should write the model version and max model board size
+// HACK(ANONYMOUS_AUTHOR): We should write the model version and max model board size
 // when exporting the model. For now we'll just hard code the values.
 constexpr int MAX_BOARD_LEN = 19;
 constexpr int MODEL_VERSION = 14;
@@ -250,7 +250,7 @@ void getOutput(
     //   ...
     //   0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
     //
-    // The other backends handle this but I (tomtseng) haven't investigated how.
+    // The other backends handle this but I (ANONYMOUS_AUTHOR) haven't investigated how.
     // For now we'll just enforce that nnXLen and nnYLen are 19. If a user wants
     // to play on a 5x5 board, they should include 19 in the bSizes config
     // parameter (and set its bSizeRelProbs to 0 if they don't actually want any

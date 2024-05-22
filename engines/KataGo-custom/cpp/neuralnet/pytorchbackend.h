@@ -11,7 +11,7 @@
 #include  "../neuralnet/nneval.h"
 #include  "../neuralnet/nninputs.h"
 
-// note(tomtseng): Ideally we'd refactor this PyTorch interface to have less code duplication
+// note(ANONYMOUS_AUTHOR): Ideally we'd refactor this PyTorch interface to have less code duplication
 // and combine less intrusively with other backends. (Realistically I won't
 // spend time refactoring this because this PyTorch backend is experimental
 // code, but if someone wants to merge these changes back into upstream then

@@ -16,7 +16,7 @@ from model_pytorch import Model
 class EvalModel(torch.nn.Module):
     """Removes outputs that are only used during training.
 
-    I (tomtseng) doubt that JIT is smart enough to optimize out parameters and
+    I (ANONYMOUS_AUTHOR) doubt that JIT is smart enough to optimize out parameters and
     calculations that are no longer used as a result of removing outputs, but we
     might as well remove unnecessary outputs regardless so that in the future we
     can choose to manually remove those parameters and calculations without
