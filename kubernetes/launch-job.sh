@@ -62,7 +62,7 @@ usage() {
   echo "    the adversary, e.g.,"
   echo "    /shared/victim-weights/kata1-b40c256-s11840935168-d2898845681 for"
   echo "    cp505, e.g.,"
-  echo "    /shared/victimplay/ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models/t0-s545065216-d136760487"
+  echo "    /shared/victimplay/ANONYMOUS_AUTHOR-avoid-pass-alive-coldstart-39-20221025-175949/models/t0-s545065216-d136760487"
   echo "    for the cyclic-adversary. The corresponding model file is expected"
   echo "    to be in either the TF weights directory or /shared/victims/."
   echo "  --victim-ckpt CHECKPOINT"

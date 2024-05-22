@@ -7,7 +7,7 @@ DEFAULT_NUM_GAMES=100
 DEFAULT_NUM_GPUS=1
 DEFAULT_ADV_CONFIG=/go_attack/configs/gtp-amcts.cfg
 DEFAULT_VICTIM_CONFIG=/go_attack/configs/gtp-raw.cfg
-DEFAULT_ADV_MODEL=/shared/victimplay/ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models/t0-s545065216-d136760487/model.bin.gz
+DEFAULT_ADV_MODEL=/shared/victimplay/ANONYMOUS_AUTHOR-avoid-pass-alive-coldstart-39-20221025-175949/models/t0-s545065216-d136760487/model.bin.gz
 DEFAULT_VICTIM_MODEL=/shared/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz
 
 usage() {

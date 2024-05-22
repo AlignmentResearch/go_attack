@@ -7,7 +7,7 @@
 ---
 main_adversary:
   path: "/nas/ucb/k8/go-attack/victimplay\
-    /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models\
+    /ANONYMOUS_AUTHOR-avoid-pass-alive-coldstart-39-20221025-175949/models\
     /t0-s545065216-d136760487/model.bin.gz" # cyclic-adv-s545m
 
 # Experiment: Evaluate `main_adversary` against several victims.
@@ -38,7 +38,7 @@ main_adversary_evaluation:
 training_checkpoint_sweep:
   # Path to all models from the training run.
   checkpoints_path: "/nas/ucb/k8/go-attack/victimplay\
-    /ttseng-avoid-pass-alive-coldstart-39-20221025-175949/models"
+    /ANONYMOUS_AUTHOR-avoid-pass-alive-coldstart-39-20221025-175949/models"
   adversary_algorithm: AMCTS-S
   adversary_visits: 600
   # Maximum number of checkpoints to evaluate (not including the main
@@ -76,7 +76,7 @@ training_checkpoint_sweep:
 katago_ckpt_sweep:
   # Set adversary_path to null to use the main adversary.
   adversary_path: "/nas/ucb/k8/go-attack/victimplay/\
-    ttseng-cyclic-vs-cp564-20230213-154321/models/\
+    ANONYMOUS_AUTHOR-cyclic-vs-cp564-20230213-154321/models/\
     t0-s22887680-d6258166/model.bin.gz"  # cyclic-adv-ft-vs-b60-s7047m-s22m
   num_games_per_matchup: 500
   # Adversary config
