@@ -1,0 +1,408 @@
+: Running with following config:
+allowResignation = true
+bSizeRelProbs = 1
+bSizes = 9
+botName0 = AAA
+botName1 = BBB
+botName2 = CCC
+botName3 = DDD
+botName4 = EEE
+botName5 = FFF
+botName6 = GGG
+botName7 = HHH
+debugSkipNeuralNet = true
+extraPairs = 2-0,2-4,1-5,7-5
+handicapCompensateKomiProb = 1.0
+handicapProb = 0.0
+hasButtons = false
+includeBots = 0,1,2,3,4
+koRules = SIMPLE
+komiMean = 7
+logGamesEvery = 20
+logMoves = false
+logSearchInfo = false
+logTimeStamp = false
+logToStdout = true
+maxMovesPerGame = 2
+maxPlayouts = 10
+multiStoneSuicideLegals = false
+nnCacheSizePowerOfTwo = 15
+nnMaxBatchSize = 64
+nnModelFile0 = MODELB
+nnModelFile1 = MODELA
+nnModelFile2 = MODELA
+nnModelFile3 = MODELC
+nnModelFile4 = MODELA
+nnModelFile5 = MODELC
+nnModelFile6 = MODELD
+nnModelFile7 = MODELE
+nnMutexPoolSizePowerOfTwo = 10
+nnRandomize = true
+numBots = 8
+numGameThreads = 1
+numGamesTotal = 44
+numNNServerThreadsPerModel = 1
+numSearchThreads = 1
+resignConsecTurns = 3
+resignThreshold = -0.95
+scoringRules = AREA
+secondaryBots = 2,3,4
+taxRules = NONE
+
+: Match Engine starting...
+: Git revision: ###
+: nnRandSeed = ###
+: After dedups: nnModelFile0 = MODELB useFP16 auto useNHWC auto
+: Initializing neural net buffer to be size 9 * 9 exactly
+: nnRandSeed = ###
+: After dedups: nnModelFile1 = MODELA useFP16 auto useNHWC auto
+: Initializing neural net buffer to be size 9 * 9 exactly
+: nnRandSeed = ###
+: After dedups: nnModelFile2 = MODELC useFP16 auto useNHWC auto
+: Initializing neural net buffer to be size 9 * 9 exactly
+: nnRandSeed = ###
+: After dedups: nnModelFile3 = MODELE useFP16 auto useNHWC auto
+: Initializing neural net buffer to be size 9 * 9 exactly
+: Loaded neural net
+: Loaded all config stuff, starting matches
+: Launching game DFD9722C50D7A135:65949BC49D3EFD0B between CCC-MCTS (B) BBB-MCTS (W)
+: Finished game DFD9722C50D7A135:65949BC49D3EFD0B between CCC-MCTS (B) BBB-MCTS (W)
+: Launching game DFD9722C50D7A135:E36C1CCCEAB03E3E between CCC-MCTS (B) AAA-MCTS (W)
+: Finished game DFD9722C50D7A135:E36C1CCCEAB03E3E between CCC-MCTS (B) AAA-MCTS (W)
+: Launching game DFD9722C50D7A135:234F5EF4D7CDD859 between BBB-MCTS (B) CCC-MCTS (W)
+: Finished game DFD9722C50D7A135:234F5EF4D7CDD859 between BBB-MCTS (B) CCC-MCTS (W)
+: Launching game DFD9722C50D7A135:A7E32E8E8FFB76D9 between DDD-MCTS (B) AAA-MCTS (W)
+: Finished game DFD9722C50D7A135:A7E32E8E8FFB76D9 between DDD-MCTS (B) AAA-MCTS (W)
+: Launching game DFD9722C50D7A135:FEACE7CEFFE1A6CE between EEE-MCTS (B) BBB-MCTS (W)
+: Finished game DFD9722C50D7A135:FEACE7CEFFE1A6CE between EEE-MCTS (B) BBB-MCTS (W)
+: Launching game DFD9722C50D7A135:F6A7136E07577B2A between EEE-MCTS (B) AAA-MCTS (W)
+: Finished game DFD9722C50D7A135:F6A7136E07577B2A between EEE-MCTS (B) AAA-MCTS (W)
+: Launching game DFD9722C50D7A135:277BF4FC52118655 between AAA-MCTS (B) CCC-MCTS (W)
+: Finished game DFD9722C50D7A135:277BF4FC52118655 between AAA-MCTS (B) CCC-MCTS (W)
+: Launching game DFD9722C50D7A135:797C439856EF960F between FFF-MCTS (B) BBB-MCTS (W)
+: Finished game DFD9722C50D7A135:797C439856EF960F between FFF-MCTS (B) BBB-MCTS (W)
+: Launching game DFD9722C50D7A135:257528675BA7ADA3 between EEE-MCTS (B) CCC-MCTS (W)
+: Finished game DFD9722C50D7A135:257528675BA7ADA3 between EEE-MCTS (B) CCC-MCTS (W)
+: Launching game DFD9722C50D7A135:049C53927E70AD82 between BBB-MCTS (B) DDD-MCTS (W)
+: Finished game DFD9722C50D7A135:049C53927E70AD82 between BBB-MCTS (B) DDD-MCTS (W)
+: Launching game DFD9722C50D7A135:0FF51EB8FFFDDED0 between FFF-MCTS (B) HHH-MCTS (W)
+: Finished game DFD9722C50D7A135:0FF51EB8FFFDDED0 between FFF-MCTS (B) HHH-MCTS (W)
+: Launching game DFD9722C50D7A135:6AE0A2E523C7B314 between DDD-MCTS (B) BBB-MCTS (W)
+: Finished game DFD9722C50D7A135:6AE0A2E523C7B314 between DDD-MCTS (B) BBB-MCTS (W)
+: Launching game DFD9722C50D7A135:ABDDB1C82920D603 between AAA-MCTS (B) EEE-MCTS (W)
+: Finished game DFD9722C50D7A135:ABDDB1C82920D603 between AAA-MCTS (B) EEE-MCTS (W)
+: Launching game DFD9722C50D7A135:DAEC7A954F088C6E between CCC-MCTS (B) EEE-MCTS (W)
+: Finished game DFD9722C50D7A135:DAEC7A954F088C6E between CCC-MCTS (B) EEE-MCTS (W)
+: Launching game DFD9722C50D7A135:FD5FD05CFF8CB0E3 between CCC-MCTS (B) AAA-MCTS (W)
+: Finished game DFD9722C50D7A135:FD5FD05CFF8CB0E3 between CCC-MCTS (B) AAA-MCTS (W)
+: Launching game DFD9722C50D7A135:9ADC2E2BB8E718E2 between BBB-MCTS (B) FFF-MCTS (W)
+: Finished game DFD9722C50D7A135:9ADC2E2BB8E718E2 between BBB-MCTS (B) FFF-MCTS (W)
+: Launching game DFD9722C50D7A135:EA0BAF7A833CD813 between AAA-MCTS (B) DDD-MCTS (W)
+: Finished game DFD9722C50D7A135:EA0BAF7A833CD813 between AAA-MCTS (B) DDD-MCTS (W)
+: Launching game DFD9722C50D7A135:904B8B523FA4F296 between AAA-MCTS (B) CCC-MCTS (W)
+: Finished game DFD9722C50D7A135:904B8B523FA4F296 between AAA-MCTS (B) CCC-MCTS (W)
+: Launching game DFD9722C50D7A135:9AE9F50AE3353750 between HHH-MCTS (B) FFF-MCTS (W)
+: Finished game DFD9722C50D7A135:9AE9F50AE3353750 between HHH-MCTS (B) FFF-MCTS (W)
+: Started 20 games
+: Launching game DFD9722C50D7A135:2F4DC3B6FE04E659 between BBB-MCTS (B) AAA-MCTS (W)
+: Finished game DFD9722C50D7A135:2F4DC3B6FE04E659 between BBB-MCTS (B) AAA-MCTS (W)
+: Launching game DFD9722C50D7A135:959A58326026C482 between BBB-MCTS (B) EEE-MCTS (W)
+: Finished game DFD9722C50D7A135:959A58326026C482 between BBB-MCTS (B) EEE-MCTS (W)
+: Launching game DFD9722C50D7A135:4CADFC671F263A26 between AAA-MCTS (B) BBB-MCTS (W)
+: Finished game DFD9722C50D7A135:4CADFC671F263A26 between AAA-MCTS (B) BBB-MCTS (W)
+: Launching game DFD9722C50D7A135:D392E21245F183EE between AAA-MCTS (B) CCC-MCTS (W)
+: Finished game DFD9722C50D7A135:D392E21245F183EE between AAA-MCTS (B) CCC-MCTS (W)
+: Launching game DFD9722C50D7A135:9451F88C9F7B58FE between BBB-MCTS (B) EEE-MCTS (W)
+: Finished game DFD9722C50D7A135:9451F88C9F7B58FE between BBB-MCTS (B) EEE-MCTS (W)
+: Launching game DFD9722C50D7A135:10B56C307D33A6DA between FFF-MCTS (B) HHH-MCTS (W)
+: Finished game DFD9722C50D7A135:10B56C307D33A6DA between FFF-MCTS (B) HHH-MCTS (W)
+: Launching game DFD9722C50D7A135:9D7BEF6398A06509 between EEE-MCTS (B) BBB-MCTS (W)
+: Finished game DFD9722C50D7A135:9D7BEF6398A06509 between EEE-MCTS (B) BBB-MCTS (W)
+: Launching game DFD9722C50D7A135:3C4E8F8FDFF12E68 between BBB-MCTS (B) AAA-MCTS (W)
+: Finished game DFD9722C50D7A135:3C4E8F8FDFF12E68 between BBB-MCTS (B) AAA-MCTS (W)
+: Launching game DFD9722C50D7A135:FDB4DB32372155B1 between FFF-MCTS (B) BBB-MCTS (W)
+: Finished game DFD9722C50D7A135:FDB4DB32372155B1 between FFF-MCTS (B) BBB-MCTS (W)
+: Launching game DFD9722C50D7A135:6F9872886D30ECA0 between BBB-MCTS (B) DDD-MCTS (W)
+: Finished game DFD9722C50D7A135:6F9872886D30ECA0 between BBB-MCTS (B) DDD-MCTS (W)
+: Launching game DFD9722C50D7A135:C5DF3E87E9FEBD2B between DDD-MCTS (B) BBB-MCTS (W)
+: Finished game DFD9722C50D7A135:C5DF3E87E9FEBD2B between DDD-MCTS (B) BBB-MCTS (W)
+: Launching game DFD9722C50D7A135:690354BE43FC4290 between CCC-MCTS (B) BBB-MCTS (W)
+: Finished game DFD9722C50D7A135:690354BE43FC4290 between CCC-MCTS (B) BBB-MCTS (W)
+: Launching game DFD9722C50D7A135:83404113D22B0EC6 between HHH-MCTS (B) FFF-MCTS (W)
+: Finished game DFD9722C50D7A135:83404113D22B0EC6 between HHH-MCTS (B) FFF-MCTS (W)
+: Launching game DFD9722C50D7A135:DBA5C8D7F0CF7A94 between DDD-MCTS (B) AAA-MCTS (W)
+: Finished game DFD9722C50D7A135:DBA5C8D7F0CF7A94 between DDD-MCTS (B) AAA-MCTS (W)
+: Launching game DFD9722C50D7A135:F3942A7653322280 between CCC-MCTS (B) AAA-MCTS (W)
+: Finished game DFD9722C50D7A135:F3942A7653322280 between CCC-MCTS (B) AAA-MCTS (W)
+: Launching game DFD9722C50D7A135:7E784698B72A1DB7 between BBB-MCTS (B) CCC-MCTS (W)
+: Finished game DFD9722C50D7A135:7E784698B72A1DB7 between BBB-MCTS (B) CCC-MCTS (W)
+: Launching game DFD9722C50D7A135:7312F5AB8C48FB87 between AAA-MCTS (B) BBB-MCTS (W)
+: Finished game DFD9722C50D7A135:7312F5AB8C48FB87 between AAA-MCTS (B) BBB-MCTS (W)
+: Launching game DFD9722C50D7A135:C25122D53C658367 between CCC-MCTS (B) AAA-MCTS (W)
+: Finished game DFD9722C50D7A135:C25122D53C658367 between CCC-MCTS (B) AAA-MCTS (W)
+: Launching game DFD9722C50D7A135:9F7BB852E99A7AA9 between EEE-MCTS (B) AAA-MCTS (W)
+: Finished game DFD9722C50D7A135:9F7BB852E99A7AA9 between EEE-MCTS (B) AAA-MCTS (W)
+: Launching game DFD9722C50D7A135:51082A704D46C80B between BBB-MCTS (B) FFF-MCTS (W)
+: Finished game DFD9722C50D7A135:51082A704D46C80B between BBB-MCTS (B) FFF-MCTS (W)
+: Started 40 games
+: Launching game DFD9722C50D7A135:D7860039740016BE between EEE-MCTS (B) CCC-MCTS (W)
+: Finished game DFD9722C50D7A135:D7860039740016BE between EEE-MCTS (B) CCC-MCTS (W)
+: Launching game DFD9722C50D7A135:8868C12E3D8355A3 between CCC-MCTS (B) EEE-MCTS (W)
+: Finished game DFD9722C50D7A135:8868C12E3D8355A3 between CCC-MCTS (B) EEE-MCTS (W)
+: Launching game DFD9722C50D7A135:659909F5CA7A12A2 between AAA-MCTS (B) DDD-MCTS (W)
+: Finished game DFD9722C50D7A135:659909F5CA7A12A2 between AAA-MCTS (B) DDD-MCTS (W)
+: Launching game DFD9722C50D7A135:E365B2AC7115F6E5 between AAA-MCTS (B) EEE-MCTS (W)
+: Finished game DFD9722C50D7A135:E365B2AC7115F6E5 between AAA-MCTS (B) EEE-MCTS (W)
+: Launching game DFD9722C50D7A135:D155CB4A9C87277F between AAA-MCTS (B) CCC-MCTS (W)
+: Finished game DFD9722C50D7A135:D155CB4A9C87277F between AAA-MCTS (B) CCC-MCTS (W)
+: Match loop thread terminating
+: MODELB
+: NN rows: 0
+: NN batches: 0
+: NN avg batch size: -nan
+: GPU -1 finishing, processed 0 rows 0 batches
+: MODELA
+: NN rows: 0
+: NN batches: 0
+: NN avg batch size: -nan
+: GPU -1 finishing, processed 0 rows 0 batches
+: MODELC
+: NN rows: 0
+: NN batches: 0
+: NN avg batch size: -nan
+: GPU -1 finishing, processed 0 rows 0 batches
+: MODELE
+: NN rows: 0
+: NN batches: 0
+: NN avg batch size: -nan
+: GPU -1 finishing, processed 0 rows 0 batches
+: All cleaned up, quitting
+: Running with following config:
+allowResignation = true
+bSizeRelProbs = 1
+bSizes = 9
+botName0 = AAA
+botName1 = BBB
+botName2 = CCC
+botName3 = DDD
+botName4 = EEE
+botName5 = FFF
+botName6 = GGG
+botName7 = HHH
+debugSkipNeuralNet = true
+extraPairs = 2-0,2-4,1-5,7-5
+extraPairsAreOneSidedBW = true
+handicapCompensateKomiProb = 1.0
+handicapProb = 0.0
+hasButtons = false
+includeBots = 0,1,2,3,4
+koRules = SIMPLE
+komiMean = 7
+logGamesEvery = 20
+logMoves = false
+logSearchInfo = false
+logTimeStamp = false
+logToStdout = true
+maxMovesPerGame = 2
+maxPlayouts = 10
+multiStoneSuicideLegals = false
+nnCacheSizePowerOfTwo = 15
+nnMaxBatchSize = 64
+nnModelFile0 = MODELB
+nnModelFile1 = MODELA
+nnModelFile2 = MODELA
+nnModelFile3 = MODELC
+nnModelFile4 = MODELA
+nnModelFile5 = MODELC
+nnModelFile6 = MODELD
+nnModelFile7 = MODELE
+nnMutexPoolSizePowerOfTwo = 10
+nnRandomize = true
+numBots = 8
+numGameThreads = 1
+numGamesTotal = 36
+numNNServerThreadsPerModel = 1
+numSearchThreads = 1
+resignConsecTurns = 3
+resignThreshold = -0.95
+scoringRules = AREA
+secondaryBots = 2,3,4
+taxRules = NONE
+
+: Match Engine starting...
+: Git revision: ###
+: nnRandSeed = ###
+: After dedups: nnModelFile0 = MODELB useFP16 auto useNHWC auto
+: Initializing neural net buffer to be size 9 * 9 exactly
+: nnRandSeed = ###
+: After dedups: nnModelFile1 = MODELA useFP16 auto useNHWC auto
+: Initializing neural net buffer to be size 9 * 9 exactly
+: nnRandSeed = ###
+: After dedups: nnModelFile2 = MODELC useFP16 auto useNHWC auto
+: Initializing neural net buffer to be size 9 * 9 exactly
+: nnRandSeed = ###
+: After dedups: nnModelFile3 = MODELE useFP16 auto useNHWC auto
+: Initializing neural net buffer to be size 9 * 9 exactly
+: Loaded neural net
+: Loaded all config stuff, starting matches
+: Launching game E3DCD13E5953B5EB:C1B21DA9445A9C4F between AAA-MCTS (B) BBB-MCTS (W)
+: Finished game E3DCD13E5953B5EB:C1B21DA9445A9C4F between AAA-MCTS (B) BBB-MCTS (W)
+: Launching game E3DCD13E5953B5EB:51D4FBBD328DF4DB between EEE-MCTS (B) BBB-MCTS (W)
+: Finished game E3DCD13E5953B5EB:51D4FBBD328DF4DB between EEE-MCTS (B) BBB-MCTS (W)
+: Launching game E3DCD13E5953B5EB:49333BFB3E944157 between CCC-MCTS (B) AAA-MCTS (W)
+: Finished game E3DCD13E5953B5EB:49333BFB3E944157 between CCC-MCTS (B) AAA-MCTS (W)
+: Launching game E3DCD13E5953B5EB:33CF06FE3D776737 between BBB-MCTS (B) FFF-MCTS (W)
+: Finished game E3DCD13E5953B5EB:33CF06FE3D776737 between BBB-MCTS (B) FFF-MCTS (W)
+: Launching game E3DCD13E5953B5EB:B0EF10A747EF94CB between CCC-MCTS (B) AAA-MCTS (W)
+: Finished game E3DCD13E5953B5EB:B0EF10A747EF94CB between CCC-MCTS (B) AAA-MCTS (W)
+: Launching game E3DCD13E5953B5EB:7D923159310E4D8E between CCC-MCTS (B) EEE-MCTS (W)
+: Finished game E3DCD13E5953B5EB:7D923159310E4D8E between CCC-MCTS (B) EEE-MCTS (W)
+: Launching game E3DCD13E5953B5EB:62271B01B8340AD7 between HHH-MCTS (B) FFF-MCTS (W)
+: Finished game E3DCD13E5953B5EB:62271B01B8340AD7 between HHH-MCTS (B) FFF-MCTS (W)
+: Launching game E3DCD13E5953B5EB:5FD1B8F839D6A800 between CCC-MCTS (B) BBB-MCTS (W)
+: Finished game E3DCD13E5953B5EB:5FD1B8F839D6A800 between CCC-MCTS (B) BBB-MCTS (W)
+: Launching game E3DCD13E5953B5EB:B9FDE8B945B42C54 between BBB-MCTS (B) DDD-MCTS (W)
+: Finished game E3DCD13E5953B5EB:B9FDE8B945B42C54 between BBB-MCTS (B) DDD-MCTS (W)
+: Launching game E3DCD13E5953B5EB:292AB3D2112AB9FE between AAA-MCTS (B) EEE-MCTS (W)
+: Finished game E3DCD13E5953B5EB:292AB3D2112AB9FE between AAA-MCTS (B) EEE-MCTS (W)
+: Launching game E3DCD13E5953B5EB:A6F93824B32CE28E between EEE-MCTS (B) AAA-MCTS (W)
+: Finished game E3DCD13E5953B5EB:A6F93824B32CE28E between EEE-MCTS (B) AAA-MCTS (W)
+: Launching game E3DCD13E5953B5EB:F0A973769C9B761C between AAA-MCTS (B) CCC-MCTS (W)
+: Finished game E3DCD13E5953B5EB:F0A973769C9B761C between AAA-MCTS (B) CCC-MCTS (W)
+: Launching game E3DCD13E5953B5EB:3F40CF0C3252A177 between DDD-MCTS (B) AAA-MCTS (W)
+: Finished game E3DCD13E5953B5EB:3F40CF0C3252A177 between DDD-MCTS (B) AAA-MCTS (W)
+: Launching game E3DCD13E5953B5EB:739178CAEA24A56F between BBB-MCTS (B) CCC-MCTS (W)
+: Finished game E3DCD13E5953B5EB:739178CAEA24A56F between BBB-MCTS (B) CCC-MCTS (W)
+: Launching game E3DCD13E5953B5EB:F9ABC5C9EE5D0DD6 between AAA-MCTS (B) DDD-MCTS (W)
+: Finished game E3DCD13E5953B5EB:F9ABC5C9EE5D0DD6 between AAA-MCTS (B) DDD-MCTS (W)
+: Launching game E3DCD13E5953B5EB:3A368A3BA837CFD4 between DDD-MCTS (B) BBB-MCTS (W)
+: Finished game E3DCD13E5953B5EB:3A368A3BA837CFD4 between DDD-MCTS (B) BBB-MCTS (W)
+: Launching game E3DCD13E5953B5EB:69797AEFC1812B38 between BBB-MCTS (B) EEE-MCTS (W)
+: Finished game E3DCD13E5953B5EB:69797AEFC1812B38 between BBB-MCTS (B) EEE-MCTS (W)
+: Launching game E3DCD13E5953B5EB:9A81D3184762EB21 between BBB-MCTS (B) AAA-MCTS (W)
+: Finished game E3DCD13E5953B5EB:9A81D3184762EB21 between BBB-MCTS (B) AAA-MCTS (W)
+: Launching game E3DCD13E5953B5EB:AEF5B83B0BBBBCE5 between EEE-MCTS (B) AAA-MCTS (W)
+: Finished game E3DCD13E5953B5EB:AEF5B83B0BBBBCE5 between EEE-MCTS (B) AAA-MCTS (W)
+: Started 20 games
+: Launching game E3DCD13E5953B5EB:8E6F213A0BAF454C between CCC-MCTS (B) AAA-MCTS (W)
+: Finished game E3DCD13E5953B5EB:8E6F213A0BAF454C between CCC-MCTS (B) AAA-MCTS (W)
+: Launching game E3DCD13E5953B5EB:985EC18062CC5A2C between CCC-MCTS (B) AAA-MCTS (W)
+: Finished game E3DCD13E5953B5EB:985EC18062CC5A2C between CCC-MCTS (B) AAA-MCTS (W)
+: Launching game E3DCD13E5953B5EB:7306564ACE0BE4A9 between BBB-MCTS (B) DDD-MCTS (W)
+: Finished game E3DCD13E5953B5EB:7306564ACE0BE4A9 between BBB-MCTS (B) DDD-MCTS (W)
+: Launching game E3DCD13E5953B5EB:76515F03344C88D4 between DDD-MCTS (B) BBB-MCTS (W)
+: Finished game E3DCD13E5953B5EB:76515F03344C88D4 between DDD-MCTS (B) BBB-MCTS (W)
+: Launching game E3DCD13E5953B5EB:1625AA419A69A786 between BBB-MCTS (B) FFF-MCTS (W)
+: Finished game E3DCD13E5953B5EB:1625AA419A69A786 between BBB-MCTS (B) FFF-MCTS (W)
+: Launching game E3DCD13E5953B5EB:1051036AE626BFE3 between AAA-MCTS (B) BBB-MCTS (W)
+: Finished game E3DCD13E5953B5EB:1051036AE626BFE3 between AAA-MCTS (B) BBB-MCTS (W)
+: Launching game E3DCD13E5953B5EB:C1379140B0216596 between HHH-MCTS (B) FFF-MCTS (W)
+: Finished game E3DCD13E5953B5EB:C1379140B0216596 between HHH-MCTS (B) FFF-MCTS (W)
+: Launching game E3DCD13E5953B5EB:7F63EBB92BEAE408 between DDD-MCTS (B) AAA-MCTS (W)
+: Finished game E3DCD13E5953B5EB:7F63EBB92BEAE408 between DDD-MCTS (B) AAA-MCTS (W)
+: Launching game E3DCD13E5953B5EB:7B14CD1BD7F12893 between AAA-MCTS (B) CCC-MCTS (W)
+: Finished game E3DCD13E5953B5EB:7B14CD1BD7F12893 between AAA-MCTS (B) CCC-MCTS (W)
+: Launching game E3DCD13E5953B5EB:EDA5ADED9D4C1C7B between CCC-MCTS (B) EEE-MCTS (W)
+: Finished game E3DCD13E5953B5EB:EDA5ADED9D4C1C7B between CCC-MCTS (B) EEE-MCTS (W)
+: Launching game E3DCD13E5953B5EB:62BFB917974DD6A7 between AAA-MCTS (B) EEE-MCTS (W)
+: Finished game E3DCD13E5953B5EB:62BFB917974DD6A7 between AAA-MCTS (B) EEE-MCTS (W)
+: Launching game E3DCD13E5953B5EB:24F17303C1223517 between AAA-MCTS (B) DDD-MCTS (W)
+: Finished game E3DCD13E5953B5EB:24F17303C1223517 between AAA-MCTS (B) DDD-MCTS (W)
+: Launching game E3DCD13E5953B5EB:39B84A6FC4480C61 between BBB-MCTS (B) CCC-MCTS (W)
+: Finished game E3DCD13E5953B5EB:39B84A6FC4480C61 between BBB-MCTS (B) CCC-MCTS (W)
+: Launching game E3DCD13E5953B5EB:1444BB292B815ACE between EEE-MCTS (B) BBB-MCTS (W)
+: Finished game E3DCD13E5953B5EB:1444BB292B815ACE between EEE-MCTS (B) BBB-MCTS (W)
+: Launching game E3DCD13E5953B5EB:17FA17FBFF5122BA between BBB-MCTS (B) AAA-MCTS (W)
+: Finished game E3DCD13E5953B5EB:17FA17FBFF5122BA between BBB-MCTS (B) AAA-MCTS (W)
+: Launching game E3DCD13E5953B5EB:3256103CFF7A2A1A between CCC-MCTS (B) BBB-MCTS (W)
+: Finished game E3DCD13E5953B5EB:3256103CFF7A2A1A between CCC-MCTS (B) BBB-MCTS (W)
+: Launching game E3DCD13E5953B5EB:9D2178FC863EE654 between BBB-MCTS (B) EEE-MCTS (W)
+: Finished game E3DCD13E5953B5EB:9D2178FC863EE654 between BBB-MCTS (B) EEE-MCTS (W)
+: Match loop thread terminating
+: MODELB
+: NN rows: 0
+: NN batches: 0
+: NN avg batch size: -nan
+: GPU -1 finishing, processed 0 rows 0 batches
+: MODELA
+: NN rows: 0
+: NN batches: 0
+: NN avg batch size: -nan
+: GPU -1 finishing, processed 0 rows 0 batches
+: MODELC
+: NN rows: 0
+: NN batches: 0
+: NN avg batch size: -nan
+: GPU -1 finishing, processed 0 rows 0 batches
+: MODELE
+: NN rows: 0
+: NN batches: 0
+: NN avg batch size: -nan
+: GPU -1 finishing, processed 0 rows 0 batches
+: All cleaned up, quitting
+tests/results/matchsgfs/games.sgfs
+Black AAA 
+10
+Black BBB 
+10
+Black CCC 
+8
+Black DDD 
+4
+Black EEE 
+6
+Black FFF 
+4
+Black GGG 
+0
+Black HHH 
+2
+White AAA 
+10
+White BBB 
+10
+White CCC 
+8
+White DDD 
+4
+White EEE 
+6
+White FFF 
+4
+White GGG 
+0
+White HHH 
+2
+tests/results/matchsgfs2/games.sgfs
+Black AAA 
+8
+Black BBB 
+10
+Black CCC 
+8
+Black DDD 
+4
+Black EEE 
+4
+Black FFF 
+0
+Black GGG 
+0
+Black HHH 
+2
+White AAA 
+10
+White BBB 
+8
+White CCC 
+4
+White DDD 
+4
+White EEE 
+6
+White FFF 
+4
+White GGG 
+0
+White HHH 
+0

@@ -1,0 +1,154 @@
+version: 2.1
+
+defaults: &defaults
+  docker:
+      auth:
+        username: $DOCKERHUB_USERNAME
+        password: $DOCKERHUB_PASSWORD
+  working_directory: /engines/KataGo-custom
+
+executors:
+  cpp:
+    <<: *defaults
+    docker:
+      # To rebuild image, run from root of go_attack repo:
+      # docker build --target=build-deps -t humancompatibleai/goattack:cpp-build-deps . -f compose/cpp/Dockerfile
+      # docker push humancompatibleai/goattack:cpp-build-deps
+      - image: humancompatibleai/goattack:cpp-build-deps
+    resource_class: xlarge
+    environment:
+      NUM_CPUS: 8
+  cpp-gpu:
+    machine: true
+    resource_class: alignmentresearch/go-attack-linux-gpu
+  python:
+    <<: *defaults
+    docker:
+      # To rebuild image, run from root of go_attack repo:
+      # docker build --target=python-deps -t humancompatibleai/goattack:python-deps . -f compose/python/Dockerfile
+      # docker push humancompatibleai/goattack:python-deps
+      - image: humancompatibleai/goattack:python-deps
+    resource_class: large
+    environment:
+      NUM_CPUS: 4
+
+commands:
+  cpp-dependencies:
+    description: "Check out and compile"
+    steps:
+      - checkout
+
+      - run:
+          name: CMake
+          command: cd cpp && cmake . -DUSE_BACKEND=CUDA -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1
+
+      - run:
+          name: make
+          command: cd cpp && make clean && make -j ${NUM_CPUS}
+  memory-monitor:
+    description: "Memory Monitor"
+    parameters:
+      user:
+        default: "root"
+        type: "string"
+    steps:
+      - run:
+          name: Memory Monitor
+          command: |
+            rm -rf /tmp/resource-usage && mkdir -p /tmp/resource-usage
+            export FILE=/tmp/resource-usage/memory.txt
+            while true; do
+              ps -u <<parameters.user>> eo pid,%cpu,%mem,args,uname --sort=-%mem >> $FILE
+              echo "----------" >> $FILE
+              sleep 1
+            done
+          background: true
+
+jobs:
+  cpp-unit-test-cpuonly:
+    executor: cpp
+    steps:
+      - memory-monitor
+      - cpp-dependencies
+
+      - run:
+          name: katago runtests
+          command: ./cpp/katago runtests
+
+      - store_artifacts:
+          path: /tmp/resource-usage
+          destination: resource-usage
+
+  cpp-unit-test-gpu:
+    executor: cpp-gpu
+    steps:
+      - cpp-dependencies
+      - memory-monitor:
+          user: circleci
+
+      - run:
+          name: katago runtests
+          command: ./cpp/katago runtests
+
+      - run:
+          name: katago runexpensivetests
+          command: ./cpp/katago runexpensivetests 100 4
+          # Large scale test to run locally:
+          #   ./cpp/katago runexpensivetests 1000 20
+
+      - run:
+          name: katago runnnlayertests
+          command: ./cpp/katago runnnlayertests
+
+      - store_artifacts:
+          path: /tmp/resource-usage
+          destination: resource-usage
+
+  python-lint:
+    executor: python
+    environment:
+      # Most of KataGo files won't pass linting, and we don't want to change
+      # all of them as it will make merging upstream changes tricky. So only
+      # lint files we add, or have substantially modified.
+      # WARNING: If you change this, also change `FULL_LINT_FILES` in
+      # `.pre-commit-config.yaml`.
+      FULL_LINT_FILES: python/curriculum.py python/sgfmill/__init__.py
+      # We type most files, but exclude a few that depend on torch that
+      # we don't have installed. (And don't want to, as it's not needed for training.)
+      # WARNING: If you change this, also change `exclude:` for pytype in
+      # .pre-commit-config.yaml
+      PYTYPE_EXCLUDE_FILES: python/genboard_common.py python/genboard_run.py python/genboard_train.py python/upload_model.py
+    steps:
+      - checkout
+
+      # Run pytype against most files.
+      - run:
+          name: pytype
+          command: pytype --version && pytype ./python/ -j "${NUM_CPUS}" -x ${PYTYPE_EXCLUDE_FILES}
+
+      # Lint a select few files that we maintain (not upstream).
+      - run:
+          name: flake8
+          command: flake8 --version && flake8 -j "${NUM_CPUS}" ${FULL_LINT_FILES}
+
+      - run:
+          name: black
+          command: black --version && black --check --diff ${FULL_LINT_FILES}
+
+      - run:
+          name: codespell
+          command: codespell -I .codespell.skip --skip='*.pyc,*.ipynb,./python/model.py' ./python/
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - cpp-unit-test-cpuonly:
+          context:
+          - docker-hub-creds
+      - cpp-unit-test-gpu:
+          context:
+            - docker-hub-creds
+      - python-lint:
+          context:
+            - docker-hub-creds

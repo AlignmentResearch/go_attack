@@ -1,0 +1,2 @@
+This version of KataGo was NOT compiled with support for distributed training.
+Compile with -DBUILD_DISTRIBUTED=1 in CMake, and/or see notes at https://github.com/lightvector/KataGo#compiling-katago
