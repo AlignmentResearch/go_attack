@@ -374,7 +374,7 @@ def generate_katago_ckpt_sweep_evaluation(
     parameters: Mapping[str, Any],
     config_dir: Path,
     repo_root: Path,
-    run_on_chai: bool = True,
+    run_on_local: bool = True,
 ) -> None:
     """Evaluate our adversary against different KataGo checkpoints."""
     common_parameters = parameters
@@ -385,7 +385,7 @@ def generate_katago_ckpt_sweep_evaluation(
     parameters = parameters[parameters_key]
 
     def adjust_nas_path_custom(s: str) -> str:
-        if run_on_chai:
+        if run_on_local:
             return s
         return adjust_nas_path(s)
 
@@ -616,9 +616,7 @@ def main():
     repo_root = Path(os.path.dirname(os.path.realpath(__file__))).parents[0]
 
     parser = argparse.ArgumentParser(
-        description="Generates config files for the main experiments in paper. "
-        "Should be run from a place where /nas/ucb is mounted at /nas/ucb "
-        "(e.g. on a CHAI machine or the Hofvarpnir login node).",
+        description="Generates config files for the main experiments in paper. ",
     )
     parser.add_argument(
         "parameter_file",
@@ -633,11 +631,9 @@ def main():
         default=repo_root / "configs" / "generated_evaluations",
     )
     parser.add_argument(
-        "--run-on-chai",
+        "--run-on-local",
         action="store_true",
-        help="Generate experiments to run on a CHAI machine "
-        "(rnn, gan, dqn, ddpg, gail, etc.). "
-        "This flag is not implemented for some experiments.",
+        help="Generate experiments to run on a local machine ",
     )
     args = parser.parse_args()
 
@@ -661,7 +657,7 @@ def main():
         evaluation_parameters,
         config_dir=config_dir,
         repo_root=repo_root,
-        run_on_chai=args.run_on_chai,
+        run_on_local=args.run_on_local,
     )
     generate_victim_visit_sweep_evaluation(
         evaluation_parameters,

@@ -40,7 +40,7 @@ setup(
     description="Research code attacking Go AI systems",
     long_description=get_readme(),
     long_description_content_type="text/markdown",
-    author="FAR AI et al",
+    author="Anonymous",
     python_requires=">=3.8.0",
     packages=find_packages("src"),
     package_dir={"": "src"},
