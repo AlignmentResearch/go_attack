@@ -1,4 +1,4 @@
-# ANONYMOUS REPO
+# Adversarially robust Go AIs
 
 This repository contains code for studying the adversarial robustness of KataGo.
 
