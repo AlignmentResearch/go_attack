@@ -44,7 +44,7 @@ The Dockerfiles contain instructions for how to build them individually. This is
 A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory inside the container.
 To run a docker container, you can use a command like
 ```
-docker run --gpus all -v ~/go_attack:/go_attack -it humancompatibleai/goattack:cpp
+docker run --gpus all -v ~/go_attack:/go_attack -it ANONYMOUS_USERNAME/goattack:cpp
 ```
 
 ## Docker compose

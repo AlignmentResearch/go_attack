@@ -8,7 +8,7 @@ version: "3"
 
 services:
   shuffle-and-export-predictor:
-    image: humancompatibleai/goattack:python
+    image: ANONYMOUS_USERNAME/goattack:python
     build:
       context: ..
       dockerfile: ./compose/python/Dockerfile
@@ -33,7 +33,7 @@ services:
     # sleep at the end so the docker container doesn't exit.
 
   train-predictor:
-    image: humancompatibleai/goattack:python
+    image: ANONYMOUS_USERNAME/goattack:python
     build:
       context: ..
       dockerfile: ./compose/python/Dockerfile

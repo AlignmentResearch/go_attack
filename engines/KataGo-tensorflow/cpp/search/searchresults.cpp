@@ -78,7 +78,7 @@ bool Search::getPlaySelectionValues(
   // AvoidPassAliveTerritory pass suppression can push the bot to start playing
   // in its own pass-alive territory, a blatantly bad tactic. We should suppress
   // those bad moves. More info at
-  // https://github.com/HumanCompatibleAI/KataGo-custom/issues/58
+  // https://github.com/ANONYMOUS_USERNAME/KataGo-custom/issues/58
   const bool suppressPassAliveTerritory =
     searchParams.passingBehavior == SearchParams::PassingBehavior::AvoidPassAliveTerritory;
   vector<Color> territories(suppressPassAliveTerritory ? Board::MAX_ARR_SIZE : 0);

@@ -1,5 +1,5 @@
 # To build, navigate to the *root* of this repo and run:
-# docker build . -f compose/python/Dockerfile -t humancompatibleai/goattack:python
+# docker build . -f compose/python/Dockerfile -t ANONYMOUS_USERNAME/goattack:python
 
 # KataGo is most stable with TF 1.15
 # See https://github.com/lightvector/KataGo/blob/master/SelfplayTraining.md.

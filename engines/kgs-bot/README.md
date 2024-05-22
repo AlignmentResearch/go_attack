@@ -1,8 +1,8 @@
 To run a bot on KGS, from root directory of the repo build the cpp-kgs container, then start it:
 
-`docker build . -f engines/kgs-bot/Dockerfile -t humancompatibleai/goattack:cpp-kgs`
+`docker build . -f engines/kgs-bot/Dockerfile -t ANONYMOUS_USERNAME/goattack:cpp-kgs`
 
-`docker run --gpus all -it humancompatibleai/goattack:cpp-kgs name=USERNAME password=PASSWORD`
+`docker run --gpus all -it ANONYMOUS_USERNAME/goattack:cpp-kgs name=USERNAME password=PASSWORD`
 
 USERNAME and PASSWORD should be replaced with the KGS login information for the account the bot will use.
 

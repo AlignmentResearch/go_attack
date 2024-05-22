@@ -1,9 +1,9 @@
 # To build, navigate to the *root* of this repo and first run:
-# docker build . -f compose/cpp/Dockerfile -t humancompatibleai/goattack:cpp
+# docker build . -f compose/cpp/Dockerfile -t ANONYMOUS_USERNAME/goattack:cpp
 # And then:
-# docker build . -f engines/kgs-bot/Dockerfile -t humancompatibleai/goattack:cpp-kgs
+# docker build . -f engines/kgs-bot/Dockerfile -t ANONYMOUS_USERNAME/goattack:cpp-kgs
 
-FROM humancompatibleai/goattack:cpp
+FROM ANONYMOUS_USERNAME/goattack:cpp
 
 # Install Java
 RUN  apt-get update -q \

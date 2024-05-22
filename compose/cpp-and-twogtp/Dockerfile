@@ -2,9 +2,9 @@
 # (located at /gogui/bin/gogui-twogtp).
 #
 # Since this image performs a multi-stage build based on
-# humancompatibleai/goatttack:cpp, that image should be rebuilt before
+# ANONYMOUS_USERNAME/goatttack:cpp, that image should be rebuilt before
 # rebuilding this image.
-FROM humancompatibleai/goattack:cpp as cpp
+FROM ANONYMOUS_USERNAME/goattack:cpp as cpp
 
 COPY ./controllers/gogui /gogui
 WORKDIR /gogui

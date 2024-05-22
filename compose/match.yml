@@ -13,7 +13,7 @@ version: "3"
 
 services:
   match:
-    image: humancompatibleai/goattack:cpp
+    image: ANONYMOUS_USERNAME/goattack:cpp
     build:
       context: ..
       dockerfile: ./compose/cpp/Dockerfile
