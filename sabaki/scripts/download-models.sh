@@ -7,14 +7,6 @@ mkdir -p $GIT_ROOT/sabaki/models/victims
 
 # Download models
 
-# cyclic-adv-s349284096-d87808728.bin.gz
-wget --content-disposition 'https://drive.google.com/uc?export=download&id=1Qktfjfr6YwplF50T-LMXkFK_qG1UXeiy' \
-     -P $GIT_ROOT/sabaki/models/adv/ -q --show-progress
-
-# cyclic-adv-s497721856-d125043118.bin.gz
-wget --content-disposition 'https://drive.google.com/uc?export=download&id=1TDSwJ_i0CHF_Ksf7lOaQIorpMu976fja' \
-     -P $GIT_ROOT/sabaki/models/adv/ -q --show-progress
-
 # cyclic-adv-s545065216-d136760487.bin.gz
 wget --content-disposition 'https://drive.google.com/uc?export=download&id=1gwD0nQsuE7aD92YJ66l82qtXR97A_lt1' \
      -P $GIT_ROOT/sabaki/models/adv/ -q --show-progress

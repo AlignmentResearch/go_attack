@@ -52,12 +52,6 @@ time_settings 0 1 0
 ## More sample bot configs
 You'll need to change the paths to the models and executables for your machine.
 ```
-# Weaker cyclic-adversary (with dragonslayer strategy)
-cyclic-adv-s349m-v600-vm-cp505-v1-s
-/Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
-gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/cyclic-adv-s349284096-d87808728.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg
-time_settings 0 1 0
-
 # Pass-adversary
 pass-adv-s34m-v600-vs-cp505-v1-s
 /Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
