@@ -18,8 +18,7 @@ usage() {
   echo "          [--lr-scale LR_SCALE] [--predictor]"
   echo "          [--predictor-warmstart-ckpt CHECKPOINT] [--resume TIMESTAMP]"
   echo "          [--warmstart-ckpt CHECKPOINT] [--victim-ckpt CHECKPOINT]"
-  echo "          [--use-weka] [--local-run] [--only-launch-curriculum]"
-  echo "          [--extra-victimplay-high-priority] PREFIX"
+  echo "          PREFIX"
   echo
   echo "positional arguments:"
   echo "  PREFIX  Identifying label used for the name of the job and the name"
@@ -28,7 +27,6 @@ usage() {
   echo "optional arguments:"
   echo "  -g GPUS, --victimplay-gpus GPUS"
   echo "    Minimum number of GPUs to use for victimplay."
-  echo "    Setting to 0 will only launch extra victimplay jobs."
   echo "    default: ${DEFAULT_NUM_VICTIMPLAY_GPUS}"
   echo "  -m GPUS, --victimplay-max-gpus GPUS"
   echo "    Maximum number of GPUs to use for victimplay."
@@ -72,18 +70,6 @@ usage() {
   echo "    weights directory for the last victim (i.e., the bot not"
   echo "    being trained) in the initial iteration's curriculum (CURRICULUM,"
   echo "    or ALTERNATE_CURRICULUM if --alternate-iteration-first is set)."
-  echo "  -w, --use-weka"
-  echo "    Store results on the go-attack Weka volume instead of the CHAI NAS"
-  echo "    volume."
-  echo "  --local-run"
-  echo "    Run locally instead of via Kubernetes. Has the effect of launching"
-  echo "    containers using docker instead of using ctl."
-  echo "  --only-launch-curriculum"
-  echo "    Only launches the curriculum and exits. Useful for editing the"
-  echo "    curriculum for an existing run."
-  echo "  --extra-victimplay-high-priority"
-  echo "    Launches extra victimplay jobs with --high-priority on hofvarpnir."
-  echo "    Has no effect in --local-run mode."
   echo
   echo "Optional arguments should be specified before positional arguments."
   echo
@@ -121,10 +107,6 @@ while [ -n "${1-}" ]; do
     -r|--resume) RESUME_TIMESTAMP=$2; shift ;;
     --warmstart-ckpt) WARMSTART_CKPT=$2; shift ;;
     --victim-ckpt) VICTIM_CKPT=$2; shift ;;
-    -w|--use-weka) export USE_WEKA=1 ;;
-    --local-run) LOCAL_RUN=1 ;;
-    --only-launch-curriculum) ONLY_LAUNCH_CURRICULUM=1 ;;
-    --extra-victimplay-high-priority) EXTRA_VICTIMPLAY_HIGH_PRIORITY=1 ;;
     -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
     *) break ;;
   esac
@@ -151,14 +133,6 @@ VOLUME_NAME="shared"
 source "$(dirname "$(readlink -f "$0")")"/launch-common.sh
 update_images "cpp python"
 
-ctl_job_run() {
-  if [ -n "${LOCAL_RUN:-}" ]; then
-    python "$GIT_ROOT"/kubernetes/ctl_job_run_wrapper.py --local-run "$@"
-  else
-    python "$GIT_ROOT"/kubernetes/ctl_job_run_wrapper.py "$@"
-  fi
-}
-
 if [ -n "${USE_PREDICTOR:-}" ]; then
   if [ -n "${USE_ITERATED_TRAINING:-}" ]; then
     echo "Using predictor networks with iterated training is not yet"\
@@ -170,7 +144,7 @@ if [ -n "${USE_PREDICTOR:-}" ]; then
   VICTIMPLAY_CMD="/go_attack/kubernetes/victimplay-predictor.sh"
 
   # shellcheck disable=SC2215,SC2086,SC2089,SC2090
-  ctl_job_run --container \
+  ctl job run --container \
       "$PYTHON_IMAGE" \
       "$PYTHON_IMAGE" \
       $VOLUME_FLAGS \
@@ -222,46 +196,8 @@ else
   CURRICULUM_CMD="/go_attack/kubernetes/curriculum.sh $RUN_NAME $VOLUME_NAME $CURRICULUM"
 fi
 
-if [ -n "${ONLY_LAUNCH_CURRICULUM:-}" ]; then
-  echo "Launching curriculum only."
-  ctl_job_run --container \
-      "$PYTHON_IMAGE" \
-      $VOLUME_FLAGS \
-      --command "$CURRICULUM_CMD" \
-      --high-priority \
-      --gpu 0 \
-      --name go-curric-"$1" \
-      --replicas 1
-  exit 0
-fi
-
-EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
-if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
-  EXTRA_VICTIMPLAY_HP_FLAG=""
-  EXTRA_VICTIMPLAY_JOB_NAME="go-train-$1-extra"
-  if [ -n "${EXTRA_VICTIMPLAY_HIGH_PRIORITY:-}" ]; then
-    EXTRA_VICTIMPLAY_HP_FLAG="--high-priority"
-    EXTRA_VICTIMPLAY_JOB_NAME+="-hp"  # So that it doesn't conflict with the non-HP job.
-  fi
-
-  # shellcheck disable=SC2086
-  ctl_job_run --container \
-      "$CPP_IMAGE" \
-      $VOLUME_FLAGS \
-      --command "$VICTIMPLAY_CMD" \
-      --gpu 1 \
-      --name "$EXTRA_VICTIMPLAY_JOB_NAME" \
-      --replicas "${EXTRA_VICTIMPLAY_GPUS}" \
-      $EXTRA_VICTIMPLAY_HP_FLAG
-
-  if [ $MIN_VICTIMPLAY_GPUS -eq 0 ]; then
-    echo "Running extra victimplay jobs only."
-    exit 0
-  fi
-fi
-
 # shellcheck disable=SC2215,SC2086,SC2089,SC2090
-ctl_job_run --container \
+ctl job run --container \
     "$CPP_IMAGE" \
     "$CPP_IMAGE" \
     "$PYTHON_IMAGE" \
@@ -285,7 +221,7 @@ if [ "$USE_GATING" -eq 1 ]; then
     echo "Using gating with iterated training is not yet implemented."
     exit 1
   fi
-  ctl_job_run --container \
+  ctl job run --container \
       "$CPP_IMAGE" \
       $VOLUME_FLAGS \
       --command "/go_attack/kubernetes/gatekeeper.sh $RUN_NAME $VOLUME_NAME" \
@@ -295,4 +231,18 @@ if [ "$USE_GATING" -eq 1 ]; then
       --gpu 1 \
       --name gt-"$1"-g \
       --replicas 1
+fi
+
+EXTRA_VICTIMPLAY_GPUS=$((MAX_VICTIMPLAY_GPUS-MIN_VICTIMPLAY_GPUS))
+if [ $EXTRA_VICTIMPLAY_GPUS -gt 0 ]; then
+  # shellcheck disable=SC2086
+  ctl job run --container \
+      "$CPP_IMAGE" \
+      $VOLUME_FLAGS \
+      --command "$VICTIMPLAY_CMD" \
+      --restart-on-failure \
+      --memory 72Gi \
+      --gpu 1 \
+      --name gt-"$1"-e \
+      --replicas "${EXTRA_VICTIMPLAY_GPUS}"
 fi
