@@ -36,7 +36,7 @@ The base KataGo models are downloaded from https://katagotraining.org/networks/.
   and the fourth line is the initial commands passed to gtp
   (in this case giving the bot infinite time to make moves).
   See below for more sample configs.
-4. After adding a config, you can follow the instructions at https://youtu.be/6ZA_saVHyTA to play against newly configured engine.
+4. After adding a config, you can follow the instructions at https://youtu.be/6ZA_saVHyTA to play against the newly configured engine.
 
 In particular, the following config runs our cyclic-adversary, assuming this
 repo is checked out at `/Users/ttw/code/go_attack/engines/` (the paths will need
