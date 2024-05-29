@@ -1,22 +1,31 @@
+"""Tests models on several cyclic group situations.
+
+The script was originally written by lightvector and can be downloaded on the
+[Computer Go Discord
+server](https://discord.com/channels/417022162348802048/459783732182777876/1079124172338368633).
+"""
+
+# note(tomtseng): ignoring some errors that I don't want to deal with as we're
+# not the original author of this script
+# flake8: noqa: D101 D102 D103 D107 DAR401
+
 import argparse
 import collections
 import json
 import math
 import os
-import sys
 import subprocess
-import time
 import tempfile
+import time
 from pathlib import Path
 from threading import Thread
 
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
 import sgfmill
-import sgfmill.sgf
-import sgfmill.boards
 import sgfmill.ascii_boards
+import sgfmill.boards
+import sgfmill.sgf
 
 BASE_CONFIG = """
 logDir = analysis_logs
@@ -85,7 +94,7 @@ class KataGo:
         self.stderrthread.start()
 
     def close(self):
-        self.katago.stdin.close()
+        self.katago.stdin.close()  # pytype: disable=attribute-error
 
     def query(self, initial_board, moves, komi, max_visits=None):
         query = {}
@@ -146,7 +155,13 @@ def process_sgf_file(filename, func):
 
 
 def walk_game_tree(
-    filename, node, board_at_setup, board, moves_since_setup, komi, func
+    filename,
+    node,
+    board_at_setup,
+    board,
+    moves_since_setup,
+    komi,
+    func,
 ):
     board = board.copy()
     ab, aw, ae = node.get_setup_stones()
@@ -180,7 +195,8 @@ def walk_game_tree(
                 ):
                     childcolor, childraw = child.get_raw_move()
                     childmove = sgfmill.sgf_properties.interpret_go_point(
-                        childraw, board.side
+                        childraw,
+                        board.side,
                     )
                     correct_moves.append((childcolor, childmove))
                 if (
@@ -189,7 +205,8 @@ def walk_game_tree(
                 ):
                     childcolor, childraw = child.get_raw_move()
                     childmove = sgfmill.sgf_properties.interpret_go_point(
-                        childraw, board.side
+                        childraw,
+                        board.side,
                     )
                     wrong_moves.append((childcolor, childmove))
 
@@ -205,17 +222,35 @@ def walk_game_tree(
         elif node.find_property("C").strip() == "BLACKWIN":
             target_winner = "b"
             func(
-                filename, board_at_setup, moves_since_setup, komi, [], [], target_winner
+                filename,
+                board_at_setup,
+                moves_since_setup,
+                komi,
+                [],
+                [],
+                target_winner,
             )
         elif node.find_property("C").strip() == "WHITEWIN":
             target_winner = "w"
             func(
-                filename, board_at_setup, moves_since_setup, komi, [], [], target_winner
+                filename,
+                board_at_setup,
+                moves_since_setup,
+                komi,
+                [],
+                [],
+                target_winner,
             )
 
     for child in node:
         walk_game_tree(
-            filename, child, board_at_setup, board, moves_since_setup, komi, func
+            filename,
+            child,
+            board_at_setup,
+            board,
+            moves_since_setup,
+            komi,
+            func,
         )
 
 
@@ -225,9 +260,8 @@ def main(temp_config_file):
     Args:
         temp_config_file: A writable temporary file for storing the KataGo config.
     """
-
     parser = argparse.ArgumentParser(
-        description="Evaluates and plots models correctness on cyclic-group situations."
+        description="Evaluates and plots models correctness on cyclic-group situations",
     )
     parser.add_argument(
         "--config",
@@ -327,7 +361,7 @@ def main(temp_config_file):
                 args.override_config,
                 args.override_komi,
                 args.rules,
-            )
+            ),
         )
 
     def get_policy_and_search_mass(board_at_setup, response, moves):
@@ -368,13 +402,6 @@ def main(temp_config_file):
     ):
         for katago in katagos:
             response = katago.query(board_at_setup, moves_since_setup, komi)
-            player = (
-                "b"
-                if len(moves_since_setup) == 0
-                or moves_since_setup[-1][0] == "w"
-                or moves_since_setup[-1][0] == "W"
-                else "w"
-            )
 
             modelname = os.path.basename(filename)
             if len(correct_moves) > 0:
@@ -382,7 +409,9 @@ def main(temp_config_file):
                 assert len(wrong_moves) == 0
 
                 correct_policy_mass, correct_search_mass = get_policy_and_search_mass(
-                    board_at_setup, response, correct_moves
+                    board_at_setup,
+                    response,
+                    correct_moves,
                 )
                 # print(correct_policy_mass, correct_search_mass)
                 correct_policy_masses[modelname][katago.name] = correct_policy_mass
@@ -393,7 +422,9 @@ def main(temp_config_file):
                 assert len(correct_moves) == 0
 
                 wrong_policy_mass, wrong_search_mass = get_policy_and_search_mass(
-                    board_at_setup, response, wrong_moves
+                    board_at_setup,
+                    response,
+                    wrong_moves,
                 )
                 # print(wrong_policy_mass, wrong_search_mass)
                 correct_policy_masses[modelname][katago.name] = 1.0 - wrong_policy_mass
@@ -406,7 +437,10 @@ def main(temp_config_file):
             search_winrate[modelname][katago.name] = response["rootInfo"]["winrate"]
 
             response = katago.query(
-                board_at_setup, moves_since_setup, komi, max_visits=1
+                board_at_setup,
+                moves_since_setup,
+                komi,
+                max_visits=1,
             )
             raw_winrate[modelname][katago.name] = response["rootInfo"]["winrate"]
 
@@ -450,7 +484,11 @@ def main(temp_config_file):
         for (series_name, series_data), color in zip(data.items(), colors):
             policy_values = [series_data[model_name] for model_name in model_names]
             ax.plot(
-                model_names, policy_values, label=series_name, color=color, marker="o"
+                model_names,
+                policy_values,
+                label=series_name,
+                color=color,
+                marker="o",
             )
 
         ax.legend()
@@ -462,7 +500,7 @@ def main(temp_config_file):
         ax.set_yscale("symlog", linthresh=1e-3, linscale=(1.0 / math.log(10)))
         ax.set_ylim([0, 1])
         ax.yaxis.set_major_formatter(
-            plt.FuncFormatter(lambda y, _: "%.3g%%" % (y * 100.0))
+            plt.FuncFormatter(lambda y, _: "%.3g%%" % (y * 100.0)),
         )
 
         for model_name in model_names:
@@ -508,7 +546,11 @@ def main(temp_config_file):
                 ytoplot(series_data[model_name]) for model_name in model_names
             ]
             ax.plot(
-                model_names, winrate_values, label=series_name, color=color, marker="o"
+                model_names,
+                winrate_values,
+                label=series_name,
+                color=color,
+                marker="o",
             )
 
         ax.legend()
@@ -518,8 +560,6 @@ def main(temp_config_file):
         ax.set_ylabel(ylabel)
 
         ax.set_ylim([0, 1])
-
-        # ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda ploty, _: "%.3g%%" % (plottoyy*100.0)))
 
         yticks = [
             (0.01, "1%"),
@@ -543,7 +583,8 @@ def main(temp_config_file):
             (0.99, "99%"),
         ]
         ax.set_yticks(
-            [ytoplot(tick[0]) for tick in yticks], [tick[1] for tick in yticks]
+            [ytoplot(tick[0]) for tick in yticks],
+            [tick[1] for tick in yticks],
         )
 
         for model_name in model_names:
@@ -582,12 +623,6 @@ def main(temp_config_file):
         race_series_names,
         search_winrate,
     )
-
-    # raceeye_series_names = [key for key in series_names if key.startswith("raceeye") and "already" not in key]
-    # plot_policy(os.path.join(output_path,"raceeye-raw.png"), "Correct Raw Policy", raceeye_series_names, correct_policy_masses)
-    # plot_policy(os.path.join(output_path,"raceeye-search.png"), "Correct Search Mass", raceeye_series_names, correct_search_masses)
-    # plot_winrate(os.path.join(output_path,"raceeye-rawwinrate.png"), "Raw Winrate", raceeye_series_names, raw_winrate)
-    # plot_winrate(os.path.join(output_path,"raceeye-searchwinrate.png"), "Search Winrate", raceeye_series_names, search_winrate)
 
     racealready_series_names = [
         key for key in series_names if key.startswith("race") and "already" in key
@@ -643,12 +678,6 @@ def main(temp_config_file):
         search_winrate,
     )
 
-    # escapeeye_series_names = [key for key in series_names if key.startswith("escapeeye") and "eye" in key]
-    # plot_policy(os.path.join(output_path,"escapeeye-raw.png"), "Correct Raw Policy", escapeeye_series_names, correct_policy_masses)
-    # plot_policy(os.path.join(output_path,"escapeeye-search.png"), "Correct Search Mass", escapeeye_series_names, correct_search_masses)
-    # plot_winrate(os.path.join(output_path,"escapeeye-rawwinrate.png"), "Raw Winrate", escapeeye_series_names, raw_winrate)
-    # plot_winrate(os.path.join(output_path,"escapeeye-searchwinrate.png"), "Search Winrate", escapeeye_series_names, search_winrate)
-
     distraction_series_names = [
         key for key in series_names if key.startswith("distraction")
     ]
@@ -676,12 +705,6 @@ def main(temp_config_file):
         distraction_series_names,
         search_winrate,
     )
-
-    # distractioneye_series_names = [key for key in series_names if key.startswith("distractioneye") and "eye" in key]
-    # plot_policy(os.path.join(output_path,"distractioneye-raw.png"), "Correct Raw Policy", distractioneye_series_names, correct_policy_masses)
-    # plot_policy(os.path.join(output_path,"distractioneye-search.png"), "Correct Search Mass", distractioneye_series_names, correct_search_masses)
-    # plot_winrate(os.path.join(output_path,"distractioneye-rawwinrate.png"), "Raw Winrate", distractioneye_series_names, raw_winrate)
-    # plot_winrate(os.path.join(output_path,"distractioneye-searchwinrate.png"), "Search Winrate", distractioneye_series_names, search_winrate)
 
     eyelive_series_names = [
         key for key in series_names if key.startswith("eye") and "live" in key
