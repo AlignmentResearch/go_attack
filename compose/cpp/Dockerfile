@@ -124,8 +124,6 @@ COPY ./scripts/ /go_attack/scripts
 COPY ./engines/KataGo-custom/cpp/evaluate_loop.sh /engines/KataGo-custom/cpp/evaluate_loop.sh
 COPY ./engines/KataGo-raw/cpp/configs /engines/KataGo-raw/cpp/configs
 
-ENTRYPOINT ["./entrypoint.sh"]
-
 # Debug image
 FROM runtime-deps as debug
 COPY --from=build-custom-debug /engines/KataGo-custom/cpp/katago /engines/KataGo-custom/cpp/katago
