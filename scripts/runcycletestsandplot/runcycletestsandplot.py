@@ -21,7 +21,7 @@ from pathlib import Path
 from threading import Thread
 
 import matplotlib.pyplot as plt
-import seaborn as sns # pytype: disable=pyi-error
+import seaborn as sns  # pytype: disable=pyi-error
 import sgfmill
 import sgfmill.ascii_boards
 import sgfmill.boards
