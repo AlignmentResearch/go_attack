@@ -49,11 +49,18 @@ ENTRYPOINT ["./entrypoint.sh"]
 FROM python-deps as prod
 # Copy over KataGo python files
 COPY ./engines/KataGo-raw/python /engines/KataGo-raw/python
+COPY ./engines/KataGo-tensorflow/python /engines/KataGo-tensorflow/python
 COPY ./engines/KataGo-custom/python /engines/KataGo-custom/python
 
 # Make /engines/KataGo-* git repos to make scripts run nicely.
 # TODO: Make this less hacky...
 WORKDIR /engines/KataGo-raw
+RUN git init . \
+  && git add . \
+  && git config user.name dummy_name \
+  && git config user.email dummy@email.com \
+  && git commit -m "Dummy commit"
+WORKDIR /engines/KataGo-tensorflow
 RUN git init . \
   && git add . \
   && git config user.name dummy_name \

@@ -6,6 +6,7 @@ Experiments:
 * Evaluate adversary vs. victim with varying victim visits.
 * Evaluate adversary vs. victim with varying adversary visits.
 """
+
 import argparse
 import getpass
 import itertools
@@ -172,9 +173,11 @@ def write_victims(
         write_bot(
             f=f,
             bot_index=bot_index_offset + i,
-            bot_path=f"/shared/victims/{victim['filename']}"
-            if "path" not in victim
-            else victim["path"],
+            bot_path=(
+                f"/shared/victims/{victim['filename']}"
+                if "path" not in victim
+                else victim["path"]
+            ),
             bot_name=victim["name"],
             num_visits=victim["visits"],
             bot_algorithm="MCTS",

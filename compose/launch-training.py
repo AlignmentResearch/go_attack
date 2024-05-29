@@ -1,4 +1,5 @@
 """Launch a victimplay training run."""
+
 import os
 from argparse import ArgumentParser
 from datetime import datetime

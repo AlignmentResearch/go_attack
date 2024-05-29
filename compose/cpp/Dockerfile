@@ -6,19 +6,12 @@
 #
 # KataGo has been tested on CUDA 11.1 with CUDNN 8.0.4
 # See https://github.com/lightvector/KataGo/blob/master/Compiling.md.
-FROM nvidia/cuda:11.1.1-cudnn8-devel-ubuntu20.04 AS build-deps
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04 AS build-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update Nvidia signing key
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
-
-# Add focal-proposed for libc6 patch
-# See https://wiki.ubuntu.com/Testing/EnableProposed for details.
-RUN echo "deb http://archive.ubuntu.com/ubuntu focal-proposed main" >> /etc/apt/sources.list \
- && echo "Package: *"                                               >> /etc/apt/preferences \
- && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
- && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
 
 # Install apt packages
 RUN apt-get update -q \
@@ -38,14 +31,13 @@ RUN apt-get update -q \
   libssl-dev \
   libzip-dev \
   zlib1g-dev \
-  # Newer version of glibc without a deadlock bug:
-  # https://bugs.launchpad.net/ubuntu/+source/glibc/+bug/1899800
-  libc6=2.31-0ubuntu9.9 \
-  libc6-dev=2.31-0ubuntu9.9 \
-  libc-dev-bin=2.31-0ubuntu9.9 \
   # Clean up
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+RUN wget https://download.pytorch.org/libtorch/cu118/libtorch-cxx11-abi-shared-with-deps-2.2.0%2Bcu118.zip \
+  && unzip libtorch-cxx11-abi-shared-with-deps-2.2.0+cu118.zip -d /opt \
+  && rm libtorch-cxx11-abi-shared-with-deps-2.2.0+cu118.zip
 
 # Install cmake
 # Instructions from https://cliutils.gitlab.io/modern-cmake/chapters/intro/installing.html
@@ -74,19 +66,12 @@ RUN cmake . -DUSE_BACKEND=CUDA -DUSE_TCMALLOC=1 -DNO_GIT_REVISION=1 -DBUILD_DEBU
 RUN make clean && make -j
 
 # Actual production image, without development headers.
-FROM nvidia/cuda:11.1.1-cudnn8-runtime-ubuntu20.04 AS runtime-deps
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu20.04 AS runtime-deps
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Update Nvidia signing key
 RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
-
-# Add focal-proposed for libc6 patch
-# See https://wiki.ubuntu.com/Testing/EnableProposed for details.
-RUN echo "deb http://archive.ubuntu.com/ubuntu focal-proposed main" >> /etc/apt/sources.list \
- && echo "Package: *"                                               >> /etc/apt/preferences \
- && echo "Pin: release a=focal-proposed"                            >> /etc/apt/preferences \
- && echo "Pin-Priority: 400"                                        >> /etc/apt/preferences
 
 # Install useful apt packages
 RUN apt-get update -q \
@@ -114,12 +99,11 @@ RUN apt-get update -q \
   libssl1.1 \
   libzip5 \
   zlib1g \
-  # Newer version of glibc without a deadlock bug:
-  # https://bugs.launchpad.net/ubuntu/+source/glibc/+bug/1899800
-  libc6=2.31-0ubuntu9.9 \
   # Clean up
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build-deps /opt/libtorch /opt/libtorch
 
 # Reset working directory
 WORKDIR /
