@@ -5,7 +5,7 @@ rm -rf $GIT_ROOT/sabaki/models
 mkdir -p $GIT_ROOT/sabaki/models/adv
 mkdir -p $GIT_ROOT/sabaki/models/victims
 
-# Download models
+# Download a few models
 
 # Original cyclic adversary
 mkdir -p $GIT_ROOT/sabaki/models/adv/cyclic
