@@ -48,7 +48,7 @@ services:
       - type: bind
         source: ${HOST_OUTPUT_DIR}
         target: /outputs
-    command: /engines/KataGo-custom/cpp/evaluate_loop.sh /outputs
+    command: /go_attack/kubernetes/evaluate_loop.sh /outputs
     deploy:
       resources:
         reservations:
