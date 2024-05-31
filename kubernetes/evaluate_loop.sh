@@ -63,7 +63,7 @@ CONFIG=${CONFIG:-"$GO_ATTACK_ROOT"/configs/match-1gpu.cfg}
 NUM_POSITIONAL_ARGUMENTS=2
 if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
   echo "Wrong number of positional arguments. Expected ${NUM_POSITIONAL_ARGUMENTS}, got $#"
-  echo "Positional arguments: $@"
+  echo "Positional arguments: $*"
   usage
   exit 1
 fi
@@ -92,6 +92,7 @@ do
     if [[ -z "$VICTIM_LIST_ARG" ]]
     then
         # https://stackoverflow.com/questions/1015678/get-most-recent-file-in-a-directory-on-linux
+        # shellcheck disable=SC2010
         VICTIM_LIST=$(ls -Art "$VICTIMS_DIR" | grep "\.\(pt\|gz\)" | tail --lines 1)
     else
         VICTIM_LIST="$VICTIM_LIST_ARG"
@@ -101,6 +102,7 @@ do
     # https://stackoverflow.com/a/10586169/7086623
     IFS=', ' read -r -a victim_array <<< "${VICTIM_LIST}"
 
+    # shellcheck disable=SC2010
     LATEST_MODEL_DIR=$(ls -v "$MODELS_DIR" | grep "\-s[0-9]\+" | tail --lines 1)
 
     if [[ -z "$LATEST_MODEL_DIR" || -z "$VICTIM_LIST" ]]; then
@@ -119,11 +121,25 @@ do
                 # https://stackoverflow.com/questions/12152626/how-can-i-remove-the-extension-of-a-filename-in-a-shell-script
                 VICTIM_NAME=$(echo "$VICTIM" | cut -f 1 -d '.')
                 EXTRA_CONFIG="numGamesTotal=$NUM_GAMES"
+                # victim.cfg may turn on pass-hardening so that we don't learn
+                # the pass attack in training, but we usually don't want
+                # hardening in evaluation.
+                EXTRA_CONFIG+=",passingBehavior0=standard"
 
                 if [ -n "$PREDICTOR_DIR" ]; then
                     # https://stackoverflow.com/questions/4561895/how-to-recursively-find-the-latest-modified-file-in-a-directory
-                    PREDICTOR=$(find $PREDICTOR_DIR -name *.bin.gz -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ")
+                    PREDICTOR=$(find "$PREDICTOR_DIR" -name "*.bin.gz" -type f -printf '%T@ %p\n' | sort -n | tail -1 | cut -f2- -d" ")
                     EXTRA_CONFIG+=",predictorPath=$PREDICTOR"
+                fi
+
+                TRAINED_MODEL="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.bin.gz
+                if [ ! -f "$TRAINED_MODEL" ]; then
+                    # Check if we're using a PyTorch model instead
+                    TRAINED_MODEL="$MODELS_DIR"/"$LATEST_MODEL_DIR"/model.pt
+                fi
+                if [ ! -f "$TRAINED_MODEL" ]; then
+                    echo "No model found in $MODELS_DIR/$LATEST_MODEL_DIR/"
+                    exit 1
                 fi
 
                 # Run the evaluation
