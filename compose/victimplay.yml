@@ -137,6 +137,7 @@ services:
         ${NUM_THREADS} \
         ${BATCH_SIZE} \
         ${USE_GATING} \
+        ${USE_TORCHSCRIPT} \
         ${SHUFFLE_EXTRA} &&
         sleep infinity
       "
