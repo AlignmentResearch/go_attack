@@ -21,20 +21,18 @@ while [ -n "${1-}" ]; do
     # Set this flag if the gatekeeper is enabled.
     --gating) USE_GATING=1 ;;
     # Pre-seed with this training data as the source.
-    # If the pre-seed source directory is formatted as `*/selfplay/t0-s*-d*`,
-    # then all earlier directories with lower step count (s) in `*/selfplay/`
+    # If the pre-seed source directory is formatted as `<some path>/t0-s*-d*`,
+    # then all earlier directories with lower step count (s) in `<some path>/`
     # will also be included in the pre-seeding.
     --preseed) PRESEED_SRC=$2; shift ;;
-    -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    -*) echo "Unknown parameter passed: $1"; exit 1 ;;
     *) break ;;
   esac
   shift
 done
 
 RUN_NAME="$1"
-DIRECTORY="$2"
-VOLUME_NAME="$3"
-shift
+VOLUME_NAME="$2"
 shift
 shift
 
@@ -52,9 +50,9 @@ else
 fi
 
 # not related to shuffle-and-export but we want some process to log this
-/go_attack/kubernetes/log-git-commit.sh /"$VOLUME_NAME"/victimplay/"$DIRECTORY"
+/go_attack/kubernetes/log-git-commit.sh /"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 
-EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$DIRECTORY"
+EXPERIMENT_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"
 mkdir --parents "$EXPERIMENT_DIR"/selfplay
 
 PRESEED_DST="$EXPERIMENT_DIR"/selfplay/prev-selfplay
@@ -86,5 +84,6 @@ if [ -n "${PRESEED_SRC:-}" ] && [ ! -d "$PRESEED_DST" ]; then
   fi
 fi
 
+# shellcheck disable=SC2086
 ./selfplay/shuffle_and_export_loop.sh "$RUN_NAME" "$EXPERIMENT_DIR" /tmp 16 256 $USE_GATING $USE_TORCHSCRIPT "$@"
 sleep infinity

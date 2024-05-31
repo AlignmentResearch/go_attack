@@ -1,6 +1,6 @@
 [
     {
-        "name": "cyclic-adv-s545065216.bin.gz",
+        "name": "cyclic-adversary-s545m.bin.gz",
         "max_visits_victim": 600,
         "win_rate": 0.9
     }

@@ -39,13 +39,54 @@ More specifically:
 1. The C++ portion of KataGo runs in the container defined by [compose/cpp/Dockerfile](compose/cpp/Dockerfile).
 2. The Python training portion of KataGo runs in the container defined at [compose/python/Dockerfile](compose/python/Dockerfile).
 
-The Dockerfiles contain instructions for how to build them individually. This is useful if you want to test just one of the docker containers.
+The Dockerfiles contain instructions for how to build them.
 
-A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory inside the container.
-To run a docker container, you can use a command like
+After building a container, you run it with a command like
 ```
-docker run --gpus all -v ~/go_attack:/go_attack -it humancompatibleai/goattack:cpp
+docker run --gpus all -v ~/go_attack:/go_attack -v DATA_DIR:/shared -it humancompatibleai/goattack:cpp
 ```
+where `DATA_DIR` is a directory, shared among all containers, in which to save the
+results of training runs.
+
+A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory inside the C++ container.
+
+## Launching victim-play training runs
+
+In order to launch training runs, run several containers
+simultaneously:
+
+* 1-GPU C++ containers executing victim-play games to generate data. Example
+  command to run in each container: `/go_attack/kubernetes/victimplay.sh
+  [--warmstart] EXPERIMENT-NAME /shared/`, where the optional `--warmstart` flag
+  should be set for warmstarted runs.
+* One 1-GPU Python container for training. Example command:
+  `/go_attack/kubernetes/train.sh [--initial-weights WARMSTART-MODEL-DIR]
+  EXPERIMENT-NAME /shared/ 1.0` where the optional `--initial-weights
+  WARMSTART-MODEL-DIR` flag should be set for warmstarted runs.
+* One Python container for shuffling data. Example command:
+  `/go_attack/kubernetes/shuffle-and-export.sh [--preseed
+  WARMSTART-SELFPLAY-DIR] EXPERIMENT-NAME /shared` where the optional `-preseed`
+  flag should be set for warmstarted runs.
+* One Python container for running the curriculum. Example command:
+  `/go_attack/kubernetes/curriculum.sh EXPERIMENT-NAME /shared/
+  /go_attack/configs/examples/cyclic-adversary-curriculum.json
+  -harden-below-visits 100`.
+  * The victims listed in the curriculum `.json` file are assumed to exist in
+    `/shared/victims`. They can be symlinks.
+* Optionally, one 1-GPU C++ container for evaluating models. Example command:
+  `/go_attack/kubernetes/evaluate-loop.sh /shared/victimplay/EXPERIMENT-NAME/
+  /shared/victimplay/EXPERIMENT-NAME/eval`.
+
+See [configs/examples](configs/examples/README.md) for example experiment
+configurations and example values for the warmstart flags.
+
+For these wrapper scripts in `kubernetes/`, optional flags for the wrapper come
+before any positional arguments, but optional flags for the underlying command
+the wrapper calls go after any positional arguments. For example, in the command
+`/go_attack/kubernetes/shuffle-and-export.sh --preseed WARMSTART-SELFPLAY-DIR
+EXPERIMENT-NAME /shared -add-to-window 100000000`, `--preseed` is a flag for the
+wrapper whereas `-add-to-window` is a flag to be passed to
+`/engines/KataGo-tensorflow/python/selfplay/shuffle_and_export_loop.sh`.
 
 ## Docker compose
 
@@ -59,6 +100,8 @@ parameters of the run (
     batch size,
     where to look for other config files
 ).
+
+(Note: we stopped using these in October 2022, so they are no longer maintained.)
 
 ## Website and analysis notebooks
 
