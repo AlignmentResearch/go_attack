@@ -12,6 +12,11 @@ while [ -n "${1-}" ]; do
     # curriculum script will handle copying the victim models for the predictor.
     --copy-initial-model) COPY_INITIAL_MODEL=1; ;;
     # Path to directory of TF weights for warmstarting.
+    # For an official KataGo model, download the TF weights from
+    # https://katagotraining.org/networks/, unzip them, and pass in the path to
+    # the unzipped directory.
+    # For one of your own training runs, pass in <path to your
+    # training run>/models/<name of your model (something like t0-sNNN-dMMM)>.
     --initial-weights) INITIAL_WEIGHTS=$2; shift ;;
     --model-kind) MODEL_KIND=$2; shift ;;
     --use-pytorch) USE_PYTORCH=1; ;;
