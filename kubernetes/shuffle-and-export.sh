@@ -71,7 +71,7 @@ if [ -n "${PRESEED_SRC:-}" ] && [ ! -d "$PRESEED_DST" ]; then
         assert_exists "$PRESEED_DST/$DIR_NAME"
       elif [[ "$DIR" =~ -s([0-9]+)-d[0-9]+ ]]; then
         STEP=${BASH_REMATCH[1]}
-        if [ "$STEP" -le "$FINAL_STEP" ]; then
+        if [ "$STEP" -lt "$FINAL_STEP" ]; then
           ln -s "$DIR" "$PRESEED_DST"
           assert_exists "$PRESEED_DST/$DIR_NAME"
         fi
