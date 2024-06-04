@@ -62,11 +62,7 @@ CONFIG=${CONFIG:-"$GO_ATTACK_ROOT"/configs/match-1gpu.cfg}
 NUM_POSITIONAL_ARGUMENTS=2
 if [ $# -ne ${NUM_POSITIONAL_ARGUMENTS} ]; then
   echo "Wrong number of positional arguments. Expected ${NUM_POSITIONAL_ARGUMENTS}, got $#"
-<<<<<<< HEAD
   echo "Positional arguments: $*"
-=======
-  echo "Positional arguments: $@"
->>>>>>> 47b02c6... evaluate_loop: Move from KataGo-custom to go_attack
   usage
   exit 1
 fi
@@ -95,10 +91,7 @@ do
     if [[ -z "$VICTIM_LIST_ARG" ]]
     then
         # https://stackoverflow.com/questions/1015678/get-most-recent-file-in-a-directory-on-linux
-<<<<<<< HEAD
         # shellcheck disable=SC2010
-=======
->>>>>>> 47b02c6... evaluate_loop: Move from KataGo-custom to go_attack
         VICTIM_LIST=$(ls -Art "$VICTIMS_DIR" | grep "\.\(pt\|gz\)" | tail --lines 1)
     else
         VICTIM_LIST="$VICTIM_LIST_ARG"
@@ -108,10 +101,7 @@ do
     # https://stackoverflow.com/a/10586169/7086623
     IFS=', ' read -r -a victim_array <<< "${VICTIM_LIST}"
 
-<<<<<<< HEAD
     # shellcheck disable=SC2010
-=======
->>>>>>> 47b02c6... evaluate_loop: Move from KataGo-custom to go_attack
     LATEST_MODEL_DIR=$(ls -v "$MODELS_DIR" | grep "\-s[0-9]\+" | tail --lines 1)
 
     if [[ -z "$LATEST_MODEL_DIR" || -z "$VICTIM_LIST" ]]; then
