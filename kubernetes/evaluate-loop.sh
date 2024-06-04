@@ -33,7 +33,6 @@ usage() {
     echo "    Default: 100"
     echo
     echo "Optional arguments should be specified before positional arguments."
-    echo "Currently expects to be run from within the 'cpp' directory of the KataGo repo."
 }
 
 VICTIM_LIST_ARG=""
