@@ -17,6 +17,8 @@ while [ -n "${1-}" ]; do
     # the unzipped directory.
     # For one of your own training runs, pass in <path to your
     # training run>/models/<name of your model (something like t0-sNNN-dMMM)>.
+    # Besides the TF weights, the C++ model needs to either also be in the
+    # directory or to be in VOLUME_NAME/victims.
     --initial-weights) INITIAL_WEIGHTS=$2; shift ;;
     --model-kind) MODEL_KIND=$2; shift ;;
     --use-pytorch) USE_PYTORCH=1; ;;
