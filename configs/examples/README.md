@@ -1,5 +1,6 @@
 Here we give examples of how to launch training runs similar to those in our
-papers.
+papers. The examples should give you a sense of how to launch your own training
+runs or fine-tune our models.
 
 For warmstarting, you will need to download our [models and training
 data](https://drive.google.com/drive/u/3/folders/1-bGX-NQOh6MuRPoXJgYHb9-jWRJvviSg)
@@ -41,6 +42,10 @@ Here we need to warmstart from the original cyclic adversary:
 * Pass the flag `--warmstart` to the victim-play script.
 
 Use the `configs/examples/attack-may23-curriculum.json` curriculum config.
+
+This is the general recipe for fine-tuning: warmstart from the starting
+adversary using the aforementioned flags and change the curriculum to point at a
+different victim.
 
 ## `continuous-adversary`
 
