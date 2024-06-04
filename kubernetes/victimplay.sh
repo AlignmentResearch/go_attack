@@ -5,6 +5,9 @@ while [ -n "${1-}" ]; do
   case $1 in
     # Specifies the config to use.
     --config) CONFIG=$2; shift ;;
+    # Use self-play instead of victim-play. (The training run is still stored in
+    # the VOLUME_NAME/victimplay/ directory since other kubernetes/ scripts
+    # assume that runs are stored there.)
     --selfplay) USE_SELFPLAY=1 ;;
     # Specifies that this is a warmstart run.
     --warmstart) USE_WARMSTART=1; ;;
