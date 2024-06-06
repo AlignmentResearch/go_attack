@@ -1,0 +1,36 @@
+# To launch run the following command from the directory containing this file:
+#     kubectl create -f vit-bot-pro.yaml
+# Make sure to set the credentials of the bot accordingly.
+# Only one copy of the bot can run at a time on one account!
+# You can set the room the bot is in by manually logging in as the bot on KGS,
+# and navigating to the room you want the bot to be in. When the bot reconnects
+# it will join the room you were in.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: vit-kgs-bot-pro
+  labels:
+    kueue.x-k8s.io/queue-name: farai
+spec:
+  suspend: true # The job must start suspended kueue will start it when it is admitted
+  template:
+    spec:
+      priorityClassName: high-batch
+      restartPolicy: OnFailure
+      containers:
+      - name: gtp
+        image: humancompatibleai/goattack:b2fb839-cpp-kgs
+        args: [
+          "name=???",
+          "password=???",
+          "gameNotes=:)",
+          "rules.time=90:00+5x0:30",
+          "opponent=???"
+        ]
+        resources:
+          limits:
+            memory: 80Gi
+            nvidia.com/gpu: "2"
+          requests:
+            cpu: 32
+            nvidia.com/gpu: "2"
