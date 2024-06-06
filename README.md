@@ -65,7 +65,7 @@ simultaneously:
   WARMSTART-MODEL-DIR` flag should be set for warmstarted runs.
 * One Python container for shuffling data. Example command:
   `/go_attack/kubernetes/shuffle-and-export.sh [--preseed
-  WARMSTART-SELFPLAY-DIR] EXPERIMENT-NAME /shared` where the optional `-preseed`
+  WARMSTART-SELFPLAY-DIR] EXPERIMENT-NAME /shared` where the optional `--preseed`
   flag should be set for warmstarted runs.
 * One Python container for running the curriculum. Example command:
   `/go_attack/kubernetes/curriculum.sh EXPERIMENT-NAME /shared/
