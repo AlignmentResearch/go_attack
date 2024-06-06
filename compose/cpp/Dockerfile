@@ -121,7 +121,6 @@ RUN pip install -e /go_attack --root-user-action=ignore
 
 # Copy over other files
 COPY ./scripts/ /go_attack/scripts
-COPY ./engines/KataGo-custom/cpp/evaluate_loop.sh /engines/KataGo-custom/cpp/evaluate_loop.sh
 COPY ./engines/KataGo-raw/cpp/configs /engines/KataGo-raw/cpp/configs
 
 # Debug image
