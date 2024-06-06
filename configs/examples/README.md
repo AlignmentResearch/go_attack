@@ -161,7 +161,7 @@ The victim `v9` is available on Google Drive.
 
 The ViT model is trained with self-play rather than victim-play, so
 * do not launch the curriculum.
-* launch self-play workers by passing the `--selfplay flag` to the victim-play
+* launch self-play workers by passing the `--selfplay` flag to the victim-play
   script. (The script still saves the experiment in `/shared/victimplay` because
   other scripts in `kubernetes/` assume experiments are located in
   `/shared/victimplay`.)
