@@ -1,16 +1,16 @@
 #!/bin/bash -e
 
 MODEL_KIND=b6c96
+COPY_INITIAL_MODEL=1
 # Command line flag parsing (https://stackoverflow.com/a/33826763/4865149).
 # Flags must be specified before positional arguments.
 while [ -n "${1-}" ]; do
   case $1 in
-    # Whether to copy model for warmstarting. If this flag is used,
-    # --initial-weights flag should be specified as well.
-    # You usually want this flag when using --initial-weights.
-    # For predictor training, this flag should not be specified since the
-    # curriculum script will handle copying the victim models for the predictor.
-    --copy-initial-model) COPY_INITIAL_MODEL=1; ;;
+    # Whether to copy model for warmstarting when --initial-weights is
+    # specified. Usually we do want to copy the model, but for predictor
+    # training, this flag should be used since the curriculum script will handle
+    # copying the victim models for the predictor.
+    --no-copy-initial-model) COPY_INITIAL_MODEL=0; ;;
     # Path to directory of TF weights for warmstarting.
     # For an official KataGo model, download the TF weights from
     # https://katagotraining.org/networks/, unzip them, and pass in the path to
@@ -22,7 +22,7 @@ while [ -n "${1-}" ]; do
     --initial-weights) INITIAL_WEIGHTS=$2; shift ;;
     --model-kind) MODEL_KIND=$2; shift ;;
     --use-pytorch) USE_PYTORCH=1; ;;
-    -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    -*) echo "Unknown parameter passed: $1"; exit 1 ;;
     *) break ;;
   esac
   shift
@@ -51,7 +51,7 @@ elif [ -n "${USE_PYTORCH:-}" ]; then # handle PyTorch initial weights
 
     PYTORCH_CHECKPOINT="$INITIAL_WEIGHTS/model.ckpt"
 
-    if [ -n "${COPY_INITIAL_MODEL:-}" ] &&
+    if [ "$COPY_INITIAL_MODEL" -eq "1" ] &&
        [ ! -f "$EXPERIMENT_DIR"/done-copying-warmstart-model ]; then
         TARGET_DIR="$EXPERIMENT_DIR"/models/t0-s0-d0
         mkdir --parents "$TARGET_DIR"
@@ -62,7 +62,9 @@ elif [ -n "${USE_PYTORCH:-}" ]; then # handle PyTorch initial weights
             cp "$INITIAL_WEIGHTS/model.pt" "$TARGET_DIR"/model.pt
         else
             echo "Error: no exported model was found at $INITIAL_WEIGHTS."
+            exit 1
         fi
+        touch "$EXPERIMENT_DIR"/done-copying-warmstart-model
     fi
 else # handle TensorFlow initial weights
     echo "Using initial weights: $INITIAL_WEIGHTS"
@@ -78,7 +80,7 @@ else # handle TensorFlow initial weights
     cp "$INITIAL_WEIGHTS"/saved_model/model.config.json "$EXPERIMENT_DIR"/train/t0/model.config.json
     cp -r "$INITIAL_WEIGHTS"/saved_model/variables/* "$EXPERIMENT_DIR"/train/t0/initial_weights
 
-    if [ -n "${COPY_INITIAL_MODEL:-}" ] &&
+    if [ "$COPY_INITIAL_MODEL" -eq "1" ] &&
        [ ! -f "$EXPERIMENT_DIR"/done-copying-warmstart-model ]; then
       INITIAL_MODEL=""
       ADV_MODEL="$INITIAL_WEIGHTS/model.bin.gz"
