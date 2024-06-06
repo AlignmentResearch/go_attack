@@ -142,8 +142,11 @@ model name with the defense iteration's model).
 ### Subsequent iterations
 
 On subsequent [defense/attack] iterations, update the curriculum to point at the
-latest [attack/defense] iteration's model and either warmstart from or resume
-the previous [defense/attack] iteration.
+latest [attack/defense] iteration's model and either warmstart (use the
+warmstart flags and give a new run name to create a new experiment directory for
+the subsequent iteration) from or resume (use the same launch commands as the
+latest iteration to continue using the same experiment run directory) the
+previous [defense/attack] iteration.
 
 (Although `kubernetes/iterated-training` contains experimental scripts for
 automating switching between attack and defense iterations, for our published
@@ -188,9 +191,9 @@ The ViT model is trained and exported as a PyTorch model, so
 
 If you first train a smaller ViT and then want to use its generated data to
 pre-train a larger ViT, then
-* launch only shuffle-and-export and the training process. To speed up training, you may
-  want to train with multiple GPUs by appending the flag `-multi-gpus <GPU
-  indices, e.g., "0,1,2,3">` to the training script.
+* launch only shuffle-and-export and the training process. To speed up training,
+  you may want to train with multiple GPUs by appending the flag `-multi-gpus
+  <GPU indices, e.g., "0,1,2,3">` to the training script.
 * slowly copy the smaller ViT's training data into the larger ViT's directory,
   using a script like `vit-link-pretraining.sh`.
 * only launch the self-play workers after the pre-training has finished.

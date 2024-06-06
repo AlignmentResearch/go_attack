@@ -1,5 +1,6 @@
 [
     {
+        "_comment": "We continuously updated the victim manually by editing the 'name' field and relaunching the curriculum.",
         "name": "kata1-b18c384nbt-s8526915840-d3929217702.bin.gz",
         "max_visits_victim": 1,
         "win_rate": 0.75

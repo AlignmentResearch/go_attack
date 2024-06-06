@@ -4,14 +4,14 @@
 # This is run from `selfplay/prev-selfplay` of the experiment directory for the
 # ViT to be pre-trained.
 
-# This should be approximately how long each training epoch takes.
+# Set this to approximate the duration of each training epoch in seconds.
 SLEEP_DURATION=1100
 
-# Here we assume the previous ViT's experiment name is "vit-b4".
-mkdir --parents b4
+# We assume the previous ViT's experiment name is "vit-b4".
 SRC_DIR=$(realpath ../../../vit-b4/selfplay)
 DST_DIR=b4
-SELFPLAY_MODELS=($(ls -v $SRC_DIR))
+mkdir --parents "$DST_DIR"
+SELFPLAY_MODELS=($(ls -v "$SRC_DIR"))
 for MODEL in "${SELFPLAY_MODELS[@]}"; do
   SRC="$SRC_DIR/$MODEL"
   if [[ "$MODEL" =~ -s([0-9]+) ]]; then
