@@ -176,7 +176,7 @@ created by the curriculum, though it is straightforward to modify it to evaluate
 trained models against some fixed KataGo network instead of against curriculum
 victim models.
 
-The ViT is trained and exported as PyTorch model, so
+The ViT model is trained and exported as a PyTorch model, so
 * training needs the extra flag `--use-pytorch` before its positional arguments.
   You will also need to specify the model architecture with the flag
   `--model-kind vitp2b4c384` (`vitp2b4c384` is a 4-block ViT; see
