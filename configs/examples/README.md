@@ -188,7 +188,7 @@ The ViT is trained and exported as PyTorch model, so
 
 If you first train a smaller ViT and then want to use its generated data to
 pre-train a larger ViT, then
-* launch only shuffle-and-export and the training. To speed up training, you may
+* launch only shuffle-and-export and the training process. To speed up training, you may
   want to train with multiple GPUs by appending the flag `-multi-gpus <GPU
   indices, e.g., "0,1,2,3">` to the training script.
 * slowly copy the smaller ViT's training data into the larger ViT's directory,
