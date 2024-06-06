@@ -159,7 +159,7 @@ The victim `v9` is available on Google Drive.
 
 ## `ViT-victim`
 
-The ViT is trained with self-play rather than victim-play, so
+The ViT model is trained with self-play rather than victim-play, so
 * do not launch the curriculum.
 * launch self-play workers by passing the `--selfplay flag` to the victim-play
   script. (The script still saves the experiment in `/shared/victimplay` because
