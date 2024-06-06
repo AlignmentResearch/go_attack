@@ -55,7 +55,7 @@ A KataGo executable can be found in the `/engines/KataGo-custom/cpp` directory i
 In order to launch training runs, run several containers
 simultaneously:
 
-* 1-GPU C++ containers executing victim-play games to generate data. Example
+* One or more 1-GPU C++ containers executing victim-play games to generate data. Example
   command to run in each container: `/go_attack/kubernetes/victimplay.sh
   [--warmstart] EXPERIMENT-NAME /shared/`, where the optional `--warmstart` flag
   should be set for warmstarted runs.
