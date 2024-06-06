@@ -18,6 +18,6 @@ while true; do
 
   ITERATION_DIR=/"$VOLUME_NAME"/victimplay/"$RUN_NAME"/iteration-"$ITERATION"
   run_until_curriculum_done "$ITERATION_DIR" \
-    /engines/KataGo-custom/cpp/evaluate_loop.sh --config "$CONFIG" \
+    /go_attack/kubernetes/evaluate-loop.sh --config "$CONFIG" \
     "$ITERATION_DIR" "$ITERATION_DIR"/eval
 done
