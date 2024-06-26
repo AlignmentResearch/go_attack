@@ -1,12 +1,12 @@
 [submodule "controllers/gogui"]
 	path = controllers/gogui
-	url = git@github.com:AlignmentResearch/gogui.git
+	url = https://github.com/AlignmentResearch/gogui.git
 [submodule "engines/KataGo-custom"]
 	path = engines/KataGo-custom
-	url = git@github.com:AlignmentResearch/KataGo-custom.git
+	url = https://github.com/AlignmentResearch/KataGo-custom.git
 [submodule "engines/KataGo-raw"]
 	path = engines/KataGo-raw
-	url = git@github.com:lightvector/KataGo.git
+	url = https://github.com/lightvector/KataGo.git
 [submodule "engines/KataGo-tensorflow"]
 	path = engines/KataGo-tensorflow
-	url = git@github.com:AlignmentResearch/KataGo-custom.git
+	url = https://github.com/AlignmentResearch/KataGo-custom.git
