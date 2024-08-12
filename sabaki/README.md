@@ -8,9 +8,8 @@ If you are on MacOS, you can install using Homebrew with the command
 
 ## Download adversary and victim neural nets
 Run `sabaki/scripts/download-models.sh`
-to automatically download the strongest adversaries and KataGo models.
-
-We host the models on Google Drive here: https://drive.google.com/drive/folders/1-bGX-NQOh6MuRPoXJgYHb9-jWRJvviSg?usp=sharing
+to automatically download the original cyclic adversary and pass adversary.
+Find other models on our [Google Drive](https://drive.google.com/drive/folders/1-bGX-NQOh6MuRPoXJgYHb9-jWRJvviSg?usp=sharing).
 
 The base KataGo models are downloaded from https://katagotraining.org/networks/.
 
@@ -37,7 +36,7 @@ The base KataGo models are downloaded from https://katagotraining.org/networks/.
   and the fourth line is the initial commands passed to gtp
   (in this case giving the bot infinite time to make moves).
   See below for more sample configs.
-4. After adding a config, you can follow the instructions at https://youtu.be/6ZA_saVHyTA to play against newly configured engine.
+4. After adding a config, you can follow the instructions at https://youtu.be/6ZA_saVHyTA to play against the newly configured engine.
 
 In particular, the following config runs our cyclic-adversary, assuming this
 repo is checked out at `/Users/ttw/code/go_attack/engines/` (the paths will need
@@ -45,23 +44,17 @@ to be adjusted depending on where your copy of the repo is located):
 ```
 cyclic-adv-s545m-v600-vm-cp505-v1-s
 /Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
-gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/cyclic-adv-s545065216-d136760487.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg
+gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/cyclic/model.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg
 time_settings 0 1 0
 ```
 
 ## More sample bot configs
 You'll need to change the paths to the models and executables for your machine.
 ```
-# Weaker cyclic-adversary (with dragonslayer strategy)
-cyclic-adv-s349m-v600-vm-cp505-v1-s
-/Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
-gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/cyclic-adv-s349284096-d87808728.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg
-time_settings 0 1 0
-
 # Pass-adversary
 pass-adv-s34m-v600-vs-cp505-v1-s
 /Users/ttw/code/go_attack/engines/KataGo-custom/cpp/katago
-gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/pass-adv-s34090496-d8262123.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg 
+gtp -model /Users/ttw/code/go_attack/sabaki/models/adv/pass/model.bin.gz -victim-model /Users/ttw/code/go_attack/sabaki/models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /Users/ttw/code/go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg 
 time_settings 0 1 0
 
 # Latest with 128 visits
@@ -87,7 +80,7 @@ and make sure Docker works on M.
 # Cyclic-adversary over ssh
 ssh-cyclic-adv-s545m-v600-vm-cp505-v1-s
 ssh
-rnn -tt 'bash -l -c "/nas/ucb/tony/go-attack/gtp-host/go_attack/sabaki/scripts/docker-katago.sh custom gtp -model /models/adv/cyclic-adv-s545065216-d136760487.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg -config /go_attack/configs/compute/1gpu.cfg"'
+rnn -tt 'bash -l -c "/nas/ucb/tony/go-attack/gtp-host/go_attack/sabaki/scripts/docker-katago.sh custom gtp -model /models/adv/cyclic/model.bin.gz -victim-model /models/victims/kata1-b40c256-s11840935168-d2898845681.bin.gz -config /go_attack/configs/sabaki/gtp-adv600-vm1-s.cfg -config /go_attack/configs/compute/1gpu.cfg"'
 time_settings 0 1 0
 ```
 

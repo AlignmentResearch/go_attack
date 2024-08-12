@@ -1,10 +1,14 @@
-#!/bin/sh -e
+#!/bin/bash -eu
 
 CONFIG=/go_attack/configs/active-experiment.cfg
 while [ -n "${1-}" ]; do
   case $1 in
     # Specifies the config to use.
     --config) CONFIG=$2; shift ;;
+    # Use self-play instead of victim-play. (The training run is still stored in
+    # the VOLUME_NAME/victimplay/ directory since other kubernetes/ scripts
+    # assume that runs are stored there.)
+    --selfplay) USE_SELFPLAY=1 ;;
     # Specifies that this is a warmstart run.
     --warmstart) USE_WARMSTART=1; ;;
     -*) echo "Unknown parameter passed: $1"; exit 1 ;;
@@ -15,6 +19,8 @@ done
 
 RUN_NAME="$1"
 VOLUME_NAME="$2"
+shift
+shift
 
 while [ -n "${USE_WARMSTART:-}" ] &&
       [ ! -f /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/done-copying-warmstart-model ]; do
@@ -23,9 +29,17 @@ while [ -n "${USE_WARMSTART:-}" ] &&
 done
 
 mkdir -p /"$VOLUME_NAME"/victimplay/"$RUN_NAME"
-/engines/KataGo-custom/cpp/katago victimplay \
-    -output-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/selfplay/ \
-    -models-dir /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/models/ \
+KATAGO_BIN=/engines/KataGo-custom/cpp/katago
+FLAGS=(
+  "-output-dir" "/$VOLUME_NAME/victimplay/$RUN_NAME/selfplay/"
+  "-models-dir" "/$VOLUME_NAME/victimplay/$RUN_NAME/models/"
+  "-config" "$CONFIG"
+  "-config" "/go_attack/configs/compute/1gpu.cfg"
+)
+if [ -n "${USE_SELFPLAY:-}" ]; then
+  $KATAGO_BIN selfplay "${FLAGS[@]}" "$@"
+else
+  $KATAGO_BIN victimplay "${FLAGS[@]}" \
     -nn-victim-path /"$VOLUME_NAME"/victimplay/"$RUN_NAME"/victims/ \
-    -config "$CONFIG" \
-    -config /go_attack/configs/compute/1gpu.cfg
+    "$@"
+fi

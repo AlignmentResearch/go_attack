@@ -1,0 +1,59 @@
+[
+    {
+        "name": "kata1-b60c320-s7047906048-d3140270330.bin.gz",
+        "max_visits_victim": 32,
+        "win_rate": 0.75
+    },
+    {
+        "name": "kata1-b60c320-s7047906048-d3140270330.bin.gz",
+        "max_visits_victim": 128,
+        "win_rate": 0.75
+    },
+    {
+        "_comment": "in the paper run we increased visits to 1600 after this",
+        "name": "kata1-b60c320-s7047906048-d3140270330.bin.gz",
+        "max_visits_victim": 512,
+        "win_rate": 0.75
+    },
+    {
+        "name": "kata1-b60c320-s7701878528-d3323518127.bin.gz",
+        "max_visits_victim": 32,
+        "win_rate": 0.75
+    },
+    {
+        "name": "kata1-b60c320-s7701878528-d3323518127.bin.gz",
+        "max_visits_victim": 64,
+        "win_rate": 0.75
+    },
+    {
+        "name": "kata1-b60c320-s7701878528-d3323518127.bin.gz",
+        "max_visits_victim": 128,
+        "win_rate": 0.75
+    },
+    {
+        "name": "kata1-b60c320-s7701878528-d3323518127.bin.gz",
+        "max_visits_victim": 256,
+        "win_rate": 0.75
+    },
+    {
+        "_comment": "in the paper run we did not increase the win rate threshold to 0.9",
+        "name": "kata1-b60c320-s7701878528-d3323518127.bin.gz",
+        "max_visits_victim": 512,
+        "win_rate": 0.9
+    },
+    {
+        "name": "kata1-b60c320-s7701878528-d3323518127.bin.gz",
+        "max_visits_victim": 1024,
+        "win_rate": 0.9
+    },
+    {
+        "name": "kata1-b60c320-s7701878528-d3323518127.bin.gz",
+        "max_visits_victim": 2048,
+        "win_rate": 0.9
+    },
+    {
+        "name": "kata1-b60c320-s7701878528-d3323518127.bin.gz",
+        "max_visits_victim": 4096,
+        "win_rate": 0.9
+    }
+]
