@@ -6,7 +6,7 @@ while [ -n "${1-}" ]; do
   case $1 in
     # Directory where curriculum looks for victim models.
     --input-models-dir) INPUT_MODELS_DIR=$2; shift ;;
-    -*) echo "Unknown parameter passed: $1"; usage; exit 1 ;;
+    -*) echo "Unknown parameter passed: $1"; exit 1 ;;
     *) break ;;
   esac
   shift

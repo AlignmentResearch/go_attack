@@ -1,0 +1,107 @@
+[
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 1,
+        "win_rate": 0.75
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 2,
+        "win_rate": 0.75
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 4,
+        "win_rate": 0.75
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 8,
+        "win_rate": 0.75
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 16,
+        "win_rate": 0.75
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 32,
+        "win_rate": 0.75
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 64,
+        "win_rate": 0.75
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 128,
+        "win_rate": 0.75
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 256,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 512,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 1024,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 2048,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 4096,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 8192,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 16384,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 32768,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 65536,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 131072,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 262144,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 524288,
+        "win_rate": 0.9
+    },
+    {
+        "name": "vit-victim-b16-s650m.pt",
+        "max_visits_victim": 1048576,
+        "win_rate": 0.9
+    }
+]
