@@ -78,7 +78,7 @@ all instances of `kata1-b18c384nbt-s8526915840-d3929217702` with
 lower visit counts <512 from the curriculum config, and relaunch the curriculum
 with the new config.
 
-## `gift-adversary`:
+## `gift-adversary`
 
 The gift adversary is warmstarted from an early checkpoint of the original
 cyclic adversary:
@@ -99,6 +99,12 @@ arguments to the victim-play script. Moreover, when running the resulting
 adversary (including with `kubernetes/evaluate-loop.sh`), you will need to set
 the KataGo config parameters `forceAllowNoResultPredictions = true` and
 `noResultUtility = -1.6` for the adversary.
+
+## `big-adversary`
+
+The big adversary is warmstarted from `attack-may23`, so follow the same
+instructions as for `continuous-adversary`, but use the
+`configs/examples/big-adversary-curriculum.json` curriculum config.
 
 ## Iterated adversarial training
 
@@ -159,6 +165,12 @@ early cyclic adversary checkpoint using the same instructions.
 
 Use the `configs/examples/atari-adversary-curriculum.json` curriculum config.
 The victim `v9` is available on Google Drive.
+
+## `stall-adversary`
+
+Warmstart from the original cyclic adversary (see `attack-may23` instructions),
+and use the `configs/examples/stall-adversary-curriculum.json` curriculum
+config.
 
 ## `ViT-victim`
 
